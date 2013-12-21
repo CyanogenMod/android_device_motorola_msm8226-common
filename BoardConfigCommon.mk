@@ -35,6 +35,8 @@ LOCAL_PATH := device/motorola/msm8226-common
 
 TARGET_SPECIFIC_HEADER_PATH += $(LOCAL_PATH)/include
 
+TARGET_QCOM_MEDIA_VARIANT := msm8226
+
 # Inline kernel building
 TARGET_KERNEL_SOURCE := kernel/motorola/msm8226
 TARGET_KERNEL_CONFIG := msm8226_mmi_defconfig
