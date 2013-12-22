@@ -31,6 +31,7 @@ bin/qmiproxy
 bin/qmuxd
 bin/qseecomd
 bin/radish
+bin/rfs_access
 bin/rild
 bin/rmt_storage
 bin/thermal-engine
