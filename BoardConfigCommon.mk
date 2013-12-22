@@ -27,7 +27,7 @@ BOARD_VENDOR := motorola-qcom
 TARGET_BOARD_PLATFORM_GPU := qcom-adreno305
 TARGET_BOARD_PLATFORM := msm8226
 TARGET_BOOTLOADER_BOARD_NAME := MSM8226
-TARGET_CPU_VARIANT := cortex-a7
+TARGET_CPU_VARIANT := krait
 
 -include device/motorola/qcom-common/BoardConfigCommon.mk
 
@@ -43,6 +43,7 @@ TARGET_KERNEL_CONFIG := msm8226_mmi_defconfig
 BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.console=ttyHSL0 androidboot.hardware=qcom user_debug=31 msm_rtb.filter=0x37 vmalloc=400M utags.blkdev=/dev/block/platform/msm_sdcc.1/by-name/utags androidboot.write_protect=0 zcache androidboot.selinux=permissive
 BOARD_KERNEL_BASE := 0x00000000
 BOARD_KERNEL_PAGESIZE := 2048
+#BOARD_KERNEL_TAGS_OFFSET := 0x01E00000
 BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x02000000 --dt $(LOCAL_PATH)/dt.img
 
 WLAN_MODULES:
