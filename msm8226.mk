@@ -14,6 +14,8 @@
 
 LOCAL_PATH := device/motorola/msm8226-common
 
+PRODUCT_BOOT_JARS += qcom.fmradio
+
 # Permissions
 PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.bluetooth_le.xml:system/etc/permissions/android.hardware.bluetooth_le.xml
@@ -25,6 +27,13 @@ DEVICE_PACKAGE_OVERLAYS += $(LOCAL_PATH)/overlay
 PRODUCT_PACKAGES += \
     audio_policy.msm8226 \
     audio.primary.msm8226
+
+# FM radio
+PRODUCT_PACKAGES += \
+    qcom.fmradio \
+    libqcomfm_jni \
+    FM2 \
+    FMRecord
 
 # HAL
 PRODUCT_PACKAGES += \

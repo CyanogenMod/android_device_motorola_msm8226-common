@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ * Copyright (c) 2009, 2012, The Linux Foundation. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *    * Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    * Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in the
+ *      documentation and/or other materials provided with the distribution.
+ *    * Neither the name of The Linux Foundation nor
+ *      the names of its contributors may be used to endorse or promote
+ *      products derived from this software without specific prior written
+ *      permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NON-INFRINGEMENT ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <LinearLayout android:id="@+id/stationinfo_layout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dip"
+        android:layout_marginLeft="5dip"
+        android:layout_marginRight="5dip"
+        android:orientation="vertical"
+        android:gravity="fill_vertical">
+
+        <RelativeLayout android:id="@+id/top_most"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dip"
+            android:layout_marginRight="5dip">
+
+           <ImageView android:id="@+id/signal_level"
+               android:src="@drawable/ic_signal_2"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:layout_alignParentTop="true"
+               android:layout_alignParentLeft="true"/>
+
+           <TextView android:id="@+id/prog_service_tv"
+               android:textAppearance="?android:attr/textAppearanceMedium"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:layout_alignParentTop="true"
+               android:layout_centerHorizontal="true"
+               android:layout_alignBaseline="@id/signal_level"
+               android:textSize="20dip"
+               android:singleLine="true"
+               android:textStyle="bold"
+               android:text="@string/prog_service_string"/>
+
+           <TextView android:id="@+id/stereo_text_tv"
+               android:textAppearance="?android:attr/textAppearanceSmall"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:layout_alignParentTop="true"
+               android:layout_alignParentRight="true"
+               android:layout_alignBaseline="@id/signal_level"
+               android:textSize="14dip"
+               android:text="@string/default_audio"/>
+
+       </RelativeLayout>
+
+    <LinearLayout android:id="@+id/station_frequency_row"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="25dip"
+        android:paddingBottom="25dip"
+        android:gravity="fill_vertical|center">
+
+        <TextView android:id="@+id/prog_frequency_tv"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:textSize="56dip"
+            android:text="@string/frequency_string" />
+
+        <RelativeLayout android:id="@+id/second_row"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:orientation="vertical"
+            android:layout_toRightOf="@id/prog_frequency_tv">
+
+            <TextView android:id="@+id/call_sign_tv"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true"
+                android:textSize="14dip"
+                android:paddingRight="5dip"
+                android:paddingBottom="2dip"
+                android:paddingLeft="5dip"
+                android:text="@string/station_id_string" />
+
+            <TextView android:id="@+id/pty_tv"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentBottom="true"
+                android:textSize="16dip"
+                android:paddingTop="5dip"
+                android:paddingRight="5dip"
+                android:paddingLeft="5dip"
+                android:text="@string/pty_string" />
+        </RelativeLayout>
+      </LinearLayout>
+
+      <!-- Station Radio Text information display -->
+      <TextView android:id="@+id/radio_text_tv"
+          android:layout_width="fill_parent"
+          android:layout_height="wrap_content"
+          android:textAppearance="?android:attr/textAppearanceMedium"
+          android:textSize="16dip"
+          android:singleLine="true"
+          android:textStyle="bold"
+          android:paddingBottom="2dip"
+          android:paddingLeft="5dip"
+          android:paddingRight="5dip"
+          android:gravity="center_horizontal"
+          android:text="@string/radio_text_string"/>
+
+      <TextView android:id="@+id/eradio_text_tv"
+          android:layout_width="fill_parent"
+          android:layout_height="wrap_content"
+          android:textAppearance="?android:attr/textAppearanceMedium"
+          android:textSize="20dip"
+          android:singleLine="true"
+          android:textStyle="bold"
+          android:paddingLeft="2dip"
+          android:paddingRight="2dip"
+          android:paddingBottom="5dip"
+          android:gravity="center_horizontal"
+          android:layout_below="@id/radio_text_tv"
+          android:text="@string/eradio_text_string"/>
+
+    </LinearLayout>
+</merge>
