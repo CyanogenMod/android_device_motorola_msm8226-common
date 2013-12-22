@@ -1,0 +1,2814 @@
+--- linux-2.4.19-rc1/net/bridge/netfilter/Makefile	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/Makefile	Sat Aug 31 12:59:08 2002
+@@ -15,7 +15,6 @@
+ obj-$(CONFIG_BRIDGE_EBT_T_FILTER) += ebtable_filter.o
+ obj-$(CONFIG_BRIDGE_EBT_T_NAT) += ebtable_nat.o
+ obj-$(CONFIG_BRIDGE_EBT_BROUTE) += ebtable_broute.o
+-obj-$(CONFIG_BRIDGE_DB) += br_db.o
+ obj-$(CONFIG_BRIDGE_EBT_IPF) += ebt_ip.o
+ obj-$(CONFIG_BRIDGE_EBT_ARPF) += ebt_arp.o
+ obj-$(CONFIG_BRIDGE_EBT_VLANF) += ebt_vlan.o
+--- linux-2.4.19-rc1/net/bridge/netfilter/Config.in	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/Config.in	Sat Aug 31 12:59:08 2002
+@@ -5,7 +5,7 @@
+ dep_tristate '    ebt: filter table support' CONFIG_BRIDGE_EBT_T_FILTER $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: nat table support' CONFIG_BRIDGE_EBT_T_NAT $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: broute table support' CONFIG_BRIDGE_EBT_BROUTE $CONFIG_BRIDGE_EBT
+-dep_tristate '    ebt: LOG support' CONFIG_BRIDGE_EBT_LOG $CONFIG_BRIDGE_EBT
++dep_tristate '    ebt: log support' CONFIG_BRIDGE_EBT_LOG $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: IP filter support' CONFIG_BRIDGE_EBT_IPF $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: ARP filter support' CONFIG_BRIDGE_EBT_ARPF $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: 802.1Q VLAN filter support (EXPERIMENTAL)' CONFIG_BRIDGE_EBT_VLANF $CONFIG_BRIDGE_EBT
+@@ -14,5 +14,4 @@
+ dep_tristate '    ebt: dnat target support' CONFIG_BRIDGE_EBT_DNAT $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: redirect target support' CONFIG_BRIDGE_EBT_REDIRECT $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: mark target support' CONFIG_BRIDGE_EBT_MARK_T $CONFIG_BRIDGE_EBT
+-dep_tristate '  Bridge: ethernet database' CONFIG_BRIDGE_DB $CONFIG_BRIDGE
+ 
+--- linux-2.4.19-rc1/net/bridge/netfilter/ebtable_filter.c	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/ebtable_filter.c	Sat Aug 31 12:59:08 2002
+@@ -9,7 +9,6 @@
+  */
+ 
+ #include <linux/netfilter_bridge/ebtables.h>
+-#include <linux/netfilter_bridge.h>
+ #include <linux/module.h>
+ 
+ #define FILTER_VALID_HOOKS ((1 << NF_BR_LOCAL_IN) | (1 << NF_BR_FORWARD) | \
+@@ -42,10 +41,9 @@
+   RW_LOCK_UNLOCKED, check, NULL
+ };
+ 
+-static unsigned int ebt_hook (unsigned int hook, struct sk_buff **pskb,
+-			const struct net_device *in,
+-			const struct net_device *out,
+-			int (*okfn)(struct sk_buff *))
++static unsigned int
++ebt_hook (unsigned int hook, struct sk_buff **pskb, const struct net_device *in,
++   const struct net_device *out, int (*okfn)(struct sk_buff *))
+ {
+ 	return ebt_do_table(hook, pskb, in, out, &frame_filter);
+ }
+--- linux-2.4.19-rc1/net/bridge/netfilter/ebtable_nat.c	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/ebtable_nat.c	Sat Aug 31 12:59:08 2002
+@@ -9,8 +9,6 @@
+  */
+ 
+ #include <linux/netfilter_bridge/ebtables.h>
+-#include <linux/netfilter_bridge.h>
+-#include <linux/netdevice.h>
+ #include <linux/module.h>
+ #define NAT_VALID_HOOKS ((1 << NF_BR_PRE_ROUTING) | (1 << NF_BR_LOCAL_OUT) | \
+    (1 << NF_BR_POST_ROUTING))
+@@ -43,17 +41,15 @@
+ };
+ 
+ static unsigned int
+-ebt_nat_dst (unsigned int hook, struct sk_buff **pskb,
+-   const struct net_device *in, const struct net_device *out,
+-   int (*okfn)(struct sk_buff *))
++ebt_nat_dst(unsigned int hook, struct sk_buff **pskb, const struct net_device *in
++   , const struct net_device *out, int (*okfn)(struct sk_buff *))
+ {
+ 	return ebt_do_table(hook, pskb, in, out, &frame_nat);
+ }
+ 
+-static unsigned int ebt_nat_src (unsigned int hook, struct sk_buff **pskb,
+-			const struct net_device *in,
+-			const struct net_device *out,
+-			int (*okfn)(struct sk_buff *))
++static unsigned int
++ebt_nat_src(unsigned int hook, struct sk_buff **pskb, const struct net_device *in
++   , const struct net_device *out, int (*okfn)(struct sk_buff *))
+ {
+ 	return ebt_do_table(hook, pskb, in, out, &frame_nat);
+ }
+--- linux-2.4.19-rc1/net/bridge/netfilter/ebtable_broute.c	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/ebtable_broute.c	Sat Aug 31 12:59:08 2002
+@@ -12,8 +12,6 @@
+  */
+ 
+ #include <linux/netfilter_bridge/ebtables.h>
+-#include <linux/netfilter_bridge.h>
+-#include <linux/netdevice.h>
+ #include <linux/module.h>
+ #include <linux/if_bridge.h>
+ #include <linux/brlock.h>
+@@ -43,10 +41,8 @@
+ };
+ 
+ static unsigned int
+-ebt_broute (unsigned int hook, struct sk_buff **pskb,
+-			const struct net_device *in,
+-			const struct net_device *out,
+-			int (*okfn)(struct sk_buff *))
++ebt_broute(unsigned int hook, struct sk_buff **pskb, const struct net_device *in,
++   const struct net_device *out, int (*okfn)(struct sk_buff *))
+ {
+ 	return ebt_do_table(hook, pskb, in, out, &broute_table);
+ }
+--- linux-2.4.19-rc1/net/bridge/netfilter/ebt_redirect.c	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/ebt_redirect.c	Sat Aug 31 12:59:08 2002
+@@ -10,8 +10,6 @@
+ 
+ #include <linux/netfilter_bridge/ebtables.h>
+ #include <linux/netfilter_bridge/ebt_redirect.h>
+-#include <linux/netfilter_bridge.h>
+-#include <linux/skbuff.h>
+ #include <linux/module.h>
+ #include <net/sock.h>
+ #include "../br_private.h"
+@@ -20,7 +18,7 @@
+    const struct net_device *in, const struct net_device *out,
+    const void *data, unsigned int datalen)
+ {
+-	struct ebt_redirect_info *infostuff = (struct ebt_redirect_info *) data;
++	struct ebt_redirect_info *info = (struct ebt_redirect_info *)data;
+ 
+ 	if (hooknr != NF_BR_BROUTING)
+ 		memcpy((**pskb).mac.ethernet->h_dest,
+@@ -30,24 +28,23 @@
+ 		   in->dev_addr, ETH_ALEN);
+ 		(*pskb)->pkt_type = PACKET_HOST;
+ 	}
+-	return infostuff->target;
++	return info->target;
+ }
+ 
+ static int ebt_target_redirect_check(const char *tablename, unsigned int hookmask,
+    const struct ebt_entry *e, void *data, unsigned int datalen)
+ {
+-	struct ebt_redirect_info *infostuff = (struct ebt_redirect_info *) data;
++	struct ebt_redirect_info *info = (struct ebt_redirect_info *)data;
+ 
+-	if ((hookmask & (1 << NF_BR_NUMHOOKS)) &&
+-	   infostuff->target == EBT_RETURN)
++	if (datalen != sizeof(struct ebt_redirect_info))
++		return -EINVAL;
++	if (BASE_CHAIN && info->target == EBT_RETURN)
+ 		return -EINVAL;
+-	hookmask &= ~(1 << NF_BR_NUMHOOKS);
++	CLEAR_BASE_CHAIN_BIT;
+ 	if ( (strcmp(tablename, "nat") || hookmask & ~(1 << NF_BR_PRE_ROUTING)) &&
+ 	     (strcmp(tablename, "broute") || hookmask & ~(1 << NF_BR_BROUTING)) )
+ 		return -EINVAL;
+-	if (datalen != sizeof(struct ebt_redirect_info))
+-		return -EINVAL;
+-	if (infostuff->target < -NUM_STANDARD_TARGETS || infostuff->target >= 0)
++	if (INVALID_TARGET)
+ 		return -EINVAL;
+ 	return 0;
+ }
+--- linux-2.4.19-rc1/net/bridge/netfilter/ebt_arp.c	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/ebt_arp.c	Sat Aug 31 12:59:08 2002
+@@ -14,73 +14,68 @@
+ #include <linux/if_arp.h>
+ #include <linux/module.h>
+ 
+-#define FWINV2(bool,invflg) ((bool) ^ !!(infostuff->invflags & invflg))
+-static int ebt_filter_arp(const struct sk_buff *skb,
+-	       const struct net_device *in,
+-	       const struct net_device *out,
+-	       const void *data,
+-	       unsigned int datalen, const struct ebt_counter *c)
++static int ebt_filter_arp(const struct sk_buff *skb, const struct net_device *in,
++   const struct net_device *out, const void *data, unsigned int datalen)
+ {
+-	struct ebt_arp_info *infostuff = (struct ebt_arp_info *)data;
++	struct ebt_arp_info *info = (struct ebt_arp_info *)data;
+ 
+-	if (infostuff->bitmask & EBT_ARP_OPCODE && FWINV2(infostuff->opcode !=
++	if (info->bitmask & EBT_ARP_OPCODE && FWINV(info->opcode !=
+ 	   ((*skb).nh.arph)->ar_op, EBT_ARP_OPCODE))
+-		return 1;
+-	if (infostuff->bitmask & EBT_ARP_HTYPE && FWINV2(infostuff->htype !=
++		return EBT_NOMATCH;
++	if (info->bitmask & EBT_ARP_HTYPE && FWINV(info->htype !=
+ 	   ((*skb).nh.arph)->ar_hrd, EBT_ARP_HTYPE))
+-		return 1;
+-	if (infostuff->bitmask & EBT_ARP_PTYPE && FWINV2(infostuff->ptype !=
++		return EBT_NOMATCH;
++	if (info->bitmask & EBT_ARP_PTYPE && FWINV(info->ptype !=
+ 	   ((*skb).nh.arph)->ar_pro, EBT_ARP_PTYPE))
+-		return 1;
++		return EBT_NOMATCH;
+ 
+-	if (infostuff->bitmask & (EBT_ARP_SRC_IP | EBT_ARP_DST_IP))
++	if (info->bitmask & (EBT_ARP_SRC_IP | EBT_ARP_DST_IP))
+ 	{
+-		__u32 arp_len = sizeof(struct arphdr) +
+-		   (2*(((*skb).nh.arph)->ar_hln)) +
+-		   (2*(((*skb).nh.arph)->ar_pln));
+-		__u32 dst;
+-		__u32 src;
++		uint32_t arp_len = sizeof(struct arphdr) +
++		   (2 * (((*skb).nh.arph)->ar_hln)) +
++		   (2 * (((*skb).nh.arph)->ar_pln));
++		uint32_t dst;
++		uint32_t src;
+ 
+- 		// Make sure the packet is long enough.
++		// Make sure the packet is long enough.
+ 		if ((((*skb).nh.raw) + arp_len) > (*skb).tail)
+-			return 1;
+-		// IPV4 addresses are always 4 bytes.
+-		if (((*skb).nh.arph)->ar_pln != sizeof(__u32))
+-			return 1;
++			return EBT_NOMATCH;
++		// IPv4 addresses are always 4 bytes.
++		if (((*skb).nh.arph)->ar_pln != sizeof(uint32_t))
++			return EBT_NOMATCH;
+ 
+-		if (infostuff->bitmask & EBT_ARP_SRC_IP) {
++		if (info->bitmask & EBT_ARP_SRC_IP) {
+ 			memcpy(&src, ((*skb).nh.raw) + sizeof(struct arphdr) +
+-			   ((*skb).nh.arph)->ar_hln, sizeof(__u32));
+-			if (FWINV2(infostuff->saddr != (src & infostuff->smsk),
++			   ((*skb).nh.arph)->ar_hln, sizeof(uint32_t));
++			if (FWINV(info->saddr != (src & info->smsk),
+ 			   EBT_ARP_SRC_IP))
+-				return 1;
++				return EBT_NOMATCH;
+ 		}
+ 
+-		if (infostuff->bitmask & EBT_ARP_DST_IP) {
++		if (info->bitmask & EBT_ARP_DST_IP) {
+ 			memcpy(&dst, ((*skb).nh.raw)+sizeof(struct arphdr) +
+ 			   (2*(((*skb).nh.arph)->ar_hln)) +
+-			   (((*skb).nh.arph)->ar_pln), sizeof(__u32));
+-			if (FWINV2(infostuff->daddr != (dst & infostuff->dmsk),
++			   (((*skb).nh.arph)->ar_pln), sizeof(uint32_t));
++			if (FWINV(info->daddr != (dst & info->dmsk),
+ 			   EBT_ARP_DST_IP))
+-				return 1;
++				return EBT_NOMATCH;
+ 		}
+ 	}
+-	return 0;
++	return EBT_MATCH;
+ }
+ 
+ static int ebt_arp_check(const char *tablename, unsigned int hookmask,
+    const struct ebt_entry *e, void *data, unsigned int datalen)
+ {
+-	struct ebt_arp_info *infostuff = (struct ebt_arp_info *) data;
++	struct ebt_arp_info *info = (struct ebt_arp_info *)data;
+ 
+ 	if (datalen != sizeof(struct ebt_arp_info))
+ 		return -EINVAL;
+-	if (e->bitmask & (EBT_NOPROTO | EBT_802_3) || 
+-	   (e->ethproto != __constant_htons(ETH_P_ARP) && 
+-	    e->ethproto != __constant_htons(ETH_P_RARP)) ||
++	if ((e->ethproto != __constant_htons(ETH_P_ARP) &&
++	   e->ethproto != __constant_htons(ETH_P_RARP)) ||
+ 	   e->invflags & EBT_IPROTO)
+ 		return -EINVAL;
+-	if (infostuff->bitmask & ~EBT_ARP_MASK)
++	if (info->bitmask & ~EBT_ARP_MASK || info->invflags & ~EBT_ARP_MASK)
+ 		return -EINVAL;
+ 	return 0;
+ }
+--- linux-2.4.19-rc1/net/bridge/netfilter/ebt_ip.c	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/ebt_ip.c	Sat Aug 31 12:59:08 2002
+@@ -13,49 +13,41 @@
+ #include <linux/ip.h>
+ #include <linux/module.h>
+ 
+-#define FWINV2(bool,invflg) ((bool) ^ !!(infostuff->invflags & invflg))
+-static int ebt_filter_ip(const struct sk_buff *skb,
+-	       const struct net_device *in,
+-	       const struct net_device *out,
+-	       const void *data,
+-	       unsigned int datalen, const struct ebt_counter *c)
++static int ebt_filter_ip(const struct sk_buff *skb, const struct net_device *in,
++   const struct net_device *out, const void *data,
++   unsigned int datalen)
+ {
+-	struct ebt_ip_info *infostuff = (struct ebt_ip_info *) data;
++	struct ebt_ip_info *info = (struct ebt_ip_info *)data;
+ 
+-	if (infostuff->bitmask & EBT_IP_TOS &&
+-	   FWINV2(infostuff->tos != ((*skb).nh.iph)->tos, EBT_IP_TOS))
+-		return 1;
+-	if (infostuff->bitmask & EBT_IP_PROTO && FWINV2(infostuff->protocol !=
++	if (info->bitmask & EBT_IP_TOS &&
++	   FWINV(info->tos != ((*skb).nh.iph)->tos, EBT_IP_TOS))
++		return EBT_NOMATCH;
++	if (info->bitmask & EBT_IP_PROTO && FWINV(info->protocol !=
+ 	   ((*skb).nh.iph)->protocol, EBT_IP_PROTO))
+-		return 1;
+-	if (infostuff->bitmask & EBT_IP_SOURCE &&
+-	   FWINV2((((*skb).nh.iph)->saddr & infostuff->smsk) !=
+-	   infostuff->saddr, EBT_IP_SOURCE))
+-		return 1;
+-	if ((infostuff->bitmask & EBT_IP_DEST) &&
+-	   FWINV2((((*skb).nh.iph)->daddr & infostuff->dmsk) !=
+-	   infostuff->daddr, EBT_IP_DEST))
+-		return 1;
+-	return 0;
++		return EBT_NOMATCH;
++	if (info->bitmask & EBT_IP_SOURCE &&
++	   FWINV((((*skb).nh.iph)->saddr & info->smsk) !=
++	   info->saddr, EBT_IP_SOURCE))
++		return EBT_NOMATCH;
++	if ((info->bitmask & EBT_IP_DEST) &&
++	   FWINV((((*skb).nh.iph)->daddr & info->dmsk) !=
++	   info->daddr, EBT_IP_DEST))
++		return EBT_NOMATCH;
++	return EBT_MATCH;
+ }
+ 
+ static int ebt_ip_check(const char *tablename, unsigned int hookmask,
+    const struct ebt_entry *e, void *data, unsigned int datalen)
+ {
+-	struct ebt_ip_info *infostuff = (struct ebt_ip_info *) data;
++	struct ebt_ip_info *info = (struct ebt_ip_info *)data;
+ 
+-	if (datalen != sizeof(struct ebt_ip_info)) {
++	if (datalen != sizeof(struct ebt_ip_info))
+ 		return -EINVAL;
+-	}
+-	if (e->bitmask & (EBT_NOPROTO | EBT_802_3) || 
+-	    e->ethproto != __constant_htons(ETH_P_IP) ||
+-	    e->invflags & EBT_IPROTO)
+-	{
++	if (e->ethproto != __constant_htons(ETH_P_IP) ||
++	   e->invflags & EBT_IPROTO)
+ 		return -EINVAL;
+-	}
+-	if (infostuff->bitmask & ~EBT_IP_MASK) {
++	if (info->bitmask & ~EBT_IP_MASK || info->invflags & ~EBT_IP_MASK)
+ 		return -EINVAL;
+-	}
+ 	return 0;
+ }
+ 
+--- linux-2.4.19-rc1/net/bridge/netfilter/ebt_vlan.c	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/ebt_vlan.c	Sat Aug 31 12:59:08 2002
+@@ -36,10 +36,10 @@
+ 
+ 
+ #define DEBUG_MSG(...) if (debug) printk (KERN_DEBUG __FILE__ ":" __FUNCTION__ ": "  __VA_ARGS__)
+-#define INV_FLAG(_inv_flag_) (infostuff->invflags & _inv_flag_) ? "!" : ""
+-#define GET_BITMASK(_BIT_MASK_) infostuff->bitmask & _BIT_MASK_
+-#define SET_BITMASK(_BIT_MASK_) infostuff->bitmask |= _BIT_MASK_
+-#define EXIT_ON_MISMATCH(_MATCH_,_MASK_) if (!((infostuff->_MATCH_ == _MATCH_)^!!(infostuff->invflags & _MASK_))) return 1;
++#define INV_FLAG(_inv_flag_) (info->invflags & _inv_flag_) ? "!" : ""
++#define GET_BITMASK(_BIT_MASK_) info->bitmask & _BIT_MASK_
++#define SET_BITMASK(_BIT_MASK_) info->bitmask |= _BIT_MASK_
++#define EXIT_ON_MISMATCH(_MATCH_,_MASK_) if (!((info->_MATCH_ == _MATCH_)^!!(info->invflags & _MASK_))) return 1;
+ 
+ /*
+  * Function description: ebt_filter_vlan() is main engine for 
+@@ -63,9 +63,9 @@
+ 		 const struct net_device *in,
+ 		 const struct net_device *out,
+ 		 const void *data,
+-		 unsigned int datalen, const struct ebt_counter *c)
++		 unsigned int datalen)
+ {
+-	struct ebt_vlan_info *infostuff = (struct ebt_vlan_info *) data;	/* userspace data */
++	struct ebt_vlan_info *info = (struct ebt_vlan_info *) data;	/* userspace data */
+ 	struct vlan_ethhdr *frame = (struct vlan_ethhdr *) skb->mac.raw;	/* Passed tagged frame */
+ 
+ 	unsigned short TCI;	/* Whole TCI, given from parsed frame */
+@@ -109,7 +109,7 @@
+ 			EXIT_ON_MISMATCH (id, EBT_VLAN_ID);
+ 			DEBUG_MSG
+ 			    ("matched rule id=%s%d for frame id=%d\n",
+-			     INV_FLAG (EBT_VLAN_ID), infostuff->id, id);
++			     INV_FLAG (EBT_VLAN_ID), info->id, id);
+ 		}
+ 	} else {
+ 		/*
+@@ -119,7 +119,7 @@
+ 			EXIT_ON_MISMATCH (prio, EBT_VLAN_PRIO);
+ 			DEBUG_MSG
+ 			    ("matched rule prio=%s%d for frame prio=%d\n",
+-			     INV_FLAG (EBT_VLAN_PRIO), infostuff->prio,
++			     INV_FLAG (EBT_VLAN_PRIO), info->prio,
+ 			     prio);
+ 		}
+ 	}
+@@ -130,7 +130,7 @@
+ 		EXIT_ON_MISMATCH (encap, EBT_VLAN_ENCAP);
+ 		DEBUG_MSG ("matched encap=%s%2.4X for frame encap=%2.4X\n",
+ 			   INV_FLAG (EBT_VLAN_ENCAP),
+-			   ntohs (infostuff->encap), ntohs (encap));
++			   ntohs (info->encap), ntohs (encap));
+ 	}
+ 	/*
+ 	 * All possible extension parameters was parsed.
+@@ -159,7 +159,7 @@
+ 		const struct ebt_entry *e, void *data,
+ 		unsigned int datalen)
+ {
+-	struct ebt_vlan_info *infostuff = (struct ebt_vlan_info *) data;
++	struct ebt_vlan_info *info = (struct ebt_vlan_info *) data;
+ 
+ 	/*
+ 	 * Parameters buffer overflow check 
+@@ -175,7 +175,7 @@
+ 	 * Is it 802.1Q frame checked?
+ 	 */
+ 	if (e->ethproto != __constant_htons (ETH_P_8021Q)) {
+-		DEBUG_MSG ("passed frame %2.4X is not 802.1Q (8100)\n",
++		DEBUG_MSG ("passed entry proto %2.4X is not 802.1Q (8100)\n",
+ 			   (unsigned short) ntohs (e->ethproto));
+ 		return -EINVAL;
+ 	}
+@@ -184,18 +184,18 @@
+ 	 * Check for bitmask range 
+ 	 * True if even one bit is out of mask
+ 	 */
+-	if (infostuff->bitmask & ~EBT_VLAN_MASK) {
++	if (info->bitmask & ~EBT_VLAN_MASK) {
+ 		DEBUG_MSG ("bitmask %2X is out of mask (%2X)\n",
+-			   infostuff->bitmask, EBT_VLAN_MASK);
++			   info->bitmask, EBT_VLAN_MASK);
+ 		return -EINVAL;
+ 	}
+ 
+ 	/*
+ 	 * Check for inversion flags range 
+ 	 */
+-	if (infostuff->invflags & ~EBT_VLAN_MASK) {
++	if (info->invflags & ~EBT_VLAN_MASK) {
+ 		DEBUG_MSG ("inversion flags %2X is out of mask (%2X)\n",
+-			   infostuff->invflags, EBT_VLAN_MASK);
++			   info->invflags, EBT_VLAN_MASK);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -223,11 +223,11 @@
+ 	 * For Linux, N = 4094.
+ 	 */
+ 	if (GET_BITMASK (EBT_VLAN_ID)) {	/* when vlan-id param was spec-ed */
+-		if (!!infostuff->id) {	/* if id!=0 => check vid range */
+-			if (infostuff->id > 4094) {	/* check if id > than (0x0FFE) */
++		if (!!info->id) {	/* if id!=0 => check vid range */
++			if (info->id > 4094) {	/* check if id > than (0x0FFE) */
+ 				DEBUG_MSG
+ 				    ("vlan id %d is out of range (1-4094)\n",
+-				     infostuff->id);
++				     info->id);
+ 				return -EINVAL;
+ 			}
+ 			/*
+@@ -240,10 +240,10 @@
+ 			 * if id=0 (null VLAN ID)  => Check for user_priority range 
+ 			 */
+ 			if (GET_BITMASK (EBT_VLAN_PRIO)) {
+-				if ((unsigned char) infostuff->prio > 7) {
++				if ((unsigned char) info->prio > 7) {
+ 					DEBUG_MSG
+ 					    ("prio %d is out of range (0-7)\n",
+-					     infostuff->prio);
++					     info->prio);
+ 					return -EINVAL;
+ 				}
+ 			}
+@@ -254,7 +254,7 @@
+ 		}
+ 	} else {		/* VLAN Id not set */
+ 		if (GET_BITMASK (EBT_VLAN_PRIO)) {	/* But user_priority is set - abnormal! */
+-			infostuff->id = 0;	/* Set null VID (case for Priority-tagged frames) */
++			info->id = 0;	/* Set null VID (case for Priority-tagged frames) */
+ 			SET_BITMASK (EBT_VLAN_ID);	/* and set id flag */
+ 		}
+ 	}
+@@ -266,10 +266,10 @@
+ 	 * if_ether.h:  ETH_ZLEN        60   -  Min. octets in frame sans FCS
+ 	 */
+ 	if (GET_BITMASK (EBT_VLAN_ENCAP)) {
+-		if ((unsigned short) ntohs (infostuff->encap) < ETH_ZLEN) {
++		if ((unsigned short) ntohs (info->encap) < ETH_ZLEN) {
+ 			DEBUG_MSG
+ 			    ("encap packet length %d is less than minimal %d\n",
+-			     ntohs (infostuff->encap), ETH_ZLEN);
++			     ntohs (info->encap), ETH_ZLEN);
+ 			return -EINVAL;
+ 		}
+ 	}
+--- linux-2.4.19-rc1/net/bridge/netfilter/ebt_log.c	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/ebt_log.c	Sat Aug 31 12:59:08 2002
+@@ -20,67 +20,56 @@
+ static int ebt_log_check(const char *tablename, unsigned int hookmask,
+    const struct ebt_entry *e, void *data, unsigned int datalen)
+ {
+-	struct ebt_log_info *loginfo = (struct ebt_log_info *)data;
++	struct ebt_log_info *info = (struct ebt_log_info *)data;
+ 
+ 	if (datalen != sizeof(struct ebt_log_info))
+ 		return -EINVAL;
+-	if (loginfo->bitmask & ~EBT_LOG_MASK)
++	if (info->bitmask & ~EBT_LOG_MASK)
+ 		return -EINVAL;
+-	if (loginfo->loglevel >= 8)
++	if (info->loglevel >= 8)
+ 		return -EINVAL;
+-	loginfo->prefix[EBT_LOG_PREFIX_SIZE - 1] = '\0';
++	info->prefix[EBT_LOG_PREFIX_SIZE - 1] = '\0';
+ 	return 0;
+ }
+ 
+ static void ebt_log(const struct sk_buff *skb, const struct net_device *in,
+-   const struct net_device *out, const void *data, unsigned int datalen,
+-   const struct ebt_counter *c)
++   const struct net_device *out, const void *data, unsigned int datalen)
+ {
+-	struct ebt_log_info *loginfo = (struct ebt_log_info *)data;
++	struct ebt_log_info *info = (struct ebt_log_info *)data;
+ 	char level_string[4] = "< >";
+-	level_string[1] = '0' + loginfo->loglevel;
++	level_string[1] = '0' + info->loglevel;
+ 
+ 	spin_lock_bh(&ebt_log_lock);
+ 	printk(level_string);
+-	// max length: 29 + 10 + 2 * 16
+-	printk("%s IN=%s OUT=%s ",
+-	       loginfo->prefix,
+-	       in ? in->name : "",
+-	       out ? out->name : "");
++	printk("%s IN=%s OUT=%s ", info->prefix, in ? in->name : "",
++	   out ? out->name : "");
+ 
+ 	if (skb->dev->hard_header_len) {
+ 		int i;
+ 		unsigned char *p = (skb->mac.ethernet)->h_source;
++
+ 		printk("MAC source = ");
+ 		for (i = 0; i < ETH_ALEN; i++,p++)
+-			printk("%02x%c", *p,
+-			       i == ETH_ALEN - 1
+-			       ? ' ':':');// length: 31
++			printk("%02x%c", *p, i == ETH_ALEN - 1 ? ' ':':');
+ 		printk("MAC dest = ");
+ 		p = (skb->mac.ethernet)->h_dest;
+ 		for (i = 0; i < ETH_ALEN; i++,p++)
+-			printk("%02x%c", *p,
+-			       i == ETH_ALEN - 1
+-			       ? ' ':':');// length: 29
++			printk("%02x%c", *p, i == ETH_ALEN - 1 ? ' ':':');
+ 	}
+-	// length: 14
+ 	printk("proto = 0x%04x", ntohs(((*skb).mac.ethernet)->h_proto));
+ 
+-	if ((loginfo->bitmask & EBT_LOG_IP) && skb->mac.ethernet->h_proto ==
++	if ((info->bitmask & EBT_LOG_IP) && skb->mac.ethernet->h_proto ==
+ 	   htons(ETH_P_IP)){
+ 		struct iphdr *iph = skb->nh.iph;
+-		// max length: 46
+ 		printk(" IP SRC=%u.%u.%u.%u IP DST=%u.%u.%u.%u,",
+ 		   NIPQUAD(iph->saddr), NIPQUAD(iph->daddr));
+-		// max length: 26
+ 		printk(" IP tos=0x%02X, IP proto=%d", iph->tos, iph->protocol);
+ 	}
+ 
+-	if ((loginfo->bitmask & EBT_LOG_ARP) &&
++	if ((info->bitmask & EBT_LOG_ARP) &&
+ 	    ((skb->mac.ethernet->h_proto == __constant_htons(ETH_P_ARP)) ||
+ 	    (skb->mac.ethernet->h_proto == __constant_htons(ETH_P_RARP)))) {
+ 		struct arphdr * arph = skb->nh.arph;
+-		// max length: 40
+ 		printk(" ARP HTYPE=%d, PTYPE=0x%04x, OPCODE=%d",
+ 		   ntohs(arph->ar_hrd), ntohs(arph->ar_pro),
+ 		   ntohs(arph->ar_op));
+--- linux-2.4.19-rc1/net/bridge/netfilter/ebt_mark.c	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/ebt_mark.c	Sat Aug 31 12:59:08 2002
+@@ -1,5 +1,5 @@
+ /*
+- *  ebt_mark_t
++ *  ebt_mark
+  *
+  *	Authors:
+  *	Bart De Schuymer <bart.de.schuymer@pandora.be>
+@@ -11,42 +11,35 @@
+ // The mark target can be used in any chain
+ // I believe adding a mangle table just for marking is total overkill
+ // Marking a frame doesn't really change anything in the frame anyway
+-// The target member of the struct ebt_vlan_info provides the same
+-// functionality as a separate table
+ 
+ #include <linux/netfilter_bridge/ebtables.h>
+ #include <linux/netfilter_bridge/ebt_mark_t.h>
+-#include <linux/netfilter_bridge.h>
+-#include <linux/skbuff.h>
+ #include <linux/module.h>
+-#include <net/sock.h>
+-#include "../br_private.h"
+ 
+ static int ebt_target_mark(struct sk_buff **pskb, unsigned int hooknr,
+    const struct net_device *in, const struct net_device *out,
+    const void *data, unsigned int datalen)
+ {
+-	struct ebt_mark_t_info *infostuff = (struct ebt_mark_t_info *) data;
++	struct ebt_mark_t_info *info = (struct ebt_mark_t_info *)data;
+ 
+-	if ((*pskb)->nfmark != infostuff->mark) {
+-		(*pskb)->nfmark = infostuff->mark;
++	if ((*pskb)->nfmark != info->mark) {
++		(*pskb)->nfmark = info->mark;
+ 		(*pskb)->nfcache |= NFC_ALTERED;
+ 	}
+-	return infostuff->target;
++	return info->target;
+ }
+ 
+ static int ebt_target_mark_check(const char *tablename, unsigned int hookmask,
+    const struct ebt_entry *e, void *data, unsigned int datalen)
+ {
+-	struct ebt_mark_t_info *infostuff = (struct ebt_mark_t_info *) data;
++	struct ebt_mark_t_info *info = (struct ebt_mark_t_info *)data;
+ 
+-	if ((hookmask & (1 << NF_BR_NUMHOOKS)) &&
+-	   infostuff->target == EBT_RETURN)
+-		return -EINVAL;
+-	hookmask &= ~(1 << NF_BR_NUMHOOKS);
+ 	if (datalen != sizeof(struct ebt_mark_t_info))
+ 		return -EINVAL;
+-	if (infostuff->target < -NUM_STANDARD_TARGETS || infostuff->target >= 0)
++	if (BASE_CHAIN && info->target == EBT_RETURN)
++		return -EINVAL;
++	CLEAR_BASE_CHAIN_BIT;
++	if (INVALID_TARGET)
+ 		return -EINVAL;
+ 	return 0;
+ }
+--- linux-2.4.19-rc1/net/bridge/netfilter/ebt_mark_m.c	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/ebt_mark_m.c	Sat Aug 31 12:59:08 2002
+@@ -14,7 +14,7 @@
+ 
+ static int ebt_filter_mark(const struct sk_buff *skb,
+    const struct net_device *in, const struct net_device *out, const void *data,
+-   unsigned int datalen, const struct ebt_counter *c)
++   unsigned int datalen)
+ {
+ 	struct ebt_mark_m_info *info = (struct ebt_mark_m_info *) data;
+ 
+@@ -28,15 +28,14 @@
+ {
+         struct ebt_mark_m_info *info = (struct ebt_mark_m_info *) data;
+ 
++	if (datalen != sizeof(struct ebt_mark_m_info))
++		return -EINVAL;
+ 	if (info->bitmask & ~EBT_MARK_MASK)
+ 		return -EINVAL;
+ 	if ((info->bitmask & EBT_MARK_OR) && (info->bitmask & EBT_MARK_AND))
+ 		return -EINVAL;
+ 	if (!info->bitmask)
+ 		return -EINVAL;
+-	if (datalen != sizeof(struct ebt_mark_m_info)) {
+-		return -EINVAL;
+-	}
+ 	return 0;
+ }
+ 
+--- linux-2.4.19-rc1/net/bridge/netfilter/ebt_snat.c	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/ebt_snat.c	Sat Aug 31 12:59:08 2002
+@@ -10,38 +10,34 @@
+ 
+ #include <linux/netfilter_bridge/ebtables.h>
+ #include <linux/netfilter_bridge/ebt_nat.h>
+-#include <linux/netfilter_bridge.h>
+-#include <linux/skbuff.h>
+ #include <linux/module.h>
+-#include <net/sock.h>
+ 
+ static int ebt_target_snat(struct sk_buff **pskb, unsigned int hooknr,
+    const struct net_device *in, const struct net_device *out,
+    const void *data, unsigned int datalen)
+ {
+-	struct ebt_nat_info *infostuff = (struct ebt_nat_info *) data;
++	struct ebt_nat_info *info = (struct ebt_nat_info *) data;
+ 
+-	memcpy(((**pskb).mac.ethernet)->h_source, infostuff->mac,
++	memcpy(((**pskb).mac.ethernet)->h_source, info->mac,
+ 	   ETH_ALEN * sizeof(unsigned char));
+-	return infostuff->target;
++	return info->target;
+ }
+ 
+ static int ebt_target_snat_check(const char *tablename, unsigned int hookmask,
+    const struct ebt_entry *e, void *data, unsigned int datalen)
+ {
+-	struct ebt_nat_info *infostuff = (struct ebt_nat_info *) data;
++	struct ebt_nat_info *info = (struct ebt_nat_info *) data;
+ 
+-	if ((hookmask & (1 << NF_BR_NUMHOOKS)) &&
+-	   infostuff->target == EBT_RETURN)
++	if (datalen != sizeof(struct ebt_nat_info))
+ 		return -EINVAL;
+-	hookmask &= ~(1 << NF_BR_NUMHOOKS);
+-	if (strcmp(tablename, "nat"))
++	if (BASE_CHAIN && info->target == EBT_RETURN)
+ 		return -EINVAL;
+-	if (datalen != sizeof(struct ebt_nat_info))
++	CLEAR_BASE_CHAIN_BIT;
++	if (strcmp(tablename, "nat"))
+ 		return -EINVAL;
+ 	if (hookmask & ~(1 << NF_BR_POST_ROUTING))
+ 		return -EINVAL;
+-	if (infostuff->target < -NUM_STANDARD_TARGETS || infostuff->target >= 0)
++	if (INVALID_TARGET)
+ 		return -EINVAL;
+ 	return 0;
+ }
+--- linux-2.4.19-rc1/net/bridge/netfilter/ebt_dnat.c	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/ebt_dnat.c	Sat Aug 31 12:59:08 2002
+@@ -10,8 +10,6 @@
+ 
+ #include <linux/netfilter_bridge/ebtables.h>
+ #include <linux/netfilter_bridge/ebt_nat.h>
+-#include <linux/netfilter_bridge.h>
+-#include <linux/skbuff.h>
+ #include <linux/module.h>
+ #include <net/sock.h>
+ 
+@@ -19,29 +17,28 @@
+    const struct net_device *in, const struct net_device *out,
+    const void *data, unsigned int datalen)
+ {
+-	struct ebt_nat_info *infostuff = (struct ebt_nat_info *) data;
++	struct ebt_nat_info *info = (struct ebt_nat_info *)data;
+ 
+-	memcpy(((**pskb).mac.ethernet)->h_dest, infostuff->mac,
++	memcpy(((**pskb).mac.ethernet)->h_dest, info->mac,
+ 	   ETH_ALEN * sizeof(unsigned char));
+-	return infostuff->target;
++	return info->target;
+ }
+ 
+ static int ebt_target_dnat_check(const char *tablename, unsigned int hookmask,
+    const struct ebt_entry *e, void *data, unsigned int datalen)
+ {
+-	struct ebt_nat_info *infostuff = (struct ebt_nat_info *) data;
++	struct ebt_nat_info *info = (struct ebt_nat_info *)data;
+ 
+-	if ((hookmask & (1 << NF_BR_NUMHOOKS)) &&
+-	   infostuff->target == EBT_RETURN)
++	if (BASE_CHAIN && info->target == EBT_RETURN)
+ 		return -EINVAL;
+-	hookmask &= ~(1 << NF_BR_NUMHOOKS);
++	CLEAR_BASE_CHAIN_BIT;
+ 	if ( (strcmp(tablename, "nat") ||
+ 	   (hookmask & ~((1 << NF_BR_PRE_ROUTING) | (1 << NF_BR_LOCAL_OUT)))) &&
+ 	   (strcmp(tablename, "broute") || hookmask & ~(1 << NF_BR_BROUTING)) )
+ 		return -EINVAL;
+ 	if (datalen != sizeof(struct ebt_nat_info))
+ 		return -EINVAL;
+-	if (infostuff->target < -NUM_STANDARD_TARGETS || infostuff->target >= 0)
++	if (INVALID_TARGET)
+ 		return -EINVAL;
+ 	return 0;
+ }
+--- linux-2.4.19-rc1/net/bridge/netfilter/ebtables.c	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/ebtables.c	Sat Aug 31 12:59:08 2002
+@@ -22,10 +22,6 @@
+ #include <linux/kmod.h>
+ #include <linux/module.h>
+ #include <linux/vmalloc.h>
+-#include <linux/skbuff.h>
+-#include <linux/if_ether.h>
+-#include <linux/netfilter_bridge.h>
+-#include <linux/netfilter_ipv4.h>
+ #include <linux/netfilter_bridge/ebtables.h>
+ #include <linux/spinlock.h>
+ #include <asm/uaccess.h>
+@@ -40,6 +36,21 @@
+ #include <linux/netfilter_ipv4/listhelp.h>
+ 
+ #if 0 // use this for remote debugging
++// Copyright (C) 1998 by Ori Pomerantz
++// Print the string to the appropriate tty, the one
++// the current task uses
++static void print_string(char *str)
++{
++	struct tty_struct *my_tty;
++
++	/* The tty for the current task */
++	my_tty = current->tty;
++	if (my_tty != NULL) {
++		(*(my_tty->driver).write)(my_tty, 0, str, strlen(str));
++		(*(my_tty->driver).write)(my_tty, 0, "\015\012", 2);
++	}
++}
++
+ #define BUGPRINT(args) print_string(args);
+ #else
+ #define BUGPRINT(format, args...) printk("kernel msg: ebtables bug: please "\
+@@ -65,8 +76,6 @@
+ 
+ 
+ 
+-static void print_string(char *str);
+-
+ static DECLARE_MUTEX(ebt_mutex);
+ static LIST_HEAD(ebt_tables);
+ static LIST_HEAD(ebt_targets);
+@@ -78,20 +87,20 @@
+ 
+ static inline int ebt_do_watcher (struct ebt_entry_watcher *w,
+    const struct sk_buff *skb, const struct net_device *in,
+-   const struct net_device *out, const struct ebt_counter *c)
++   const struct net_device *out)
+ {
+ 	w->u.watcher->watcher(skb, in, out, w->data,
+-	   w->watcher_size, c);
++	   w->watcher_size);
+ 	// watchers don't give a verdict
+ 	return 0;
+ }
+ 
+ static inline int ebt_do_match (struct ebt_entry_match *m,
+    const struct sk_buff *skb, const struct net_device *in,
+-   const struct net_device *out, const struct ebt_counter *c)
++   const struct net_device *out)
+ {
+ 	return m->u.match->match(skb, in, out, m->data,
+-	   m->match_size, c);
++	   m->match_size);
+ }
+ 
+ static inline int ebt_dev_check(char *entry, const struct net_device *device)
+@@ -100,48 +109,48 @@
+ 		return 0;
+ 	if (!device)
+ 		return 1;
+-	return !!strncmp(entry, device->name, IFNAMSIZ);
++	return !!strcmp(entry, device->name);
+ }
+ 
+-#define FWINV(bool,invflg) ((bool) ^ !!(p->invflags & invflg))
++#define FWINV2(bool,invflg) ((bool) ^ !!(e->invflags & invflg))
+ // process standard matches
+-static inline int ebt_basic_match(struct ebt_entry *p, struct ethhdr *h,
++static inline int ebt_basic_match(struct ebt_entry *e, struct ethhdr *h,
+    const struct net_device *in, const struct net_device *out)
+ {
+ 	int verdict, i;
+ 
+-	if (p->bitmask & EBT_802_3) {
+-		if (FWINV(ntohs(h->h_proto) >= 1536, EBT_IPROTO))
++	if (e->bitmask & EBT_802_3) {
++		if (FWINV2(ntohs(h->h_proto) >= 1536, EBT_IPROTO))
+ 			return 1;
+-	} else if (!(p->bitmask & EBT_NOPROTO) &&
+-	   FWINV(p->ethproto != h->h_proto, EBT_IPROTO))
++	} else if (!(e->bitmask & EBT_NOPROTO) &&
++	   FWINV2(e->ethproto != h->h_proto, EBT_IPROTO))
+ 		return 1;
+ 
+-	if (FWINV(ebt_dev_check(p->in, in), EBT_IIN))
++	if (FWINV2(ebt_dev_check(e->in, in), EBT_IIN))
+ 		return 1;
+-	if (FWINV(ebt_dev_check(p->out, out), EBT_IOUT))
++	if (FWINV2(ebt_dev_check(e->out, out), EBT_IOUT))
+ 		return 1;
+-	if ((!in || !in->br_port) ? 0 : FWINV(ebt_dev_check(
+-	   p->logical_in, &in->br_port->br->dev), EBT_ILOGICALIN))
++	if ((!in || !in->br_port) ? 0 : FWINV2(ebt_dev_check(
++	   e->logical_in, &in->br_port->br->dev), EBT_ILOGICALIN))
+ 		return 1;
+-	if ((!out || !out->br_port) ? 0 : FWINV(ebt_dev_check(
+-	   (p->logical_out), &out->br_port->br->dev), EBT_ILOGICALOUT))
++	if ((!out || !out->br_port) ? 0 : FWINV2(ebt_dev_check(
++	   e->logical_out, &out->br_port->br->dev), EBT_ILOGICALOUT))
+ 		return 1;
+-	
+-	if (p->bitmask & EBT_SOURCEMAC) {
++
++	if (e->bitmask & EBT_SOURCEMAC) {
+ 		verdict = 0;
+ 		for (i = 0; i < 6; i++)
+-			verdict |= (h->h_source[i] ^ p->sourcemac[i]) &
+-			   p->sourcemsk[i];
+-		if (FWINV(verdict != 0, EBT_ISOURCE) )
++			verdict |= (h->h_source[i] ^ e->sourcemac[i]) &
++			   e->sourcemsk[i];
++		if (FWINV2(verdict != 0, EBT_ISOURCE) )
+ 			return 1;
+ 	}
+-	if (p->bitmask & EBT_DESTMAC) {
++	if (e->bitmask & EBT_DESTMAC) {
+ 		verdict = 0;
+ 		for (i = 0; i < 6; i++)
+-			verdict |= (h->h_dest[i] ^ p->destmac[i]) &
+-			   p->destmsk[i];
+-		if (FWINV(verdict != 0, EBT_IDEST) )
++			verdict |= (h->h_dest[i] ^ e->destmac[i]) &
++			   e->destmsk[i];
++		if (FWINV2(verdict != 0, EBT_IDEST) )
+ 			return 1;
+ 	}
+ 	return 0;
+@@ -163,7 +172,7 @@
+ 	struct ebt_table_info *private = table->private;
+ 
+ 	read_lock_bh(&table->lock);
+-	cb_base = COUNTER_BASE(private->counters, private->nentries, \
++	cb_base = COUNTER_BASE(private->counters, private->nentries,
+ 	   cpu_number_map(smp_processor_id()));
+ 	if (private->chainstack)
+ 		cs = private->chainstack[cpu_number_map(smp_processor_id())];
+@@ -180,8 +189,7 @@
+ 		if (ebt_basic_match(point, (**pskb).mac.ethernet, in, out))
+ 			goto letscontinue;
+ 
+-		if (EBT_MATCH_ITERATE(point, ebt_do_match, *pskb, in,
+-		   out, counter_base + i) != 0)
++		if (EBT_MATCH_ITERATE(point, ebt_do_match, *pskb, in, out) != 0)
+ 			goto letscontinue;
+ 
+ 		// increase counter
+@@ -190,7 +198,7 @@
+ 		// these should only watch: not modify, nor tell us
+ 		// what to do with the packet
+ 		EBT_WATCHER_ITERATE(point, ebt_do_watcher, *pskb, in,
+-		   out, counter_base + i);
++		   out);
+ 
+ 		t = (struct ebt_entry_target *)
+ 		   (((char *)point) + point->target_offset);
+@@ -210,11 +218,13 @@
+ 		}
+ 		if (verdict == EBT_RETURN) {
+ letsreturn:
++#ifdef CONFIG_NETFILTER_DEBUG
+ 			if (sp == 0) {
+ 				BUGPRINT("RETURN on base chain");
+ 				// act like this is EBT_CONTINUE
+ 				goto letscontinue;
+ 			}
++#endif
+ 			sp--;
+ 			// put all the local variables right
+ 			i = cs[sp].n;
+@@ -227,11 +237,13 @@
+ 		}
+ 		if (verdict == EBT_CONTINUE)
+ 			goto letscontinue;
++#ifdef CONFIG_NETFILTER_DEBUG
+ 		if (verdict < 0) {
+ 			BUGPRINT("bogus standard verdict\n");
+ 			read_unlock_bh(&table->lock);
+ 			return NF_DROP;
+ 		}
++#endif
+ 		// jump to a udc
+ 		cs[sp].n = i + 1;
+ 		cs[sp].chaininfo = chaininfo;
+@@ -239,11 +251,13 @@
+ 		   (((char *)point) + point->next_offset);
+ 		i = 0;
+ 		chaininfo = (struct ebt_entries *) (base + verdict);
++#ifdef CONFIG_NETFILTER_DEBUG
+ 		if (chaininfo->distinguisher) {
+ 			BUGPRINT("jump to non-chain\n");
+ 			read_unlock_bh(&table->lock);
+ 			return NF_DROP;
+ 		}
++#endif
+ 		nentries = chaininfo->nentries;
+ 		point = (struct ebt_entry *)chaininfo->data;
+ 		counter_base = cb_base + chaininfo->counter_offset;
+@@ -266,12 +280,10 @@
+ 	return NF_DROP;
+ }
+ 
+-/* If it succeeds, returns element and locks mutex */
++// If it succeeds, returns element and locks mutex
+ static inline void *
+-find_inlist_lock_noload(struct list_head *head,
+-			const char *name,
+-			int *error,
+-			struct semaphore *mutex)
++find_inlist_lock_noload(struct list_head *head, const char *name, int *error,
++   struct semaphore *mutex)
+ {
+ 	void *ret;
+ 
+@@ -291,11 +303,8 @@
+ #define find_inlist_lock(h,n,p,e,m) find_inlist_lock_noload((h),(n),(e),(m))
+ #else
+ static void *
+-find_inlist_lock(struct list_head *head,
+-		 const char *name,
+-		 const char *prefix,
+-		 int *error,
+-		 struct semaphore *mutex)
++find_inlist_lock(struct list_head *head, const char *name, const char *prefix,
++   int *error, struct semaphore *mutex)
+ {
+ 	void *ret;
+ 
+@@ -345,7 +354,6 @@
+ 	if (((char *)m) + m->match_size + sizeof(struct ebt_entry_match) >
+ 	   ((char *)e) + e->watchers_offset)
+ 		return -EINVAL;
+-	m->u.name[EBT_FUNCTION_MAXNAMELEN - 1] = '\0';
+ 	match = find_match_lock(m->u.name, &ret, &ebt_mutex);
+ 	if (!match)
+ 		return ret;
+@@ -374,7 +382,6 @@
+ 	if (((char *)w) + w->watcher_size + sizeof(struct ebt_entry_watcher) >
+ 	   ((char *)e) + e->target_offset)
+ 		return -EINVAL;
+-	w->u.name[EBT_FUNCTION_MAXNAMELEN - 1] = '\0';
+ 	watcher = find_watcher_lock(w->u.name, &ret, &ebt_mutex);
+ 	if (!watcher)
+ 		return ret;
+@@ -457,7 +464,7 @@
+ 	// a plain old entry, heh
+ 	if (sizeof(struct ebt_entry) > e->watchers_offset ||
+ 	   e->watchers_offset > e->target_offset ||
+-	   e->target_offset > e->next_offset) {
++	   e->target_offset >= e->next_offset) {
+ 		BUGPRINT("entry offsets not in right order\n");
+ 		return -EINVAL;
+ 	}
+@@ -537,6 +544,27 @@
+ }
+ 
+ static inline int
++ebt_cleanup_entry(struct ebt_entry *e, unsigned int *cnt)
++{
++	struct ebt_entry_target *t;
++
++	if ((e->bitmask & EBT_ENTRY_OR_ENTRIES) == 0)
++		return 0;
++	// we're done
++	if (cnt && (*cnt)-- == 0)
++		return 1;
++	EBT_WATCHER_ITERATE(e, ebt_cleanup_watcher, NULL);
++	EBT_MATCH_ITERATE(e, ebt_cleanup_match, NULL);
++	t = (struct ebt_entry_target *)(((char *)e) + e->target_offset);
++	if (t->u.target->destroy)
++		t->u.target->destroy(t->data, t->target_size);
++	if (t->u.target->me)
++		__MOD_DEC_USE_COUNT(t->u.target->me);
++
++	return 0;
++}
++
++static inline int
+ ebt_check_entry(struct ebt_entry *e, struct ebt_table_info *newinfo,
+    const char *name, unsigned int *cnt, unsigned int valid_hooks,
+    struct ebt_cl_stack *cl_s, unsigned int udc_cnt)
+@@ -562,10 +590,6 @@
+ 		BUGPRINT("NOPROTO & 802_3 not allowed\n");
+ 		return -EINVAL;
+ 	}
+-	e->in[IFNAMSIZ - 1] = '\0';
+-	e->out[IFNAMSIZ - 1] = '\0';
+-	e->logical_in[IFNAMSIZ - 1] = '\0';
+-	e->logical_out[IFNAMSIZ - 1] = '\0';
+ 	// what hook do we belong to?
+ 	for (i = 0; i < NF_BR_NUMHOOKS; i++) {
+ 		if ((valid_hooks & (1 << i)) == 0)
+@@ -597,7 +621,6 @@
+ 	if (ret != 0)
+ 		goto cleanup_watchers;
+ 	t = (struct ebt_entry_target *)(((char *)e) + e->target_offset);
+-	t->u.name[EBT_FUNCTION_MAXNAMELEN - 1] = '\0';
+ 	target = find_target_lock(t->u.name, &ret, &ebt_mutex);
+ 	if (!target)
+ 		goto cleanup_watchers;
+@@ -637,27 +660,6 @@
+ 	return ret;
+ }
+ 
+-static inline int
+-ebt_cleanup_entry(struct ebt_entry *e, unsigned int *cnt)
+-{
+-	struct ebt_entry_target *t;
+-
+-	if ((e->bitmask & EBT_ENTRY_OR_ENTRIES) == 0)
+-		return 0;
+-	// we're done
+-	if (cnt && (*cnt)-- == 0)
+-		return 1;
+-	EBT_WATCHER_ITERATE(e, ebt_cleanup_watcher, NULL);
+-	EBT_MATCH_ITERATE(e, ebt_cleanup_match, NULL);
+-	t = (struct ebt_entry_target *)(((char *)e) + e->target_offset);
+-	if (t->u.target->destroy)
+-		t->u.target->destroy(t->data, t->target_size);
+-	if (t->u.target->me)
+-		__MOD_DEC_USE_COUNT(t->u.target->me);
+-
+-	return 0;
+-}
+-
+ // checks for loops and sets the hook mask for udc
+ // the hook mask for udc tells us from which base chains the udc can be
+ // accessed. This mask is a parameter to the check() functions of the extensions
+@@ -687,7 +689,6 @@
+ 		}
+ 		t = (struct ebt_entry_target *)
+ 		   (((char *)e) + e->target_offset);
+-		t->u.name[EBT_FUNCTION_MAXNAMELEN - 1] = '\0';
+ 		if (strcmp(t->u.name, EBT_STANDARD_TARGET))
+ 			goto letscontinue;
+ 		if (e->target_offset + sizeof(struct ebt_standard_target) >
+@@ -857,7 +858,6 @@
+ 	//   beginning of a chain. This can only occur in chains that
+ 	//   are not accessible from any base chains, so we don't care.
+ 
+-	repl->name[EBT_TABLE_MAXNAMELEN - 1] = '\0';
+ 	// used to know what we need to clean up if something goes wrong
+ 	i = 0;
+ 	ret = EBT_ENTRY_ITERATE(newinfo->entries, newinfo->entries_size,
+@@ -961,7 +961,7 @@
+ 	// the table doesn't like it
+ 	if (t->check && (ret = t->check(newinfo, tmp.valid_hooks)))
+ 		goto free_unlock;
+-		
++
+ 	if (tmp.num_counters && tmp.num_counters != t->private->nentries) {
+ 		BUGPRINT("Wrong nr. of counters requested\n");
+ 		ret = -EINVAL;
+@@ -979,8 +979,8 @@
+ 	t->private = newinfo;
+ 	write_unlock_bh(&t->lock);
+ 	up(&ebt_mutex);
+-	// So, a user can change the chains while having messed up his counter
+-	// allocation. Only reason why I do this is because this way the lock
++	// So, a user can change the chains while having messed up her counter
++	// allocation. Only reason why this is done is because this way the lock
+ 	// is held only once, while this doesn't bring the kernel into a
+ 	// dangerous state.
+ 	if (tmp.num_counters &&
+@@ -1220,11 +1220,10 @@
+ 
+ 	if ( !(tmp = (struct ebt_counter *)
+ 	   vmalloc(hlp.num_counters * sizeof(struct ebt_counter))) ){
+-		MEMPRINT("Updata_counters && nomemory\n");
++		MEMPRINT("Update_counters && nomemory\n");
+ 		return -ENOMEM;
+ 	}
+ 
+-	hlp.name[EBT_TABLE_MAXNAMELEN - 1] = '\0';
+ 	t = find_table_lock(hlp.name, &ret, &ebt_mutex);
+ 	if (!t)
+ 		goto free_tmp;
+@@ -1279,12 +1278,13 @@
+ static inline int ebt_make_names(struct ebt_entry *e, char *base, char *ubase)
+ {
+ 	int ret;
+-	char *hlp = ubase - base + (char *)e + e->target_offset;
++	char *hlp;
+ 	struct ebt_entry_target *t;
+ 
+ 	if ((e->bitmask & EBT_ENTRY_OR_ENTRIES) == 0)
+ 		return 0;
+ 
++	hlp = ubase - base + (char *)e + e->target_offset;
+ 	t = (struct ebt_entry_target *)(((char *)e) + e->target_offset);
+ 	
+ 	ret = EBT_MATCH_ITERATE(e, ebt_make_matchname, base, ubase);
+@@ -1369,10 +1369,6 @@
+ 		BUGPRINT("Couldn't copy entries to userspace\n");
+ 		return -EFAULT;
+ 	}
+-	if (copy_to_user(user, &tmp, sizeof(struct ebt_replace))) {
+-		BUGPRINT("Couldn't copy ebt_replace to userspace\n");
+-		return -EFAULT;
+-	}
+ 	// set the match/watcher/target names right
+ 	return EBT_ENTRY_ITERATE(entries, entries_size,
+ 	   ebt_make_names, entries, tmp.entries);
+@@ -1454,21 +1450,6 @@
+     EBT_BASE_CTL, EBT_SO_GET_MAX + 1, do_ebt_get_ctl, 0, NULL
+ };
+ 
+-// Copyright (C) 1998 by Ori Pomerantz
+-// Print the string to the appropriate tty, the one
+-// the current task uses
+-static void print_string(char *str)
+-{
+-	struct tty_struct *my_tty;
+-
+-	/* The tty for the current task */
+-	my_tty = current->tty;
+-	if (my_tty != NULL) {
+-		(*(my_tty->driver).write)(my_tty, 0, str, strlen(str));  
+-		(*(my_tty->driver).write)(my_tty, 0, "\015\012", 2);
+-	}
+-}
+-
+ static int __init init(void)
+ {
+ 	int ret;
+@@ -1479,14 +1460,14 @@
+ 	if ((ret = nf_register_sockopt(&ebt_sockopts)) < 0)
+ 		return ret;
+ 
+-	print_string("Ebtables v2.0 registered");
++	printk("Ebtables v2.0 registered");
+ 	return 0;
+ }
+ 
+ static void __exit fini(void)
+ {
+ 	nf_unregister_sockopt(&ebt_sockopts);
+-	print_string("Ebtables v2.0 unregistered");
++	printk("Ebtables v2.0 unregistered");
+ }
+ 
+ EXPORT_SYMBOL(ebt_register_table);
+--- linux-2.4.19-rc1/include/linux/netfilter_bridge/ebtables.h	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/include/linux/netfilter_bridge/ebtables.h	Sat Aug 31 12:59:08 2002
+@@ -40,9 +40,13 @@
+ #define EBT_RETURN   -4
+ #define NUM_STANDARD_TARGETS   4
+ 
++// return values for match() functions
++#define EBT_MATCH 0
++#define EBT_NOMATCH 1
++
+ struct ebt_counter
+ {
+-	__u64 pcnt;
++	uint64_t pcnt;
+ };
+ 
+ struct ebt_entries {
+@@ -135,7 +139,7 @@
+ 	// this needs to be the first field
+ 	unsigned int bitmask;
+ 	unsigned int invflags;
+-	__u16 ethproto;
++	uint16_t ethproto;
+ 	// the physical in-dev
+ 	char in[IFNAMSIZ];
+ 	// the logical in-dev
+@@ -183,7 +187,7 @@
+ 	// 0 == it matches
+ 	int (*match)(const struct sk_buff *skb, const struct net_device *in,
+ 	   const struct net_device *out, const void *matchdata,
+-	   unsigned int datalen, const struct ebt_counter *c);
++	   unsigned int datalen);
+ 	// 0 == let it in
+ 	int (*check)(const char *tablename, unsigned int hookmask,
+ 	   const struct ebt_entry *e, void *matchdata, unsigned int datalen);
+@@ -197,7 +201,7 @@
+ 	const char name[EBT_FUNCTION_MAXNAMELEN];
+ 	void (*watcher)(const struct sk_buff *skb, const struct net_device *in,
+ 	   const struct net_device *out, const void *watcherdata,
+-	   unsigned int datalen, const struct ebt_counter *c);
++	   unsigned int datalen);
+ 	// 0 == let it in
+ 	int (*check)(const char *tablename, unsigned int hookmask,
+ 	   const struct ebt_entry *e, void *watcherdata, unsigned int datalen);
+@@ -210,12 +214,9 @@
+ 	struct list_head list;
+ 	const char name[EBT_FUNCTION_MAXNAMELEN];
+ 	// returns one of the standard verdicts
+-	int (*target)(struct sk_buff **pskb,
+-	       unsigned int hooknr,
+-	       const struct net_device *in,
+-	       const struct net_device *out,
+-	       const void *targetdata,
+-	       unsigned int datalen);
++	int (*target)(struct sk_buff **pskb, unsigned int hooknr,
++	   const struct net_device *in, const struct net_device *out,
++	   const void *targetdata, unsigned int datalen);
+ 	// 0 == let it in
+ 	int (*check)(const char *tablename, unsigned int hookmask,
+ 	   const struct ebt_entry *e, void *targetdata, unsigned int datalen);
+@@ -271,6 +272,16 @@
+    const struct net_device *in, const struct net_device *out,
+    struct ebt_table *table);
+ 
++   // Used in the kernel match() functions
++#define FWINV(bool,invflg) ((bool) ^ !!(info->invflags & invflg))
++// True if the hook mask denotes that the rule is in a base chain,
++// used in the check() functions
++#define BASE_CHAIN (hookmask & (1 << NF_BR_NUMHOOKS))
++// Clear the bit in the hook mask that tells if the rule is on a base chain
++#define CLEAR_BASE_CHAIN_BIT (hookmask &= ~(1 << NF_BR_NUMHOOKS))
++// True if the target is not a standard target
++#define INVALID_TARGET (info->target < -NUM_STANDARD_TARGETS || info->target >= 0)
++
+ #endif /* __KERNEL__ */
+ 
+ // blatently stolen from ip_tables.h
+@@ -333,9 +344,9 @@
+ 		if (__ret != 0)                             \
+ 			break;                              \
+ 		if (__entry->bitmask != 0)                  \
+-		 __i += __entry->next_offset;               \
++			__i += __entry->next_offset;        \
+ 		else                                        \
+-		 __i += sizeof(struct ebt_entries);         \
++			__i += sizeof(struct ebt_entries);  \
+ 	}                                                   \
+ 	if (__ret == 0) {                                   \
+ 		if (__i != (size))                          \
+--- linux-2.4.19-rc1/include/linux/netfilter_bridge/ebt_arp.h	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/include/linux/netfilter_bridge/ebt_arp.h	Sat Aug 31 12:59:08 2002
+@@ -12,15 +12,15 @@
+ 
+ struct ebt_arp_info
+ {
+-	__u16 htype;
+-	__u16 ptype;
+-	__u16 opcode;
+-	__u32 saddr;
+-	__u32 smsk;
+-	__u32 daddr;
+-	__u32 dmsk;
+-	__u8  bitmask;
+-	__u8  invflags;
++	uint16_t htype;
++	uint16_t ptype;
++	uint16_t opcode;
++	uint32_t saddr;
++	uint32_t smsk;
++	uint32_t daddr;
++	uint32_t dmsk;
++	uint8_t  bitmask;
++	uint8_t  invflags;
+ };
+ 
+ #endif
+--- linux-2.4.19-rc1/include/linux/netfilter_bridge/ebt_ip.h	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/include/linux/netfilter_bridge/ebt_ip.h	Sat Aug 31 12:59:08 2002
+@@ -11,14 +11,14 @@
+ // the same values are used for the invflags
+ struct ebt_ip_info
+ {
+-	__u32 saddr;
+-	__u32 daddr;
+-	__u32 smsk;
+-	__u32 dmsk;
+-	__u8  tos;
+-	__u8  protocol;
+-	__u8  bitmask;
+-	__u8  invflags;
++	uint32_t saddr;
++	uint32_t daddr;
++	uint32_t smsk;
++	uint32_t dmsk;
++	uint8_t  tos;
++	uint8_t  protocol;
++	uint8_t  bitmask;
++	uint8_t  invflags;
+ };
+ 
+ #endif
+--- linux-2.4.19-rc1/include/linux/netfilter_bridge/ebt_vlan.h	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/include/linux/netfilter_bridge/ebt_vlan.h	Sat Aug 31 12:59:08 2002
+@@ -8,12 +8,12 @@
+ #define EBT_VLAN_MATCH "vlan"
+ 
+ struct ebt_vlan_info {
+-	__u16 id;		/* VLAN ID {1-4095} */
+-	__u8 prio;		/* VLAN User Priority {0-7} */
+-	__u16 encap;		/* VLAN Encapsulated frame code {0-65535} */
+-	__u8 bitmask;		/* Args bitmask bit 1=1 - ID arg, 
++	uint16_t id;		/* VLAN ID {1-4095} */
++	uint8_t prio;		/* VLAN User Priority {0-7} */
++	uint16_t encap;		/* VLAN Encapsulated frame code {0-65535} */
++	uint8_t bitmask;		/* Args bitmask bit 1=1 - ID arg,
+ 				   bit 2=1 User-Priority arg, bit 3=1 encap*/
+-	__u8 invflags;		/* Inverse bitmask  bit 1=1 - inversed ID arg, 
++	uint8_t invflags;		/* Inverse bitmask  bit 1=1 - inversed ID arg, 
+ 				   bit 2=1 - inversed Pirority arg */
+ };
+ 
+--- linux-2.4.19-rc1/include/linux/netfilter_bridge/ebt_log.h	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/include/linux/netfilter_bridge/ebt_log.h	Sat Aug 31 12:59:08 2002
+@@ -9,9 +9,9 @@
+ 
+ struct ebt_log_info
+ {
+-	__u8 loglevel;
+-	__u8 prefix[EBT_LOG_PREFIX_SIZE];
+-	__u32 bitmask;
++	uint8_t loglevel;
++	uint8_t prefix[EBT_LOG_PREFIX_SIZE];
++	uint32_t bitmask;
+ };
+ 
+ #endif
+--- linux-2.4.19-rc1/include/linux/netfilter_bridge/ebt_mark_m.h	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/include/linux/netfilter_bridge/ebt_mark_m.h	Sat Aug 31 12:59:08 2002
+@@ -7,8 +7,8 @@
+ struct ebt_mark_m_info
+ {
+ 	unsigned long mark, mask;
+-	__u8 invert;
+-	__u8 bitmask;
++	uint8_t invert;
++	uint8_t bitmask;
+ };
+ #define EBT_MARK_MATCH "mark_m"
+ 
+--- linux-2.4.19-rc1/net/bridge/netfilter/Makefile	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/Makefile	Sat Aug 31 12:59:08 2002
+@@ -15,7 +15,6 @@
+ obj-$(CONFIG_BRIDGE_EBT_T_FILTER) += ebtable_filter.o
+ obj-$(CONFIG_BRIDGE_EBT_T_NAT) += ebtable_nat.o
+ obj-$(CONFIG_BRIDGE_EBT_BROUTE) += ebtable_broute.o
+-obj-$(CONFIG_BRIDGE_DB) += br_db.o
+ obj-$(CONFIG_BRIDGE_EBT_IPF) += ebt_ip.o
+ obj-$(CONFIG_BRIDGE_EBT_ARPF) += ebt_arp.o
+ obj-$(CONFIG_BRIDGE_EBT_VLANF) += ebt_vlan.o
+--- linux-2.4.19-rc1/net/bridge/netfilter/Config.in	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/Config.in	Sat Aug 31 12:59:08 2002
+@@ -5,7 +5,7 @@
+ dep_tristate '    ebt: filter table support' CONFIG_BRIDGE_EBT_T_FILTER $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: nat table support' CONFIG_BRIDGE_EBT_T_NAT $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: broute table support' CONFIG_BRIDGE_EBT_BROUTE $CONFIG_BRIDGE_EBT
+-dep_tristate '    ebt: LOG support' CONFIG_BRIDGE_EBT_LOG $CONFIG_BRIDGE_EBT
++dep_tristate '    ebt: log support' CONFIG_BRIDGE_EBT_LOG $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: IP filter support' CONFIG_BRIDGE_EBT_IPF $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: ARP filter support' CONFIG_BRIDGE_EBT_ARPF $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: 802.1Q VLAN filter support (EXPERIMENTAL)' CONFIG_BRIDGE_EBT_VLANF $CONFIG_BRIDGE_EBT
+@@ -14,5 +14,4 @@
+ dep_tristate '    ebt: dnat target support' CONFIG_BRIDGE_EBT_DNAT $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: redirect target support' CONFIG_BRIDGE_EBT_REDIRECT $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: mark target support' CONFIG_BRIDGE_EBT_MARK_T $CONFIG_BRIDGE_EBT
+-dep_tristate '  Bridge: ethernet database' CONFIG_BRIDGE_DB $CONFIG_BRIDGE
+ 
+--- linux-2.4.19-rc1/net/bridge/netfilter/ebtable_filter.c	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/ebtable_filter.c	Sat Aug 31 12:59:08 2002
+@@ -9,7 +9,6 @@
+  */
+ 
+ #include <linux/netfilter_bridge/ebtables.h>
+-#include <linux/netfilter_bridge.h>
+ #include <linux/module.h>
+ 
+ #define FILTER_VALID_HOOKS ((1 << NF_BR_LOCAL_IN) | (1 << NF_BR_FORWARD) | \
+@@ -42,10 +41,9 @@
+   RW_LOCK_UNLOCKED, check, NULL
+ };
+ 
+-static unsigned int ebt_hook (unsigned int hook, struct sk_buff **pskb,
+-			const struct net_device *in,
+-			const struct net_device *out,
+-			int (*okfn)(struct sk_buff *))
++static unsigned int
++ebt_hook (unsigned int hook, struct sk_buff **pskb, const struct net_device *in,
++   const struct net_device *out, int (*okfn)(struct sk_buff *))
+ {
+ 	return ebt_do_table(hook, pskb, in, out, &frame_filter);
+ }
+--- linux-2.4.19-rc1/net/bridge/netfilter/ebtable_nat.c	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/ebtable_nat.c	Sat Aug 31 12:59:08 2002
+@@ -9,8 +9,6 @@
+  */
+ 
+ #include <linux/netfilter_bridge/ebtables.h>
+-#include <linux/netfilter_bridge.h>
+-#include <linux/netdevice.h>
+ #include <linux/module.h>
+ #define NAT_VALID_HOOKS ((1 << NF_BR_PRE_ROUTING) | (1 << NF_BR_LOCAL_OUT) | \
+    (1 << NF_BR_POST_ROUTING))
+@@ -43,17 +41,15 @@
+ };
+ 
+ static unsigned int
+-ebt_nat_dst (unsigned int hook, struct sk_buff **pskb,
+-   const struct net_device *in, const struct net_device *out,
+-   int (*okfn)(struct sk_buff *))
++ebt_nat_dst(unsigned int hook, struct sk_buff **pskb, const struct net_device *in
++   , const struct net_device *out, int (*okfn)(struct sk_buff *))
+ {
+ 	return ebt_do_table(hook, pskb, in, out, &frame_nat);
+ }
+ 
+-static unsigned int ebt_nat_src (unsigned int hook, struct sk_buff **pskb,
+-			const struct net_device *in,
+-			const struct net_device *out,
+-			int (*okfn)(struct sk_buff *))
++static unsigned int
++ebt_nat_src(unsigned int hook, struct sk_buff **pskb, const struct net_device *in
++   , const struct net_device *out, int (*okfn)(struct sk_buff *))
+ {
+ 	return ebt_do_table(hook, pskb, in, out, &frame_nat);
+ }
+--- linux-2.4.19-rc1/net/bridge/netfilter/ebtable_broute.c	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/ebtable_broute.c	Sat Aug 31 12:59:08 2002
+@@ -12,8 +12,6 @@
+  */
+ 
+ #include <linux/netfilter_bridge/ebtables.h>
+-#include <linux/netfilter_bridge.h>
+-#include <linux/netdevice.h>
+ #include <linux/module.h>
+ #include <linux/if_bridge.h>
+ #include <linux/brlock.h>
+@@ -43,10 +41,8 @@
+ };
+ 
+ static unsigned int
+-ebt_broute (unsigned int hook, struct sk_buff **pskb,
+-			const struct net_device *in,
+-			const struct net_device *out,
+-			int (*okfn)(struct sk_buff *))
++ebt_broute(unsigned int hook, struct sk_buff **pskb, const struct net_device *in,
++   const struct net_device *out, int (*okfn)(struct sk_buff *))
+ {
+ 	return ebt_do_table(hook, pskb, in, out, &broute_table);
+ }
+--- linux-2.4.19-rc1/net/bridge/netfilter/ebt_redirect.c	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/ebt_redirect.c	Sat Aug 31 12:59:08 2002
+@@ -10,8 +10,6 @@
+ 
+ #include <linux/netfilter_bridge/ebtables.h>
+ #include <linux/netfilter_bridge/ebt_redirect.h>
+-#include <linux/netfilter_bridge.h>
+-#include <linux/skbuff.h>
+ #include <linux/module.h>
+ #include <net/sock.h>
+ #include "../br_private.h"
+@@ -20,7 +18,7 @@
+    const struct net_device *in, const struct net_device *out,
+    const void *data, unsigned int datalen)
+ {
+-	struct ebt_redirect_info *infostuff = (struct ebt_redirect_info *) data;
++	struct ebt_redirect_info *info = (struct ebt_redirect_info *)data;
+ 
+ 	if (hooknr != NF_BR_BROUTING)
+ 		memcpy((**pskb).mac.ethernet->h_dest,
+@@ -30,24 +28,23 @@
+ 		   in->dev_addr, ETH_ALEN);
+ 		(*pskb)->pkt_type = PACKET_HOST;
+ 	}
+-	return infostuff->target;
++	return info->target;
+ }
+ 
+ static int ebt_target_redirect_check(const char *tablename, unsigned int hookmask,
+    const struct ebt_entry *e, void *data, unsigned int datalen)
+ {
+-	struct ebt_redirect_info *infostuff = (struct ebt_redirect_info *) data;
++	struct ebt_redirect_info *info = (struct ebt_redirect_info *)data;
+ 
+-	if ((hookmask & (1 << NF_BR_NUMHOOKS)) &&
+-	   infostuff->target == EBT_RETURN)
++	if (datalen != sizeof(struct ebt_redirect_info))
++		return -EINVAL;
++	if (BASE_CHAIN && info->target == EBT_RETURN)
+ 		return -EINVAL;
+-	hookmask &= ~(1 << NF_BR_NUMHOOKS);
++	CLEAR_BASE_CHAIN_BIT;
+ 	if ( (strcmp(tablename, "nat") || hookmask & ~(1 << NF_BR_PRE_ROUTING)) &&
+ 	     (strcmp(tablename, "broute") || hookmask & ~(1 << NF_BR_BROUTING)) )
+ 		return -EINVAL;
+-	if (datalen != sizeof(struct ebt_redirect_info))
+-		return -EINVAL;
+-	if (infostuff->target < -NUM_STANDARD_TARGETS || infostuff->target >= 0)
++	if (INVALID_TARGET)
+ 		return -EINVAL;
+ 	return 0;
+ }
+--- linux-2.4.19-rc1/net/bridge/netfilter/ebt_arp.c	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/ebt_arp.c	Sat Aug 31 12:59:08 2002
+@@ -14,73 +14,68 @@
+ #include <linux/if_arp.h>
+ #include <linux/module.h>
+ 
+-#define FWINV2(bool,invflg) ((bool) ^ !!(infostuff->invflags & invflg))
+-static int ebt_filter_arp(const struct sk_buff *skb,
+-	       const struct net_device *in,
+-	       const struct net_device *out,
+-	       const void *data,
+-	       unsigned int datalen, const struct ebt_counter *c)
++static int ebt_filter_arp(const struct sk_buff *skb, const struct net_device *in,
++   const struct net_device *out, const void *data, unsigned int datalen)
+ {
+-	struct ebt_arp_info *infostuff = (struct ebt_arp_info *)data;
++	struct ebt_arp_info *info = (struct ebt_arp_info *)data;
+ 
+-	if (infostuff->bitmask & EBT_ARP_OPCODE && FWINV2(infostuff->opcode !=
++	if (info->bitmask & EBT_ARP_OPCODE && FWINV(info->opcode !=
+ 	   ((*skb).nh.arph)->ar_op, EBT_ARP_OPCODE))
+-		return 1;
+-	if (infostuff->bitmask & EBT_ARP_HTYPE && FWINV2(infostuff->htype !=
++		return EBT_NOMATCH;
++	if (info->bitmask & EBT_ARP_HTYPE && FWINV(info->htype !=
+ 	   ((*skb).nh.arph)->ar_hrd, EBT_ARP_HTYPE))
+-		return 1;
+-	if (infostuff->bitmask & EBT_ARP_PTYPE && FWINV2(infostuff->ptype !=
++		return EBT_NOMATCH;
++	if (info->bitmask & EBT_ARP_PTYPE && FWINV(info->ptype !=
+ 	   ((*skb).nh.arph)->ar_pro, EBT_ARP_PTYPE))
+-		return 1;
++		return EBT_NOMATCH;
+ 
+-	if (infostuff->bitmask & (EBT_ARP_SRC_IP | EBT_ARP_DST_IP))
++	if (info->bitmask & (EBT_ARP_SRC_IP | EBT_ARP_DST_IP))
+ 	{
+-		__u32 arp_len = sizeof(struct arphdr) +
+-		   (2*(((*skb).nh.arph)->ar_hln)) +
+-		   (2*(((*skb).nh.arph)->ar_pln));
+-		__u32 dst;
+-		__u32 src;
++		uint32_t arp_len = sizeof(struct arphdr) +
++		   (2 * (((*skb).nh.arph)->ar_hln)) +
++		   (2 * (((*skb).nh.arph)->ar_pln));
++		uint32_t dst;
++		uint32_t src;
+ 
+- 		// Make sure the packet is long enough.
++		// Make sure the packet is long enough.
+ 		if ((((*skb).nh.raw) + arp_len) > (*skb).tail)
+-			return 1;
+-		// IPV4 addresses are always 4 bytes.
+-		if (((*skb).nh.arph)->ar_pln != sizeof(__u32))
+-			return 1;
++			return EBT_NOMATCH;
++		// IPv4 addresses are always 4 bytes.
++		if (((*skb).nh.arph)->ar_pln != sizeof(uint32_t))
++			return EBT_NOMATCH;
+ 
+-		if (infostuff->bitmask & EBT_ARP_SRC_IP) {
++		if (info->bitmask & EBT_ARP_SRC_IP) {
+ 			memcpy(&src, ((*skb).nh.raw) + sizeof(struct arphdr) +
+-			   ((*skb).nh.arph)->ar_hln, sizeof(__u32));
+-			if (FWINV2(infostuff->saddr != (src & infostuff->smsk),
++			   ((*skb).nh.arph)->ar_hln, sizeof(uint32_t));
++			if (FWINV(info->saddr != (src & info->smsk),
+ 			   EBT_ARP_SRC_IP))
+-				return 1;
++				return EBT_NOMATCH;
+ 		}
+ 
+-		if (infostuff->bitmask & EBT_ARP_DST_IP) {
++		if (info->bitmask & EBT_ARP_DST_IP) {
+ 			memcpy(&dst, ((*skb).nh.raw)+sizeof(struct arphdr) +
+ 			   (2*(((*skb).nh.arph)->ar_hln)) +
+-			   (((*skb).nh.arph)->ar_pln), sizeof(__u32));
+-			if (FWINV2(infostuff->daddr != (dst & infostuff->dmsk),
++			   (((*skb).nh.arph)->ar_pln), sizeof(uint32_t));
++			if (FWINV(info->daddr != (dst & info->dmsk),
+ 			   EBT_ARP_DST_IP))
+-				return 1;
++				return EBT_NOMATCH;
+ 		}
+ 	}
+-	return 0;
++	return EBT_MATCH;
+ }
+ 
+ static int ebt_arp_check(const char *tablename, unsigned int hookmask,
+    const struct ebt_entry *e, void *data, unsigned int datalen)
+ {
+-	struct ebt_arp_info *infostuff = (struct ebt_arp_info *) data;
++	struct ebt_arp_info *info = (struct ebt_arp_info *)data;
+ 
+ 	if (datalen != sizeof(struct ebt_arp_info))
+ 		return -EINVAL;
+-	if (e->bitmask & (EBT_NOPROTO | EBT_802_3) || 
+-	   (e->ethproto != __constant_htons(ETH_P_ARP) && 
+-	    e->ethproto != __constant_htons(ETH_P_RARP)) ||
++	if ((e->ethproto != __constant_htons(ETH_P_ARP) &&
++	   e->ethproto != __constant_htons(ETH_P_RARP)) ||
+ 	   e->invflags & EBT_IPROTO)
+ 		return -EINVAL;
+-	if (infostuff->bitmask & ~EBT_ARP_MASK)
++	if (info->bitmask & ~EBT_ARP_MASK || info->invflags & ~EBT_ARP_MASK)
+ 		return -EINVAL;
+ 	return 0;
+ }
+--- linux-2.4.19-rc1/net/bridge/netfilter/ebt_ip.c	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/ebt_ip.c	Sat Aug 31 12:59:08 2002
+@@ -13,49 +13,41 @@
+ #include <linux/ip.h>
+ #include <linux/module.h>
+ 
+-#define FWINV2(bool,invflg) ((bool) ^ !!(infostuff->invflags & invflg))
+-static int ebt_filter_ip(const struct sk_buff *skb,
+-	       const struct net_device *in,
+-	       const struct net_device *out,
+-	       const void *data,
+-	       unsigned int datalen, const struct ebt_counter *c)
++static int ebt_filter_ip(const struct sk_buff *skb, const struct net_device *in,
++   const struct net_device *out, const void *data,
++   unsigned int datalen)
+ {
+-	struct ebt_ip_info *infostuff = (struct ebt_ip_info *) data;
++	struct ebt_ip_info *info = (struct ebt_ip_info *)data;
+ 
+-	if (infostuff->bitmask & EBT_IP_TOS &&
+-	   FWINV2(infostuff->tos != ((*skb).nh.iph)->tos, EBT_IP_TOS))
+-		return 1;
+-	if (infostuff->bitmask & EBT_IP_PROTO && FWINV2(infostuff->protocol !=
++	if (info->bitmask & EBT_IP_TOS &&
++	   FWINV(info->tos != ((*skb).nh.iph)->tos, EBT_IP_TOS))
++		return EBT_NOMATCH;
++	if (info->bitmask & EBT_IP_PROTO && FWINV(info->protocol !=
+ 	   ((*skb).nh.iph)->protocol, EBT_IP_PROTO))
+-		return 1;
+-	if (infostuff->bitmask & EBT_IP_SOURCE &&
+-	   FWINV2((((*skb).nh.iph)->saddr & infostuff->smsk) !=
+-	   infostuff->saddr, EBT_IP_SOURCE))
+-		return 1;
+-	if ((infostuff->bitmask & EBT_IP_DEST) &&
+-	   FWINV2((((*skb).nh.iph)->daddr & infostuff->dmsk) !=
+-	   infostuff->daddr, EBT_IP_DEST))
+-		return 1;
+-	return 0;
++		return EBT_NOMATCH;
++	if (info->bitmask & EBT_IP_SOURCE &&
++	   FWINV((((*skb).nh.iph)->saddr & info->smsk) !=
++	   info->saddr, EBT_IP_SOURCE))
++		return EBT_NOMATCH;
++	if ((info->bitmask & EBT_IP_DEST) &&
++	   FWINV((((*skb).nh.iph)->daddr & info->dmsk) !=
++	   info->daddr, EBT_IP_DEST))
++		return EBT_NOMATCH;
++	return EBT_MATCH;
+ }
+ 
+ static int ebt_ip_check(const char *tablename, unsigned int hookmask,
+    const struct ebt_entry *e, void *data, unsigned int datalen)
+ {
+-	struct ebt_ip_info *infostuff = (struct ebt_ip_info *) data;
++	struct ebt_ip_info *info = (struct ebt_ip_info *)data;
+ 
+-	if (datalen != sizeof(struct ebt_ip_info)) {
++	if (datalen != sizeof(struct ebt_ip_info))
+ 		return -EINVAL;
+-	}
+-	if (e->bitmask & (EBT_NOPROTO | EBT_802_3) || 
+-	    e->ethproto != __constant_htons(ETH_P_IP) ||
+-	    e->invflags & EBT_IPROTO)
+-	{
++	if (e->ethproto != __constant_htons(ETH_P_IP) ||
++	   e->invflags & EBT_IPROTO)
+ 		return -EINVAL;
+-	}
+-	if (infostuff->bitmask & ~EBT_IP_MASK) {
++	if (info->bitmask & ~EBT_IP_MASK || info->invflags & ~EBT_IP_MASK)
+ 		return -EINVAL;
+-	}
+ 	return 0;
+ }
+ 
+--- linux-2.4.19-rc1/net/bridge/netfilter/ebt_vlan.c	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/ebt_vlan.c	Sat Aug 31 12:59:08 2002
+@@ -36,10 +36,10 @@
+ 
+ 
+ #define DEBUG_MSG(...) if (debug) printk (KERN_DEBUG __FILE__ ":" __FUNCTION__ ": "  __VA_ARGS__)
+-#define INV_FLAG(_inv_flag_) (infostuff->invflags & _inv_flag_) ? "!" : ""
+-#define GET_BITMASK(_BIT_MASK_) infostuff->bitmask & _BIT_MASK_
+-#define SET_BITMASK(_BIT_MASK_) infostuff->bitmask |= _BIT_MASK_
+-#define EXIT_ON_MISMATCH(_MATCH_,_MASK_) if (!((infostuff->_MATCH_ == _MATCH_)^!!(infostuff->invflags & _MASK_))) return 1;
++#define INV_FLAG(_inv_flag_) (info->invflags & _inv_flag_) ? "!" : ""
++#define GET_BITMASK(_BIT_MASK_) info->bitmask & _BIT_MASK_
++#define SET_BITMASK(_BIT_MASK_) info->bitmask |= _BIT_MASK_
++#define EXIT_ON_MISMATCH(_MATCH_,_MASK_) if (!((info->_MATCH_ == _MATCH_)^!!(info->invflags & _MASK_))) return 1;
+ 
+ /*
+  * Function description: ebt_filter_vlan() is main engine for 
+@@ -63,9 +63,9 @@
+ 		 const struct net_device *in,
+ 		 const struct net_device *out,
+ 		 const void *data,
+-		 unsigned int datalen, const struct ebt_counter *c)
++		 unsigned int datalen)
+ {
+-	struct ebt_vlan_info *infostuff = (struct ebt_vlan_info *) data;	/* userspace data */
++	struct ebt_vlan_info *info = (struct ebt_vlan_info *) data;	/* userspace data */
+ 	struct vlan_ethhdr *frame = (struct vlan_ethhdr *) skb->mac.raw;	/* Passed tagged frame */
+ 
+ 	unsigned short TCI;	/* Whole TCI, given from parsed frame */
+@@ -109,7 +109,7 @@
+ 			EXIT_ON_MISMATCH (id, EBT_VLAN_ID);
+ 			DEBUG_MSG
+ 			    ("matched rule id=%s%d for frame id=%d\n",
+-			     INV_FLAG (EBT_VLAN_ID), infostuff->id, id);
++			     INV_FLAG (EBT_VLAN_ID), info->id, id);
+ 		}
+ 	} else {
+ 		/*
+@@ -119,7 +119,7 @@
+ 			EXIT_ON_MISMATCH (prio, EBT_VLAN_PRIO);
+ 			DEBUG_MSG
+ 			    ("matched rule prio=%s%d for frame prio=%d\n",
+-			     INV_FLAG (EBT_VLAN_PRIO), infostuff->prio,
++			     INV_FLAG (EBT_VLAN_PRIO), info->prio,
+ 			     prio);
+ 		}
+ 	}
+@@ -130,7 +130,7 @@
+ 		EXIT_ON_MISMATCH (encap, EBT_VLAN_ENCAP);
+ 		DEBUG_MSG ("matched encap=%s%2.4X for frame encap=%2.4X\n",
+ 			   INV_FLAG (EBT_VLAN_ENCAP),
+-			   ntohs (infostuff->encap), ntohs (encap));
++			   ntohs (info->encap), ntohs (encap));
+ 	}
+ 	/*
+ 	 * All possible extension parameters was parsed.
+@@ -159,7 +159,7 @@
+ 		const struct ebt_entry *e, void *data,
+ 		unsigned int datalen)
+ {
+-	struct ebt_vlan_info *infostuff = (struct ebt_vlan_info *) data;
++	struct ebt_vlan_info *info = (struct ebt_vlan_info *) data;
+ 
+ 	/*
+ 	 * Parameters buffer overflow check 
+@@ -175,7 +175,7 @@
+ 	 * Is it 802.1Q frame checked?
+ 	 */
+ 	if (e->ethproto != __constant_htons (ETH_P_8021Q)) {
+-		DEBUG_MSG ("passed frame %2.4X is not 802.1Q (8100)\n",
++		DEBUG_MSG ("passed entry proto %2.4X is not 802.1Q (8100)\n",
+ 			   (unsigned short) ntohs (e->ethproto));
+ 		return -EINVAL;
+ 	}
+@@ -184,18 +184,18 @@
+ 	 * Check for bitmask range 
+ 	 * True if even one bit is out of mask
+ 	 */
+-	if (infostuff->bitmask & ~EBT_VLAN_MASK) {
++	if (info->bitmask & ~EBT_VLAN_MASK) {
+ 		DEBUG_MSG ("bitmask %2X is out of mask (%2X)\n",
+-			   infostuff->bitmask, EBT_VLAN_MASK);
++			   info->bitmask, EBT_VLAN_MASK);
+ 		return -EINVAL;
+ 	}
+ 
+ 	/*
+ 	 * Check for inversion flags range 
+ 	 */
+-	if (infostuff->invflags & ~EBT_VLAN_MASK) {
++	if (info->invflags & ~EBT_VLAN_MASK) {
+ 		DEBUG_MSG ("inversion flags %2X is out of mask (%2X)\n",
+-			   infostuff->invflags, EBT_VLAN_MASK);
++			   info->invflags, EBT_VLAN_MASK);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -223,11 +223,11 @@
+ 	 * For Linux, N = 4094.
+ 	 */
+ 	if (GET_BITMASK (EBT_VLAN_ID)) {	/* when vlan-id param was spec-ed */
+-		if (!!infostuff->id) {	/* if id!=0 => check vid range */
+-			if (infostuff->id > 4094) {	/* check if id > than (0x0FFE) */
++		if (!!info->id) {	/* if id!=0 => check vid range */
++			if (info->id > 4094) {	/* check if id > than (0x0FFE) */
+ 				DEBUG_MSG
+ 				    ("vlan id %d is out of range (1-4094)\n",
+-				     infostuff->id);
++				     info->id);
+ 				return -EINVAL;
+ 			}
+ 			/*
+@@ -240,10 +240,10 @@
+ 			 * if id=0 (null VLAN ID)  => Check for user_priority range 
+ 			 */
+ 			if (GET_BITMASK (EBT_VLAN_PRIO)) {
+-				if ((unsigned char) infostuff->prio > 7) {
++				if ((unsigned char) info->prio > 7) {
+ 					DEBUG_MSG
+ 					    ("prio %d is out of range (0-7)\n",
+-					     infostuff->prio);
++					     info->prio);
+ 					return -EINVAL;
+ 				}
+ 			}
+@@ -254,7 +254,7 @@
+ 		}
+ 	} else {		/* VLAN Id not set */
+ 		if (GET_BITMASK (EBT_VLAN_PRIO)) {	/* But user_priority is set - abnormal! */
+-			infostuff->id = 0;	/* Set null VID (case for Priority-tagged frames) */
++			info->id = 0;	/* Set null VID (case for Priority-tagged frames) */
+ 			SET_BITMASK (EBT_VLAN_ID);	/* and set id flag */
+ 		}
+ 	}
+@@ -266,10 +266,10 @@
+ 	 * if_ether.h:  ETH_ZLEN        60   -  Min. octets in frame sans FCS
+ 	 */
+ 	if (GET_BITMASK (EBT_VLAN_ENCAP)) {
+-		if ((unsigned short) ntohs (infostuff->encap) < ETH_ZLEN) {
++		if ((unsigned short) ntohs (info->encap) < ETH_ZLEN) {
+ 			DEBUG_MSG
+ 			    ("encap packet length %d is less than minimal %d\n",
+-			     ntohs (infostuff->encap), ETH_ZLEN);
++			     ntohs (info->encap), ETH_ZLEN);
+ 			return -EINVAL;
+ 		}
+ 	}
+--- linux-2.4.19-rc1/net/bridge/netfilter/ebt_log.c	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/ebt_log.c	Sat Aug 31 12:59:08 2002
+@@ -20,67 +20,56 @@
+ static int ebt_log_check(const char *tablename, unsigned int hookmask,
+    const struct ebt_entry *e, void *data, unsigned int datalen)
+ {
+-	struct ebt_log_info *loginfo = (struct ebt_log_info *)data;
++	struct ebt_log_info *info = (struct ebt_log_info *)data;
+ 
+ 	if (datalen != sizeof(struct ebt_log_info))
+ 		return -EINVAL;
+-	if (loginfo->bitmask & ~EBT_LOG_MASK)
++	if (info->bitmask & ~EBT_LOG_MASK)
+ 		return -EINVAL;
+-	if (loginfo->loglevel >= 8)
++	if (info->loglevel >= 8)
+ 		return -EINVAL;
+-	loginfo->prefix[EBT_LOG_PREFIX_SIZE - 1] = '\0';
++	info->prefix[EBT_LOG_PREFIX_SIZE - 1] = '\0';
+ 	return 0;
+ }
+ 
+ static void ebt_log(const struct sk_buff *skb, const struct net_device *in,
+-   const struct net_device *out, const void *data, unsigned int datalen,
+-   const struct ebt_counter *c)
++   const struct net_device *out, const void *data, unsigned int datalen)
+ {
+-	struct ebt_log_info *loginfo = (struct ebt_log_info *)data;
++	struct ebt_log_info *info = (struct ebt_log_info *)data;
+ 	char level_string[4] = "< >";
+-	level_string[1] = '0' + loginfo->loglevel;
++	level_string[1] = '0' + info->loglevel;
+ 
+ 	spin_lock_bh(&ebt_log_lock);
+ 	printk(level_string);
+-	// max length: 29 + 10 + 2 * 16
+-	printk("%s IN=%s OUT=%s ",
+-	       loginfo->prefix,
+-	       in ? in->name : "",
+-	       out ? out->name : "");
++	printk("%s IN=%s OUT=%s ", info->prefix, in ? in->name : "",
++	   out ? out->name : "");
+ 
+ 	if (skb->dev->hard_header_len) {
+ 		int i;
+ 		unsigned char *p = (skb->mac.ethernet)->h_source;
++
+ 		printk("MAC source = ");
+ 		for (i = 0; i < ETH_ALEN; i++,p++)
+-			printk("%02x%c", *p,
+-			       i == ETH_ALEN - 1
+-			       ? ' ':':');// length: 31
++			printk("%02x%c", *p, i == ETH_ALEN - 1 ? ' ':':');
+ 		printk("MAC dest = ");
+ 		p = (skb->mac.ethernet)->h_dest;
+ 		for (i = 0; i < ETH_ALEN; i++,p++)
+-			printk("%02x%c", *p,
+-			       i == ETH_ALEN - 1
+-			       ? ' ':':');// length: 29
++			printk("%02x%c", *p, i == ETH_ALEN - 1 ? ' ':':');
+ 	}
+-	// length: 14
+ 	printk("proto = 0x%04x", ntohs(((*skb).mac.ethernet)->h_proto));
+ 
+-	if ((loginfo->bitmask & EBT_LOG_IP) && skb->mac.ethernet->h_proto ==
++	if ((info->bitmask & EBT_LOG_IP) && skb->mac.ethernet->h_proto ==
+ 	   htons(ETH_P_IP)){
+ 		struct iphdr *iph = skb->nh.iph;
+-		// max length: 46
+ 		printk(" IP SRC=%u.%u.%u.%u IP DST=%u.%u.%u.%u,",
+ 		   NIPQUAD(iph->saddr), NIPQUAD(iph->daddr));
+-		// max length: 26
+ 		printk(" IP tos=0x%02X, IP proto=%d", iph->tos, iph->protocol);
+ 	}
+ 
+-	if ((loginfo->bitmask & EBT_LOG_ARP) &&
++	if ((info->bitmask & EBT_LOG_ARP) &&
+ 	    ((skb->mac.ethernet->h_proto == __constant_htons(ETH_P_ARP)) ||
+ 	    (skb->mac.ethernet->h_proto == __constant_htons(ETH_P_RARP)))) {
+ 		struct arphdr * arph = skb->nh.arph;
+-		// max length: 40
+ 		printk(" ARP HTYPE=%d, PTYPE=0x%04x, OPCODE=%d",
+ 		   ntohs(arph->ar_hrd), ntohs(arph->ar_pro),
+ 		   ntohs(arph->ar_op));
+--- linux-2.4.19-rc1/net/bridge/netfilter/ebt_mark.c	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/ebt_mark.c	Sat Aug 31 12:59:08 2002
+@@ -1,5 +1,5 @@
+ /*
+- *  ebt_mark_t
++ *  ebt_mark
+  *
+  *	Authors:
+  *	Bart De Schuymer <bart.de.schuymer@pandora.be>
+@@ -11,42 +11,35 @@
+ // The mark target can be used in any chain
+ // I believe adding a mangle table just for marking is total overkill
+ // Marking a frame doesn't really change anything in the frame anyway
+-// The target member of the struct ebt_vlan_info provides the same
+-// functionality as a separate table
+ 
+ #include <linux/netfilter_bridge/ebtables.h>
+ #include <linux/netfilter_bridge/ebt_mark_t.h>
+-#include <linux/netfilter_bridge.h>
+-#include <linux/skbuff.h>
+ #include <linux/module.h>
+-#include <net/sock.h>
+-#include "../br_private.h"
+ 
+ static int ebt_target_mark(struct sk_buff **pskb, unsigned int hooknr,
+    const struct net_device *in, const struct net_device *out,
+    const void *data, unsigned int datalen)
+ {
+-	struct ebt_mark_t_info *infostuff = (struct ebt_mark_t_info *) data;
++	struct ebt_mark_t_info *info = (struct ebt_mark_t_info *)data;
+ 
+-	if ((*pskb)->nfmark != infostuff->mark) {
+-		(*pskb)->nfmark = infostuff->mark;
++	if ((*pskb)->nfmark != info->mark) {
++		(*pskb)->nfmark = info->mark;
+ 		(*pskb)->nfcache |= NFC_ALTERED;
+ 	}
+-	return infostuff->target;
++	return info->target;
+ }
+ 
+ static int ebt_target_mark_check(const char *tablename, unsigned int hookmask,
+    const struct ebt_entry *e, void *data, unsigned int datalen)
+ {
+-	struct ebt_mark_t_info *infostuff = (struct ebt_mark_t_info *) data;
++	struct ebt_mark_t_info *info = (struct ebt_mark_t_info *)data;
+ 
+-	if ((hookmask & (1 << NF_BR_NUMHOOKS)) &&
+-	   infostuff->target == EBT_RETURN)
+-		return -EINVAL;
+-	hookmask &= ~(1 << NF_BR_NUMHOOKS);
+ 	if (datalen != sizeof(struct ebt_mark_t_info))
+ 		return -EINVAL;
+-	if (infostuff->target < -NUM_STANDARD_TARGETS || infostuff->target >= 0)
++	if (BASE_CHAIN && info->target == EBT_RETURN)
++		return -EINVAL;
++	CLEAR_BASE_CHAIN_BIT;
++	if (INVALID_TARGET)
+ 		return -EINVAL;
+ 	return 0;
+ }
+--- linux-2.4.19-rc1/net/bridge/netfilter/ebt_mark_m.c	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/ebt_mark_m.c	Sat Aug 31 12:59:08 2002
+@@ -14,7 +14,7 @@
+ 
+ static int ebt_filter_mark(const struct sk_buff *skb,
+    const struct net_device *in, const struct net_device *out, const void *data,
+-   unsigned int datalen, const struct ebt_counter *c)
++   unsigned int datalen)
+ {
+ 	struct ebt_mark_m_info *info = (struct ebt_mark_m_info *) data;
+ 
+@@ -28,15 +28,14 @@
+ {
+         struct ebt_mark_m_info *info = (struct ebt_mark_m_info *) data;
+ 
++	if (datalen != sizeof(struct ebt_mark_m_info))
++		return -EINVAL;
+ 	if (info->bitmask & ~EBT_MARK_MASK)
+ 		return -EINVAL;
+ 	if ((info->bitmask & EBT_MARK_OR) && (info->bitmask & EBT_MARK_AND))
+ 		return -EINVAL;
+ 	if (!info->bitmask)
+ 		return -EINVAL;
+-	if (datalen != sizeof(struct ebt_mark_m_info)) {
+-		return -EINVAL;
+-	}
+ 	return 0;
+ }
+ 
+--- linux-2.4.19-rc1/net/bridge/netfilter/ebt_snat.c	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/ebt_snat.c	Sat Aug 31 12:59:08 2002
+@@ -10,38 +10,34 @@
+ 
+ #include <linux/netfilter_bridge/ebtables.h>
+ #include <linux/netfilter_bridge/ebt_nat.h>
+-#include <linux/netfilter_bridge.h>
+-#include <linux/skbuff.h>
+ #include <linux/module.h>
+-#include <net/sock.h>
+ 
+ static int ebt_target_snat(struct sk_buff **pskb, unsigned int hooknr,
+    const struct net_device *in, const struct net_device *out,
+    const void *data, unsigned int datalen)
+ {
+-	struct ebt_nat_info *infostuff = (struct ebt_nat_info *) data;
++	struct ebt_nat_info *info = (struct ebt_nat_info *) data;
+ 
+-	memcpy(((**pskb).mac.ethernet)->h_source, infostuff->mac,
++	memcpy(((**pskb).mac.ethernet)->h_source, info->mac,
+ 	   ETH_ALEN * sizeof(unsigned char));
+-	return infostuff->target;
++	return info->target;
+ }
+ 
+ static int ebt_target_snat_check(const char *tablename, unsigned int hookmask,
+    const struct ebt_entry *e, void *data, unsigned int datalen)
+ {
+-	struct ebt_nat_info *infostuff = (struct ebt_nat_info *) data;
++	struct ebt_nat_info *info = (struct ebt_nat_info *) data;
+ 
+-	if ((hookmask & (1 << NF_BR_NUMHOOKS)) &&
+-	   infostuff->target == EBT_RETURN)
++	if (datalen != sizeof(struct ebt_nat_info))
+ 		return -EINVAL;
+-	hookmask &= ~(1 << NF_BR_NUMHOOKS);
+-	if (strcmp(tablename, "nat"))
++	if (BASE_CHAIN && info->target == EBT_RETURN)
+ 		return -EINVAL;
+-	if (datalen != sizeof(struct ebt_nat_info))
++	CLEAR_BASE_CHAIN_BIT;
++	if (strcmp(tablename, "nat"))
+ 		return -EINVAL;
+ 	if (hookmask & ~(1 << NF_BR_POST_ROUTING))
+ 		return -EINVAL;
+-	if (infostuff->target < -NUM_STANDARD_TARGETS || infostuff->target >= 0)
++	if (INVALID_TARGET)
+ 		return -EINVAL;
+ 	return 0;
+ }
+--- linux-2.4.19-rc1/net/bridge/netfilter/ebt_dnat.c	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/ebt_dnat.c	Sat Aug 31 12:59:08 2002
+@@ -10,8 +10,6 @@
+ 
+ #include <linux/netfilter_bridge/ebtables.h>
+ #include <linux/netfilter_bridge/ebt_nat.h>
+-#include <linux/netfilter_bridge.h>
+-#include <linux/skbuff.h>
+ #include <linux/module.h>
+ #include <net/sock.h>
+ 
+@@ -19,29 +17,28 @@
+    const struct net_device *in, const struct net_device *out,
+    const void *data, unsigned int datalen)
+ {
+-	struct ebt_nat_info *infostuff = (struct ebt_nat_info *) data;
++	struct ebt_nat_info *info = (struct ebt_nat_info *)data;
+ 
+-	memcpy(((**pskb).mac.ethernet)->h_dest, infostuff->mac,
++	memcpy(((**pskb).mac.ethernet)->h_dest, info->mac,
+ 	   ETH_ALEN * sizeof(unsigned char));
+-	return infostuff->target;
++	return info->target;
+ }
+ 
+ static int ebt_target_dnat_check(const char *tablename, unsigned int hookmask,
+    const struct ebt_entry *e, void *data, unsigned int datalen)
+ {
+-	struct ebt_nat_info *infostuff = (struct ebt_nat_info *) data;
++	struct ebt_nat_info *info = (struct ebt_nat_info *)data;
+ 
+-	if ((hookmask & (1 << NF_BR_NUMHOOKS)) &&
+-	   infostuff->target == EBT_RETURN)
++	if (BASE_CHAIN && info->target == EBT_RETURN)
+ 		return -EINVAL;
+-	hookmask &= ~(1 << NF_BR_NUMHOOKS);
++	CLEAR_BASE_CHAIN_BIT;
+ 	if ( (strcmp(tablename, "nat") ||
+ 	   (hookmask & ~((1 << NF_BR_PRE_ROUTING) | (1 << NF_BR_LOCAL_OUT)))) &&
+ 	   (strcmp(tablename, "broute") || hookmask & ~(1 << NF_BR_BROUTING)) )
+ 		return -EINVAL;
+ 	if (datalen != sizeof(struct ebt_nat_info))
+ 		return -EINVAL;
+-	if (infostuff->target < -NUM_STANDARD_TARGETS || infostuff->target >= 0)
++	if (INVALID_TARGET)
+ 		return -EINVAL;
+ 	return 0;
+ }
+--- linux-2.4.19-rc1/net/bridge/netfilter/ebtables.c	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/net/bridge/netfilter/ebtables.c	Sat Aug 31 12:59:08 2002
+@@ -22,10 +22,6 @@
+ #include <linux/kmod.h>
+ #include <linux/module.h>
+ #include <linux/vmalloc.h>
+-#include <linux/skbuff.h>
+-#include <linux/if_ether.h>
+-#include <linux/netfilter_bridge.h>
+-#include <linux/netfilter_ipv4.h>
+ #include <linux/netfilter_bridge/ebtables.h>
+ #include <linux/spinlock.h>
+ #include <asm/uaccess.h>
+@@ -40,6 +36,21 @@
+ #include <linux/netfilter_ipv4/listhelp.h>
+ 
+ #if 0 // use this for remote debugging
++// Copyright (C) 1998 by Ori Pomerantz
++// Print the string to the appropriate tty, the one
++// the current task uses
++static void print_string(char *str)
++{
++	struct tty_struct *my_tty;
++
++	/* The tty for the current task */
++	my_tty = current->tty;
++	if (my_tty != NULL) {
++		(*(my_tty->driver).write)(my_tty, 0, str, strlen(str));
++		(*(my_tty->driver).write)(my_tty, 0, "\015\012", 2);
++	}
++}
++
+ #define BUGPRINT(args) print_string(args);
+ #else
+ #define BUGPRINT(format, args...) printk("kernel msg: ebtables bug: please "\
+@@ -65,8 +76,6 @@
+ 
+ 
+ 
+-static void print_string(char *str);
+-
+ static DECLARE_MUTEX(ebt_mutex);
+ static LIST_HEAD(ebt_tables);
+ static LIST_HEAD(ebt_targets);
+@@ -78,20 +87,20 @@
+ 
+ static inline int ebt_do_watcher (struct ebt_entry_watcher *w,
+    const struct sk_buff *skb, const struct net_device *in,
+-   const struct net_device *out, const struct ebt_counter *c)
++   const struct net_device *out)
+ {
+ 	w->u.watcher->watcher(skb, in, out, w->data,
+-	   w->watcher_size, c);
++	   w->watcher_size);
+ 	// watchers don't give a verdict
+ 	return 0;
+ }
+ 
+ static inline int ebt_do_match (struct ebt_entry_match *m,
+    const struct sk_buff *skb, const struct net_device *in,
+-   const struct net_device *out, const struct ebt_counter *c)
++   const struct net_device *out)
+ {
+ 	return m->u.match->match(skb, in, out, m->data,
+-	   m->match_size, c);
++	   m->match_size);
+ }
+ 
+ static inline int ebt_dev_check(char *entry, const struct net_device *device)
+@@ -100,48 +109,48 @@
+ 		return 0;
+ 	if (!device)
+ 		return 1;
+-	return !!strncmp(entry, device->name, IFNAMSIZ);
++	return !!strcmp(entry, device->name);
+ }
+ 
+-#define FWINV(bool,invflg) ((bool) ^ !!(p->invflags & invflg))
++#define FWINV2(bool,invflg) ((bool) ^ !!(e->invflags & invflg))
+ // process standard matches
+-static inline int ebt_basic_match(struct ebt_entry *p, struct ethhdr *h,
++static inline int ebt_basic_match(struct ebt_entry *e, struct ethhdr *h,
+    const struct net_device *in, const struct net_device *out)
+ {
+ 	int verdict, i;
+ 
+-	if (p->bitmask & EBT_802_3) {
+-		if (FWINV(ntohs(h->h_proto) >= 1536, EBT_IPROTO))
++	if (e->bitmask & EBT_802_3) {
++		if (FWINV2(ntohs(h->h_proto) >= 1536, EBT_IPROTO))
+ 			return 1;
+-	} else if (!(p->bitmask & EBT_NOPROTO) &&
+-	   FWINV(p->ethproto != h->h_proto, EBT_IPROTO))
++	} else if (!(e->bitmask & EBT_NOPROTO) &&
++	   FWINV2(e->ethproto != h->h_proto, EBT_IPROTO))
+ 		return 1;
+ 
+-	if (FWINV(ebt_dev_check(p->in, in), EBT_IIN))
++	if (FWINV2(ebt_dev_check(e->in, in), EBT_IIN))
+ 		return 1;
+-	if (FWINV(ebt_dev_check(p->out, out), EBT_IOUT))
++	if (FWINV2(ebt_dev_check(e->out, out), EBT_IOUT))
+ 		return 1;
+-	if ((!in || !in->br_port) ? 0 : FWINV(ebt_dev_check(
+-	   p->logical_in, &in->br_port->br->dev), EBT_ILOGICALIN))
++	if ((!in || !in->br_port) ? 0 : FWINV2(ebt_dev_check(
++	   e->logical_in, &in->br_port->br->dev), EBT_ILOGICALIN))
+ 		return 1;
+-	if ((!out || !out->br_port) ? 0 : FWINV(ebt_dev_check(
+-	   (p->logical_out), &out->br_port->br->dev), EBT_ILOGICALOUT))
++	if ((!out || !out->br_port) ? 0 : FWINV2(ebt_dev_check(
++	   e->logical_out, &out->br_port->br->dev), EBT_ILOGICALOUT))
+ 		return 1;
+-	
+-	if (p->bitmask & EBT_SOURCEMAC) {
++
++	if (e->bitmask & EBT_SOURCEMAC) {
+ 		verdict = 0;
+ 		for (i = 0; i < 6; i++)
+-			verdict |= (h->h_source[i] ^ p->sourcemac[i]) &
+-			   p->sourcemsk[i];
+-		if (FWINV(verdict != 0, EBT_ISOURCE) )
++			verdict |= (h->h_source[i] ^ e->sourcemac[i]) &
++			   e->sourcemsk[i];
++		if (FWINV2(verdict != 0, EBT_ISOURCE) )
+ 			return 1;
+ 	}
+-	if (p->bitmask & EBT_DESTMAC) {
++	if (e->bitmask & EBT_DESTMAC) {
+ 		verdict = 0;
+ 		for (i = 0; i < 6; i++)
+-			verdict |= (h->h_dest[i] ^ p->destmac[i]) &
+-			   p->destmsk[i];
+-		if (FWINV(verdict != 0, EBT_IDEST) )
++			verdict |= (h->h_dest[i] ^ e->destmac[i]) &
++			   e->destmsk[i];
++		if (FWINV2(verdict != 0, EBT_IDEST) )
+ 			return 1;
+ 	}
+ 	return 0;
+@@ -163,7 +172,7 @@
+ 	struct ebt_table_info *private = table->private;
+ 
+ 	read_lock_bh(&table->lock);
+-	cb_base = COUNTER_BASE(private->counters, private->nentries, \
++	cb_base = COUNTER_BASE(private->counters, private->nentries,
+ 	   cpu_number_map(smp_processor_id()));
+ 	if (private->chainstack)
+ 		cs = private->chainstack[cpu_number_map(smp_processor_id())];
+@@ -180,8 +189,7 @@
+ 		if (ebt_basic_match(point, (**pskb).mac.ethernet, in, out))
+ 			goto letscontinue;
+ 
+-		if (EBT_MATCH_ITERATE(point, ebt_do_match, *pskb, in,
+-		   out, counter_base + i) != 0)
++		if (EBT_MATCH_ITERATE(point, ebt_do_match, *pskb, in, out) != 0)
+ 			goto letscontinue;
+ 
+ 		// increase counter
+@@ -190,7 +198,7 @@
+ 		// these should only watch: not modify, nor tell us
+ 		// what to do with the packet
+ 		EBT_WATCHER_ITERATE(point, ebt_do_watcher, *pskb, in,
+-		   out, counter_base + i);
++		   out);
+ 
+ 		t = (struct ebt_entry_target *)
+ 		   (((char *)point) + point->target_offset);
+@@ -210,11 +218,13 @@
+ 		}
+ 		if (verdict == EBT_RETURN) {
+ letsreturn:
++#ifdef CONFIG_NETFILTER_DEBUG
+ 			if (sp == 0) {
+ 				BUGPRINT("RETURN on base chain");
+ 				// act like this is EBT_CONTINUE
+ 				goto letscontinue;
+ 			}
++#endif
+ 			sp--;
+ 			// put all the local variables right
+ 			i = cs[sp].n;
+@@ -227,11 +237,13 @@
+ 		}
+ 		if (verdict == EBT_CONTINUE)
+ 			goto letscontinue;
++#ifdef CONFIG_NETFILTER_DEBUG
+ 		if (verdict < 0) {
+ 			BUGPRINT("bogus standard verdict\n");
+ 			read_unlock_bh(&table->lock);
+ 			return NF_DROP;
+ 		}
++#endif
+ 		// jump to a udc
+ 		cs[sp].n = i + 1;
+ 		cs[sp].chaininfo = chaininfo;
+@@ -239,11 +251,13 @@
+ 		   (((char *)point) + point->next_offset);
+ 		i = 0;
+ 		chaininfo = (struct ebt_entries *) (base + verdict);
++#ifdef CONFIG_NETFILTER_DEBUG
+ 		if (chaininfo->distinguisher) {
+ 			BUGPRINT("jump to non-chain\n");
+ 			read_unlock_bh(&table->lock);
+ 			return NF_DROP;
+ 		}
++#endif
+ 		nentries = chaininfo->nentries;
+ 		point = (struct ebt_entry *)chaininfo->data;
+ 		counter_base = cb_base + chaininfo->counter_offset;
+@@ -266,12 +280,10 @@
+ 	return NF_DROP;
+ }
+ 
+-/* If it succeeds, returns element and locks mutex */
++// If it succeeds, returns element and locks mutex
+ static inline void *
+-find_inlist_lock_noload(struct list_head *head,
+-			const char *name,
+-			int *error,
+-			struct semaphore *mutex)
++find_inlist_lock_noload(struct list_head *head, const char *name, int *error,
++   struct semaphore *mutex)
+ {
+ 	void *ret;
+ 
+@@ -291,11 +303,8 @@
+ #define find_inlist_lock(h,n,p,e,m) find_inlist_lock_noload((h),(n),(e),(m))
+ #else
+ static void *
+-find_inlist_lock(struct list_head *head,
+-		 const char *name,
+-		 const char *prefix,
+-		 int *error,
+-		 struct semaphore *mutex)
++find_inlist_lock(struct list_head *head, const char *name, const char *prefix,
++   int *error, struct semaphore *mutex)
+ {
+ 	void *ret;
+ 
+@@ -345,7 +354,6 @@
+ 	if (((char *)m) + m->match_size + sizeof(struct ebt_entry_match) >
+ 	   ((char *)e) + e->watchers_offset)
+ 		return -EINVAL;
+-	m->u.name[EBT_FUNCTION_MAXNAMELEN - 1] = '\0';
+ 	match = find_match_lock(m->u.name, &ret, &ebt_mutex);
+ 	if (!match)
+ 		return ret;
+@@ -374,7 +382,6 @@
+ 	if (((char *)w) + w->watcher_size + sizeof(struct ebt_entry_watcher) >
+ 	   ((char *)e) + e->target_offset)
+ 		return -EINVAL;
+-	w->u.name[EBT_FUNCTION_MAXNAMELEN - 1] = '\0';
+ 	watcher = find_watcher_lock(w->u.name, &ret, &ebt_mutex);
+ 	if (!watcher)
+ 		return ret;
+@@ -457,7 +464,7 @@
+ 	// a plain old entry, heh
+ 	if (sizeof(struct ebt_entry) > e->watchers_offset ||
+ 	   e->watchers_offset > e->target_offset ||
+-	   e->target_offset > e->next_offset) {
++	   e->target_offset >= e->next_offset) {
+ 		BUGPRINT("entry offsets not in right order\n");
+ 		return -EINVAL;
+ 	}
+@@ -537,6 +544,27 @@
+ }
+ 
+ static inline int
++ebt_cleanup_entry(struct ebt_entry *e, unsigned int *cnt)
++{
++	struct ebt_entry_target *t;
++
++	if ((e->bitmask & EBT_ENTRY_OR_ENTRIES) == 0)
++		return 0;
++	// we're done
++	if (cnt && (*cnt)-- == 0)
++		return 1;
++	EBT_WATCHER_ITERATE(e, ebt_cleanup_watcher, NULL);
++	EBT_MATCH_ITERATE(e, ebt_cleanup_match, NULL);
++	t = (struct ebt_entry_target *)(((char *)e) + e->target_offset);
++	if (t->u.target->destroy)
++		t->u.target->destroy(t->data, t->target_size);
++	if (t->u.target->me)
++		__MOD_DEC_USE_COUNT(t->u.target->me);
++
++	return 0;
++}
++
++static inline int
+ ebt_check_entry(struct ebt_entry *e, struct ebt_table_info *newinfo,
+    const char *name, unsigned int *cnt, unsigned int valid_hooks,
+    struct ebt_cl_stack *cl_s, unsigned int udc_cnt)
+@@ -562,10 +590,6 @@
+ 		BUGPRINT("NOPROTO & 802_3 not allowed\n");
+ 		return -EINVAL;
+ 	}
+-	e->in[IFNAMSIZ - 1] = '\0';
+-	e->out[IFNAMSIZ - 1] = '\0';
+-	e->logical_in[IFNAMSIZ - 1] = '\0';
+-	e->logical_out[IFNAMSIZ - 1] = '\0';
+ 	// what hook do we belong to?
+ 	for (i = 0; i < NF_BR_NUMHOOKS; i++) {
+ 		if ((valid_hooks & (1 << i)) == 0)
+@@ -597,7 +621,6 @@
+ 	if (ret != 0)
+ 		goto cleanup_watchers;
+ 	t = (struct ebt_entry_target *)(((char *)e) + e->target_offset);
+-	t->u.name[EBT_FUNCTION_MAXNAMELEN - 1] = '\0';
+ 	target = find_target_lock(t->u.name, &ret, &ebt_mutex);
+ 	if (!target)
+ 		goto cleanup_watchers;
+@@ -637,27 +660,6 @@
+ 	return ret;
+ }
+ 
+-static inline int
+-ebt_cleanup_entry(struct ebt_entry *e, unsigned int *cnt)
+-{
+-	struct ebt_entry_target *t;
+-
+-	if ((e->bitmask & EBT_ENTRY_OR_ENTRIES) == 0)
+-		return 0;
+-	// we're done
+-	if (cnt && (*cnt)-- == 0)
+-		return 1;
+-	EBT_WATCHER_ITERATE(e, ebt_cleanup_watcher, NULL);
+-	EBT_MATCH_ITERATE(e, ebt_cleanup_match, NULL);
+-	t = (struct ebt_entry_target *)(((char *)e) + e->target_offset);
+-	if (t->u.target->destroy)
+-		t->u.target->destroy(t->data, t->target_size);
+-	if (t->u.target->me)
+-		__MOD_DEC_USE_COUNT(t->u.target->me);
+-
+-	return 0;
+-}
+-
+ // checks for loops and sets the hook mask for udc
+ // the hook mask for udc tells us from which base chains the udc can be
+ // accessed. This mask is a parameter to the check() functions of the extensions
+@@ -687,7 +689,6 @@
+ 		}
+ 		t = (struct ebt_entry_target *)
+ 		   (((char *)e) + e->target_offset);
+-		t->u.name[EBT_FUNCTION_MAXNAMELEN - 1] = '\0';
+ 		if (strcmp(t->u.name, EBT_STANDARD_TARGET))
+ 			goto letscontinue;
+ 		if (e->target_offset + sizeof(struct ebt_standard_target) >
+@@ -857,7 +858,6 @@
+ 	//   beginning of a chain. This can only occur in chains that
+ 	//   are not accessible from any base chains, so we don't care.
+ 
+-	repl->name[EBT_TABLE_MAXNAMELEN - 1] = '\0';
+ 	// used to know what we need to clean up if something goes wrong
+ 	i = 0;
+ 	ret = EBT_ENTRY_ITERATE(newinfo->entries, newinfo->entries_size,
+@@ -961,7 +961,7 @@
+ 	// the table doesn't like it
+ 	if (t->check && (ret = t->check(newinfo, tmp.valid_hooks)))
+ 		goto free_unlock;
+-		
++
+ 	if (tmp.num_counters && tmp.num_counters != t->private->nentries) {
+ 		BUGPRINT("Wrong nr. of counters requested\n");
+ 		ret = -EINVAL;
+@@ -979,8 +979,8 @@
+ 	t->private = newinfo;
+ 	write_unlock_bh(&t->lock);
+ 	up(&ebt_mutex);
+-	// So, a user can change the chains while having messed up his counter
+-	// allocation. Only reason why I do this is because this way the lock
++	// So, a user can change the chains while having messed up her counter
++	// allocation. Only reason why this is done is because this way the lock
+ 	// is held only once, while this doesn't bring the kernel into a
+ 	// dangerous state.
+ 	if (tmp.num_counters &&
+@@ -1220,11 +1220,10 @@
+ 
+ 	if ( !(tmp = (struct ebt_counter *)
+ 	   vmalloc(hlp.num_counters * sizeof(struct ebt_counter))) ){
+-		MEMPRINT("Updata_counters && nomemory\n");
++		MEMPRINT("Update_counters && nomemory\n");
+ 		return -ENOMEM;
+ 	}
+ 
+-	hlp.name[EBT_TABLE_MAXNAMELEN - 1] = '\0';
+ 	t = find_table_lock(hlp.name, &ret, &ebt_mutex);
+ 	if (!t)
+ 		goto free_tmp;
+@@ -1279,12 +1278,13 @@
+ static inline int ebt_make_names(struct ebt_entry *e, char *base, char *ubase)
+ {
+ 	int ret;
+-	char *hlp = ubase - base + (char *)e + e->target_offset;
++	char *hlp;
+ 	struct ebt_entry_target *t;
+ 
+ 	if ((e->bitmask & EBT_ENTRY_OR_ENTRIES) == 0)
+ 		return 0;
+ 
++	hlp = ubase - base + (char *)e + e->target_offset;
+ 	t = (struct ebt_entry_target *)(((char *)e) + e->target_offset);
+ 	
+ 	ret = EBT_MATCH_ITERATE(e, ebt_make_matchname, base, ubase);
+@@ -1369,10 +1369,6 @@
+ 		BUGPRINT("Couldn't copy entries to userspace\n");
+ 		return -EFAULT;
+ 	}
+-	if (copy_to_user(user, &tmp, sizeof(struct ebt_replace))) {
+-		BUGPRINT("Couldn't copy ebt_replace to userspace\n");
+-		return -EFAULT;
+-	}
+ 	// set the match/watcher/target names right
+ 	return EBT_ENTRY_ITERATE(entries, entries_size,
+ 	   ebt_make_names, entries, tmp.entries);
+@@ -1454,21 +1450,6 @@
+     EBT_BASE_CTL, EBT_SO_GET_MAX + 1, do_ebt_get_ctl, 0, NULL
+ };
+ 
+-// Copyright (C) 1998 by Ori Pomerantz
+-// Print the string to the appropriate tty, the one
+-// the current task uses
+-static void print_string(char *str)
+-{
+-	struct tty_struct *my_tty;
+-
+-	/* The tty for the current task */
+-	my_tty = current->tty;
+-	if (my_tty != NULL) {
+-		(*(my_tty->driver).write)(my_tty, 0, str, strlen(str));  
+-		(*(my_tty->driver).write)(my_tty, 0, "\015\012", 2);
+-	}
+-}
+-
+ static int __init init(void)
+ {
+ 	int ret;
+@@ -1479,14 +1460,14 @@
+ 	if ((ret = nf_register_sockopt(&ebt_sockopts)) < 0)
+ 		return ret;
+ 
+-	print_string("Ebtables v2.0 registered");
++	printk("Ebtables v2.0 registered");
+ 	return 0;
+ }
+ 
+ static void __exit fini(void)
+ {
+ 	nf_unregister_sockopt(&ebt_sockopts);
+-	print_string("Ebtables v2.0 unregistered");
++	printk("Ebtables v2.0 unregistered");
+ }
+ 
+ EXPORT_SYMBOL(ebt_register_table);
+--- linux-2.4.19-rc1/include/linux/netfilter_bridge/ebtables.h	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/include/linux/netfilter_bridge/ebtables.h	Sat Aug 31 12:59:08 2002
+@@ -40,9 +40,13 @@
+ #define EBT_RETURN   -4
+ #define NUM_STANDARD_TARGETS   4
+ 
++// return values for match() functions
++#define EBT_MATCH 0
++#define EBT_NOMATCH 1
++
+ struct ebt_counter
+ {
+-	__u64 pcnt;
++	uint64_t pcnt;
+ };
+ 
+ struct ebt_entries {
+@@ -135,7 +139,7 @@
+ 	// this needs to be the first field
+ 	unsigned int bitmask;
+ 	unsigned int invflags;
+-	__u16 ethproto;
++	uint16_t ethproto;
+ 	// the physical in-dev
+ 	char in[IFNAMSIZ];
+ 	// the logical in-dev
+@@ -183,7 +187,7 @@
+ 	// 0 == it matches
+ 	int (*match)(const struct sk_buff *skb, const struct net_device *in,
+ 	   const struct net_device *out, const void *matchdata,
+-	   unsigned int datalen, const struct ebt_counter *c);
++	   unsigned int datalen);
+ 	// 0 == let it in
+ 	int (*check)(const char *tablename, unsigned int hookmask,
+ 	   const struct ebt_entry *e, void *matchdata, unsigned int datalen);
+@@ -197,7 +201,7 @@
+ 	const char name[EBT_FUNCTION_MAXNAMELEN];
+ 	void (*watcher)(const struct sk_buff *skb, const struct net_device *in,
+ 	   const struct net_device *out, const void *watcherdata,
+-	   unsigned int datalen, const struct ebt_counter *c);
++	   unsigned int datalen);
+ 	// 0 == let it in
+ 	int (*check)(const char *tablename, unsigned int hookmask,
+ 	   const struct ebt_entry *e, void *watcherdata, unsigned int datalen);
+@@ -210,12 +214,9 @@
+ 	struct list_head list;
+ 	const char name[EBT_FUNCTION_MAXNAMELEN];
+ 	// returns one of the standard verdicts
+-	int (*target)(struct sk_buff **pskb,
+-	       unsigned int hooknr,
+-	       const struct net_device *in,
+-	       const struct net_device *out,
+-	       const void *targetdata,
+-	       unsigned int datalen);
++	int (*target)(struct sk_buff **pskb, unsigned int hooknr,
++	   const struct net_device *in, const struct net_device *out,
++	   const void *targetdata, unsigned int datalen);
+ 	// 0 == let it in
+ 	int (*check)(const char *tablename, unsigned int hookmask,
+ 	   const struct ebt_entry *e, void *targetdata, unsigned int datalen);
+@@ -271,6 +272,16 @@
+    const struct net_device *in, const struct net_device *out,
+    struct ebt_table *table);
+ 
++   // Used in the kernel match() functions
++#define FWINV(bool,invflg) ((bool) ^ !!(info->invflags & invflg))
++// True if the hook mask denotes that the rule is in a base chain,
++// used in the check() functions
++#define BASE_CHAIN (hookmask & (1 << NF_BR_NUMHOOKS))
++// Clear the bit in the hook mask that tells if the rule is on a base chain
++#define CLEAR_BASE_CHAIN_BIT (hookmask &= ~(1 << NF_BR_NUMHOOKS))
++// True if the target is not a standard target
++#define INVALID_TARGET (info->target < -NUM_STANDARD_TARGETS || info->target >= 0)
++
+ #endif /* __KERNEL__ */
+ 
+ // blatently stolen from ip_tables.h
+@@ -333,9 +344,9 @@
+ 		if (__ret != 0)                             \
+ 			break;                              \
+ 		if (__entry->bitmask != 0)                  \
+-		 __i += __entry->next_offset;               \
++			__i += __entry->next_offset;        \
+ 		else                                        \
+-		 __i += sizeof(struct ebt_entries);         \
++			__i += sizeof(struct ebt_entries);  \
+ 	}                                                   \
+ 	if (__ret == 0) {                                   \
+ 		if (__i != (size))                          \
+--- linux-2.4.19-rc1/include/linux/netfilter_bridge/ebt_arp.h	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/include/linux/netfilter_bridge/ebt_arp.h	Sat Aug 31 12:59:08 2002
+@@ -12,15 +12,15 @@
+ 
+ struct ebt_arp_info
+ {
+-	__u16 htype;
+-	__u16 ptype;
+-	__u16 opcode;
+-	__u32 saddr;
+-	__u32 smsk;
+-	__u32 daddr;
+-	__u32 dmsk;
+-	__u8  bitmask;
+-	__u8  invflags;
++	uint16_t htype;
++	uint16_t ptype;
++	uint16_t opcode;
++	uint32_t saddr;
++	uint32_t smsk;
++	uint32_t daddr;
++	uint32_t dmsk;
++	uint8_t  bitmask;
++	uint8_t  invflags;
+ };
+ 
+ #endif
+--- linux-2.4.19-rc1/include/linux/netfilter_bridge/ebt_ip.h	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/include/linux/netfilter_bridge/ebt_ip.h	Sat Aug 31 12:59:08 2002
+@@ -11,14 +11,14 @@
+ // the same values are used for the invflags
+ struct ebt_ip_info
+ {
+-	__u32 saddr;
+-	__u32 daddr;
+-	__u32 smsk;
+-	__u32 dmsk;
+-	__u8  tos;
+-	__u8  protocol;
+-	__u8  bitmask;
+-	__u8  invflags;
++	uint32_t saddr;
++	uint32_t daddr;
++	uint32_t smsk;
++	uint32_t dmsk;
++	uint8_t  tos;
++	uint8_t  protocol;
++	uint8_t  bitmask;
++	uint8_t  invflags;
+ };
+ 
+ #endif
+--- linux-2.4.19-rc1/include/linux/netfilter_bridge/ebt_vlan.h	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/include/linux/netfilter_bridge/ebt_vlan.h	Sat Aug 31 12:59:08 2002
+@@ -8,12 +8,12 @@
+ #define EBT_VLAN_MATCH "vlan"
+ 
+ struct ebt_vlan_info {
+-	__u16 id;		/* VLAN ID {1-4095} */
+-	__u8 prio;		/* VLAN User Priority {0-7} */
+-	__u16 encap;		/* VLAN Encapsulated frame code {0-65535} */
+-	__u8 bitmask;		/* Args bitmask bit 1=1 - ID arg, 
++	uint16_t id;		/* VLAN ID {1-4095} */
++	uint8_t prio;		/* VLAN User Priority {0-7} */
++	uint16_t encap;		/* VLAN Encapsulated frame code {0-65535} */
++	uint8_t bitmask;		/* Args bitmask bit 1=1 - ID arg,
+ 				   bit 2=1 User-Priority arg, bit 3=1 encap*/
+-	__u8 invflags;		/* Inverse bitmask  bit 1=1 - inversed ID arg, 
++	uint8_t invflags;		/* Inverse bitmask  bit 1=1 - inversed ID arg, 
+ 				   bit 2=1 - inversed Pirority arg */
+ };
+ 
+--- linux-2.4.19-rc1/include/linux/netfilter_bridge/ebt_log.h	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/include/linux/netfilter_bridge/ebt_log.h	Sat Aug 31 12:59:08 2002
+@@ -9,9 +9,9 @@
+ 
+ struct ebt_log_info
+ {
+-	__u8 loglevel;
+-	__u8 prefix[EBT_LOG_PREFIX_SIZE];
+-	__u32 bitmask;
++	uint8_t loglevel;
++	uint8_t prefix[EBT_LOG_PREFIX_SIZE];
++	uint32_t bitmask;
+ };
+ 
+ #endif
+--- linux-2.4.19-rc1/include/linux/netfilter_bridge/ebt_mark_m.h	Sat Aug 31 12:53:52 2002
++++ linux-2.4.20-pre5-rc2/include/linux/netfilter_bridge/ebt_mark_m.h	Sat Aug 31 12:59:08 2002
+@@ -7,8 +7,8 @@
+ struct ebt_mark_m_info
+ {
+ 	unsigned long mark, mask;
+-	__u8 invert;
+-	__u8 bitmask;
++	uint8_t invert;
++	uint8_t bitmask;
+ };
+ #define EBT_MARK_MATCH "mark_m"
+ 

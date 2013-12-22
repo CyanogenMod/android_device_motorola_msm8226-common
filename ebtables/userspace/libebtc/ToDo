@@ -1,0 +1,21 @@
+
+
+--------------------------------------------------------------------------------
+
+  Library for ethernet bridge tables
+  Version 0.1.0
+
+  Copyright 2005 by Jens Götze
+  All rights reserved.
+
+--------------------------------------------------------------------------------
+
+
+Conditions for release 1.0:
+
+  2005-04-04: Jens Götze <jens@1in1.de>
+
+    [ ] Better documentation of functions, types and macros.
+    [ ] 64 Bit Kernel and 32 Bit Userspace casts.
+
+

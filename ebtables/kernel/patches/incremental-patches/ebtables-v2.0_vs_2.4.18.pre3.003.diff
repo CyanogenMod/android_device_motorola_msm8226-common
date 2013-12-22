@@ -1,0 +1,367 @@
+April 22
+* add brouter support
+* add --[d,s]nat-target option kernel support for the nat target
+
+--- linux/net/bridge/br_private.h	Mon Apr 22 23:03:27 2002
++++ ebt2.0pre3.003/net/bridge/br_private.h	Mon Apr 22 22:44:20 2002
+@@ -170,7 +170,7 @@
+ 
+ /* br_input.c */
+ extern int  br_handle_frame_finish(struct sk_buff *skb);
+-extern void br_handle_frame(struct sk_buff *skb);
++extern int br_handle_frame(struct sk_buff *skb);
+ 
+ /* br_ioctl.c */
+ extern void br_call_ioctl_atomic(void (*fn)(void));
+--- /dev/null	Thu Aug 24 11:00:32 2000
++++ ebt2.0pre3.003/net/bridge/netfilter/ebtable_broute.c	Mon Apr 22 19:11:31 2002
+@@ -0,0 +1,80 @@
++/*
++ *  ebtable_broute
++ *
++ *	Authors:
++ *	Bart De Schuymer <bart.de.schuymer@pandora.be>
++ *
++ *  April, 2002
++ *
++ *  This table lets you choose between routing and bridging for frames
++ *  entering on a bridge enslaved nic. This table is traversed before any
++ *  other ebtables table. See net/bridge/br_input.c.
++ */
++
++#include <linux/netfilter_bridge/ebtables.h>
++#include <linux/netfilter_bridge.h>
++#include <linux/netdevice.h>
++#include <linux/module.h>
++#include <linux/if_bridge.h>
++#include <linux/brlock.h>
++
++// EBT_ACCEPT means the frame will be bridged
++// EBT_DROP means the frame will be routed
++static struct ebt_entries initial_chain =
++  {0, EBT_ACCEPT, 0};
++
++static struct ebt_replace initial_table =
++{
++  "broute", 1 << NF_BR_BROUTING, 0, sizeof(struct ebt_entries),
++  { [NF_BR_BROUTING]&initial_chain}, {},
++  0, NULL, (char *)&initial_chain
++};
++
++static int check(const struct ebt_table_info *info, unsigned int valid_hooks)
++{
++	if (valid_hooks & ~(1 << NF_BR_BROUTING))
++		return -EINVAL;
++	return 0;
++}
++
++static struct ebt_table broute_table =
++{
++  {NULL, NULL}, "broute", &initial_table, 1 << NF_BR_BROUTING,
++  RW_LOCK_UNLOCKED, check, NULL
++};
++
++static unsigned int
++ebt_broute (unsigned int hook, struct sk_buff **pskb,
++			const struct net_device *in,
++			const struct net_device *out,
++			int (*okfn)(struct sk_buff *))
++{
++	return ebt_do_table(hook, pskb, in, out, &broute_table);
++}
++
++static int __init init(void)
++{
++	int ret;
++
++	ret = ebt_register_table(&broute_table);
++	if (ret < 0)
++		return ret;
++	br_write_lock_bh(BR_NETPROTO_LOCK);
++	// in br_input.c, br_handle_frame() wants to call broute_decision()
++	broute_decision = ebt_broute;
++	br_write_unlock_bh(BR_NETPROTO_LOCK);
++	return ret;
++}
++
++static void __exit fini(void)
++{
++	br_write_lock_bh(BR_NETPROTO_LOCK);
++	broute_decision = NULL;
++	br_write_unlock_bh(BR_NETPROTO_LOCK);
++	ebt_unregister_table(&broute_table);
++}
++
++module_init(init);
++module_exit(fini);
++EXPORT_NO_SYMBOLS;
++MODULE_LICENSE("GPL");
+--- linux/include/linux/if_bridge.h	Thu Nov 22 20:47:12 2001
++++ ebt2.0pre3.003/include/linux/if_bridge.h	Mon Apr 22 19:29:41 2002
+@@ -102,8 +102,13 @@
+ struct net_bridge_port;
+ 
+ extern int (*br_ioctl_hook)(unsigned long arg);
+-extern void (*br_handle_frame_hook)(struct sk_buff *skb);
+-
++extern int (*br_handle_frame_hook)(struct sk_buff *skb);
++#if defined(CONFIG_BRIDGE_EBT_BROUTE) || \
++    defined(CONFIG_BRIDGE_EBT_BROUTE_MODULE)
++extern unsigned int (*broute_decision) (unsigned int hook, struct sk_buff **pskb,
++   const struct net_device *in, const struct net_device *out,
++   int (*okfn)(struct sk_buff *));
++#endif
+ #endif
+ 
+ #endif
+--- linux/net/core/dev.c	Mon Feb 25 20:38:14 2002
++++ ebt2.0pre3.003/net/core/dev.c	Sun Apr 21 18:15:38 2002
+@@ -1384,7 +1384,14 @@
+ }
+ 
+ #if defined(CONFIG_BRIDGE) || defined(CONFIG_BRIDGE_MODULE)
+-void (*br_handle_frame_hook)(struct sk_buff *skb) = NULL;
++int (*br_handle_frame_hook)(struct sk_buff *skb) = NULL;
++#if defined(CONFIG_BRIDGE_EBT_BROUTE) || \
++    defined(CONFIG_BRIDGE_EBT_BROUTE_MODULE)
++unsigned int (*broute_decision) (unsigned int hook, struct sk_buff **pskb,
++			const struct net_device *in,
++			const struct net_device *out,
++			int (*okfn)(struct sk_buff *)) = NULL;
++#endif
+ #endif
+ 
+ static __inline__ int handle_bridge(struct sk_buff *skb,
+@@ -1394,14 +1401,14 @@
+ 
+ 	if (pt_prev) {
+ 		if (!pt_prev->data)
+-			ret = deliver_to_old_ones(pt_prev, skb, 0);
++			deliver_to_old_ones(pt_prev, skb, 0);
+ 		else {
+ 			atomic_inc(&skb->users);
+-			ret = pt_prev->func(skb, skb->dev, pt_prev);
++			pt_prev->func(skb, skb->dev, pt_prev);
+ 		}
+ 	}
+ 
+-	br_handle_frame_hook(skb);
++	ret = br_handle_frame_hook(skb);
+ 	return ret;
+ }
+ 
+@@ -1479,9 +1486,10 @@
+ #if defined(CONFIG_BRIDGE) || defined(CONFIG_BRIDGE_MODULE)
+ 			if (skb->dev->br_port != NULL &&
+ 			    br_handle_frame_hook != NULL) {
+-				handle_bridge(skb, pt_prev);
+-				dev_put(rx_dev);
+-				continue;
++				if (handle_bridge(skb, pt_prev) == 0) {
++					dev_put(rx_dev);
++					continue;
++				}
+ 			}
+ #endif
+ 
+--- linux/net/bridge/br_input.c	Mon Apr 22 23:03:27 2002
++++ ebt2.0pre3.003/net/bridge/br_input.c	Sun Apr 21 18:15:23 2002
+@@ -19,7 +19,10 @@
+ #include <linux/if_bridge.h>
+ #include <linux/netfilter_bridge.h>
+ #include "br_private.h"
+-
++#if defined(CONFIG_BRIDGE_EBT_BROUTE) || \
++    defined(CONFIG_BRIDGE_EBT_BROUTE_MODULE)
++#include <linux/netfilter.h>
++#endif
+ unsigned char bridge_ula[6] = { 0x01, 0x80, 0xc2, 0x00, 0x00, 0x00 };
+ 
+ static int br_pass_frame_up_finish(struct sk_buff *skb)
+@@ -112,7 +115,7 @@
+ 	return 0;
+ }
+ 
+-void br_handle_frame(struct sk_buff *skb)
++int br_handle_frame(struct sk_buff *skb)
+ {
+ 	struct net_bridge *br;
+ 	unsigned char *dest;
+@@ -146,23 +149,30 @@
+ 		goto handle_special_frame;
+ 
+ 	if (p->state == BR_STATE_FORWARDING) {
++#if defined(CONFIG_BRIDGE_EBT_BROUTE) || \
++    defined(CONFIG_BRIDGE_EBT_BROUTE_MODULE)
++		if (broute_decision && broute_decision(NF_BR_BROUTING, &skb,
++		   skb->dev, NULL, NULL) == NF_DROP)
++			return -1;
++#endif
+ 		NF_HOOK(PF_BRIDGE, NF_BR_PRE_ROUTING, skb, skb->dev, NULL,
+ 			br_handle_frame_finish);
+ 		read_unlock(&br->lock);
+-		return;
++		return 0;
+ 	}
+ 
+ err:
+ 	read_unlock(&br->lock);
+ err_nolock:
+ 	kfree_skb(skb);
+-	return;
++	return 0;
+ 
+ handle_special_frame:
+ 	if (!dest[5]) {
+ 		br_stp_handle_bpdu(skb);
+-		return;
++		return 0;
+ 	}
+ 
+ 	kfree_skb(skb);
++	return 0;
+ }
+--- linux/net/netsyms.c	Mon Feb 25 20:38:14 2002
++++ ebt2.0pre3.003/net/netsyms.c	Sun Apr 21 18:15:56 2002
+@@ -228,6 +228,10 @@
+ 
+ #if defined(CONFIG_BRIDGE) || defined(CONFIG_BRIDGE_MODULE)
+ EXPORT_SYMBOL(br_handle_frame_hook);
++#if defined(CONFIG_BRIDGE_EBT_BROUTE) || \
++    defined(CONFIG_BRIDGE_EBT_BROUTE_MODULE)
++EXPORT_SYMBOL(broute_decision);
++#endif
+ #ifdef CONFIG_INET
+ EXPORT_SYMBOL(br_ioctl_hook);
+ #endif
+--- linux/include/linux/netfilter_bridge.h	Tue Jun 12 04:15:27 2001
++++ ebt2.0pre3.003/include/linux/netfilter_bridge.h	Sun Apr 21 19:02:02 2002
+@@ -18,7 +18,8 @@
+ #define NF_BR_LOCAL_OUT		3
+ /* Packets about to hit the wire. */
+ #define NF_BR_POST_ROUTING	4
+-#define NF_BR_NUMHOOKS		5
+-
++/* Not really a hook, but used for the ebtables broute table */
++#define NF_BR_BROUTING		5
++#define NF_BR_NUMHOOKS		6
+ 
+ #endif
+--- linux/net/bridge/netfilter/Makefile	Mon Apr 22 23:03:37 2002
++++ ebt2.0pre3.003/net/bridge/netfilter/Makefile	Sun Apr 21 14:17:32 2002
+@@ -14,6 +14,7 @@
+ obj-$(CONFIG_BRIDGE_EBT) += ebtables.o
+ obj-$(CONFIG_BRIDGE_EBT_T_FILTER) += ebtable_filter.o
+ obj-$(CONFIG_BRIDGE_EBT_T_NAT) += ebtable_nat.o
++obj-$(CONFIG_BRIDGE_EBT_BROUTE) += ebtable_broute.o
+ obj-$(CONFIG_BRIDGE_DB) += br_db.o
+ obj-$(CONFIG_BRIDGE_EBT_IPF) += ebt_ip.o
+ obj-$(CONFIG_BRIDGE_EBT_ARPF) += ebt_arp.o
+--- linux/net/bridge/netfilter/Config.in	Mon Apr 22 23:03:37 2002
++++ ebt2.0pre3.003/net/bridge/netfilter/Config.in	Sat Apr 20 18:08:53 2002
+@@ -4,6 +4,7 @@
+ dep_tristate '  Bridge: ebtables' CONFIG_BRIDGE_EBT $CONFIG_BRIDGE
+ dep_tristate '    ebt: filter table support' CONFIG_BRIDGE_EBT_T_FILTER $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: nat table support' CONFIG_BRIDGE_EBT_T_NAT $CONFIG_BRIDGE_EBT
++dep_tristate '    ebt: broute table support' CONFIG_BRIDGE_EBT_BROUTE $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: LOG support' CONFIG_BRIDGE_EBT_LOG $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: IP filter support' CONFIG_BRIDGE_EBT_IPF $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: ARP filter support' CONFIG_BRIDGE_EBT_ARPF $CONFIG_BRIDGE_EBT
+--- linux/net/bridge/netfilter/ebtable_nat.c	Mon Apr 22 23:03:37 2002
++++ ebt2.0pre3.003/net/bridge/netfilter/ebtable_nat.c	Sat Apr 20 17:34:35 2002
+@@ -55,18 +55,16 @@
+ 
+ static unsigned int
+ ebt_nat_dst (unsigned int hook, struct sk_buff **pskb,
+-			const struct net_device *in,
+-			const struct net_device *out,
+-			int (*okfn)(struct sk_buff *))
++   const struct net_device *in, const struct net_device *out,
++   int (*okfn)(struct sk_buff *))
+ {
+ 	return ebt_do_table(hook, pskb, in, out, &frame_nat);
+ }
+ 
+ // let snat know this frame is routed
+ static unsigned int ebt_clear_physin (unsigned int hook, struct sk_buff **pskb,
+-			const struct net_device *in,
+-			const struct net_device *out,
+-			int (*okfn)(struct sk_buff *))
++   const struct net_device *in, const struct net_device *out,
++   int (*okfn)(struct sk_buff *))
+ {
+ 	(*pskb)->physindev = NULL;
+ 	return NF_ACCEPT;
+@@ -74,9 +72,8 @@
+ 
+ // let snat know this frame is bridged
+ static unsigned int ebt_set_physin (unsigned int hook, struct sk_buff **pskb,
+-			const struct net_device *in,
+-			const struct net_device *out,
+-			int (*okfn)(struct sk_buff *))
++   const struct net_device *in, const struct net_device *out,
++   int (*okfn)(struct sk_buff *))
+ {
+ 	(*pskb)->physindev = &__fake_net_device;
+ 	return NF_ACCEPT;
+--- linux/net/bridge/netfilter/ebt_nat.c	Mon Apr 22 23:03:37 2002
++++ ebt2.0pre3.003/net/bridge/netfilter/ebt_nat.c	Mon Apr 22 22:48:15 2002
+@@ -33,7 +33,7 @@
+ 	}
+ 	memcpy(((**pskb).mac.ethernet)->h_source, infostuff->mac,
+ 	   ETH_ALEN * sizeof(unsigned char));
+-	return EBT_ACCEPT;
++	return infostuff->target;
+ }
+ 
+ __u8 ebt_target_dnat(struct sk_buff **pskb, unsigned int hooknr,
+@@ -54,29 +54,37 @@
+ 	}
+ 	memcpy(((**pskb).mac.ethernet)->h_dest, infostuff->mac,
+ 	   ETH_ALEN * sizeof(unsigned char));
+-	return EBT_ACCEPT;
++	return infostuff->target;
+ }
+ 
+ int ebt_target_snat_check(const char *tablename, unsigned int hooknr,
+    const struct ebt_entry *e, void *data, unsigned int datalen)
+ {
++	struct ebt_nat_info *infostuff = (struct ebt_nat_info *) data;
++
+ 	if (strcmp(tablename, "nat"))
+ 		return -EINVAL;
+ 	if (datalen != sizeof(struct ebt_nat_info))
+ 		return -EINVAL;
+ 	if (hooknr != NF_BR_POST_ROUTING)
+ 		return -EINVAL;
++	if (infostuff->target >= NUM_STANDARD_TARGETS)
++		return -EINVAL;
+ 	return 0;
+ }
+ 
+ int ebt_target_dnat_check(const char *tablename, unsigned int hooknr,
+    const struct ebt_entry *e, void *data, unsigned int datalen)
+ {
++	struct ebt_nat_info *infostuff = (struct ebt_nat_info *) data;
++
+ 	if (strcmp(tablename, "nat"))
+ 		return -EINVAL;
+ 	if (datalen != sizeof(struct ebt_nat_info))
+ 		return -EINVAL;
+ 	if (hooknr != NF_BR_PRE_ROUTING && hooknr != NF_BR_LOCAL_OUT)
++		return -EINVAL;
++	if (infostuff->target >= NUM_STANDARD_TARGETS)
+ 		return -EINVAL;
+ 	return 0;
+ }
+--- linux/include/linux/netfilter_bridge/ebt_nat.h	Mon Apr 22 23:03:37 2002
++++ ebt2.0pre3.003/include/linux/netfilter_bridge/ebt_nat.h	Mon Apr 22 20:43:40 2002
+@@ -4,6 +4,8 @@
+ struct ebt_nat_info
+ {
+ 	unsigned char mac[ETH_ALEN];
++	// EBT_ACCEPT, EBT_DROP or EBT_CONTINUE
++	__u8 target;
+ };
+ #define EBT_SNAT_TARGET "snat"
+ #define EBT_DNAT_TARGET "dnat"

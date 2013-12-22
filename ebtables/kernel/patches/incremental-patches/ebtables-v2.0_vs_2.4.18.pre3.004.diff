@@ -1,0 +1,252 @@
+* add redirect target
+* remove some bugs from nat target
+* use NF_BR_PRI_*
+
+--- /dev/null	Thu Aug 24 11:00:32 2000
++++ ebt2.0pre3.004/net/bridge/netfilter/ebt_redirect.c	Sat Apr 27 13:09:16 2002
+@@ -0,0 +1,63 @@
++/*
++ *  ebt_redirect
++ *
++ *	Authors:
++ *	Bart De Schuymer <bart.de.schuymer@pandora.be>
++ *
++ *  April, 2002
++ *
++ */
++
++#include <linux/netfilter_bridge/ebtables.h>
++#include <linux/netfilter_bridge/ebt_redirect.h>
++#include <linux/netfilter_bridge.h>
++#include <linux/skbuff.h>
++#include <linux/module.h>
++#include <net/sock.h>
++
++static __u8 ebt_target_redirect(struct sk_buff **pskb, unsigned int hooknr,
++   const struct net_device *in, const struct net_device *out,
++   const void *data, unsigned int datalen)
++{
++	struct ebt_redirect_info *infostuff = (struct ebt_redirect_info *) data;
++
++	memcpy((**pskb).mac.ethernet->h_dest, in->dev_addr, ETH_ALEN);
++	(*pskb)->pkt_type = PACKET_HOST;
++	return infostuff->target;
++}
++
++static int ebt_target_redirect_check(const char *tablename, unsigned int hooknr,
++   const struct ebt_entry *e, void *data, unsigned int datalen)
++{
++	struct ebt_redirect_info *infostuff = (struct ebt_redirect_info *) data;
++
++	if ( (strcmp(tablename, "nat") || hooknr != NF_BR_PRE_ROUTING) &&
++	     (strcmp(tablename, "broute") || hooknr != NF_BR_BROUTING) )
++		return -EINVAL;
++	if (datalen != sizeof(struct ebt_redirect_info))
++		return -EINVAL;
++	if (infostuff->target >= NUM_STANDARD_TARGETS)
++		return -EINVAL;
++	return 0;
++}
++
++static struct ebt_target redirect_target =
++{
++	{NULL, NULL}, EBT_REDIRECT_TARGET, ebt_target_redirect,
++	ebt_target_redirect_check, NULL, THIS_MODULE
++};
++
++static int __init init(void)
++{
++	return ebt_register_target(&redirect_target);
++}
++
++static void __exit fini(void)
++{
++	ebt_unregister_target(&redirect_target);
++}
++
++module_init(init);
++module_exit(fini);
++EXPORT_NO_SYMBOLS;
++MODULE_LICENSE("GPL");
+--- linux/include/linux/netfilter_bridge.h	Sun Apr 21 19:02:02 2002
++++ ebt2.0pre3.004/include/linux/netfilter_bridge.h	Sat Apr 27 17:40:09 2002
+@@ -22,4 +22,15 @@
+ #define NF_BR_BROUTING		5
+ #define NF_BR_NUMHOOKS		6
+ 
++enum nf_br_hook_priorities {
++        NF_BR_PRI_FIRST = INT_MIN,
++        NF_BR_PRI_FILTER_BRIDGED = -200,
++        NF_BR_PRI_FILTER_OTHER = 200,
++        NF_BR_PRI_NAT_DST_BRIDGED = -300,
++        NF_BR_PRI_NAT_DST_OTHER = 100,
++        NF_BR_PRI_NAT_SRC_BRIDGED = -100,
++        NF_BR_PRI_NAT_SRC_OTHER = 300,
++        NF_BR_PRI_LAST = INT_MAX,
++};
++
+ #endif
+--- linux/net/bridge/netfilter/Makefile	Sun Apr 21 14:17:32 2002
++++ ebt2.0pre3.004/net/bridge/netfilter/Makefile	Tue Apr 23 22:52:25 2002
+@@ -20,5 +20,5 @@
+ obj-$(CONFIG_BRIDGE_EBT_ARPF) += ebt_arp.o
+ obj-$(CONFIG_BRIDGE_EBT_LOG) += ebt_log.o
+ obj-$(CONFIG_BRIDGE_EBT_NAT) += ebt_nat.o
+-
++obj-$(CONFIG_BRIDGE_EBT_REDIRECT) += ebt_redirect.o
+ include $(TOPDIR)/Rules.make
+--- linux/net/bridge/netfilter/Config.in	Sat Apr 20 18:08:53 2002
++++ ebt2.0pre3.004/net/bridge/netfilter/Config.in	Tue Apr 23 22:51:38 2002
+@@ -9,5 +9,6 @@
+ dep_tristate '    ebt: IP filter support' CONFIG_BRIDGE_EBT_IPF $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: ARP filter support' CONFIG_BRIDGE_EBT_ARPF $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: nat target support' CONFIG_BRIDGE_EBT_NAT $CONFIG_BRIDGE_EBT
++dep_tristate '    ebt: redirect target support' CONFIG_BRIDGE_EBT_REDIRECT $CONFIG_BRIDGE_EBT
+ dep_tristate '  Bridge: ethernet database' CONFIG_BRIDGE_DB $CONFIG_BRIDGE
+ 
+--- linux/net/bridge/netfilter/ebtable_filter.c	Sat Apr 13 21:51:47 2002
++++ ebt2.0pre3.004/net/bridge/netfilter/ebtable_filter.c	Sat Apr 27 17:44:20 2002
+@@ -52,9 +52,12 @@
+ }
+ 
+ static struct nf_hook_ops ebt_ops_filter[] = {
+-  { { NULL, NULL }, ebt_hook, PF_BRIDGE, NF_BR_LOCAL_IN, -200},
+-  { { NULL, NULL }, ebt_hook, PF_BRIDGE, NF_BR_FORWARD, -200},
+-  { { NULL, NULL }, ebt_hook, PF_BRIDGE, NF_BR_LOCAL_OUT, 200}
++	{ { NULL, NULL }, ebt_hook, PF_BRIDGE, NF_BR_LOCAL_IN,
++	   NF_BR_PRI_FILTER_BRIDGED},
++	{ { NULL, NULL }, ebt_hook, PF_BRIDGE, NF_BR_FORWARD,
++	   NF_BR_PRI_FILTER_BRIDGED},
++	{ { NULL, NULL }, ebt_hook, PF_BRIDGE, NF_BR_LOCAL_OUT,
++	   NF_BR_PRI_FILTER_OTHER}
+ };
+ 
+ static int __init init(void)
+--- linux/net/bridge/netfilter/ebtable_nat.c	Sat Apr 20 17:34:35 2002
++++ ebt2.0pre3.004/net/bridge/netfilter/ebtable_nat.c	Sat Apr 27 17:42:28 2002
+@@ -109,12 +109,18 @@
+ }
+ 
+ static struct nf_hook_ops ebt_ops_nat[] = {
+-	{ { NULL, NULL }, ebt_nat_dst, PF_BRIDGE, NF_BR_LOCAL_OUT, 100},
+-	{ { NULL, NULL }, ebt_nat_src, PF_BRIDGE, NF_BR_POST_ROUTING, -100},
+-	{ { NULL, NULL }, ebt_nat_src_route, PF_BRIDGE, NF_BR_POST_ROUTING,300},
+-	{ { NULL, NULL }, ebt_nat_dst, PF_BRIDGE, NF_BR_PRE_ROUTING, -300},
+-	{ { NULL, NULL }, ebt_clear_physin, PF_BRIDGE, NF_BR_LOCAL_OUT,200 + 1},
+-	{ { NULL, NULL }, ebt_set_physin, PF_BRIDGE, NF_BR_FORWARD, 200 + 1}
++	{ { NULL, NULL }, ebt_nat_dst, PF_BRIDGE, NF_BR_LOCAL_OUT,
++	   NF_BR_PRI_NAT_DST_OTHER},
++	{ { NULL, NULL }, ebt_nat_src, PF_BRIDGE, NF_BR_POST_ROUTING,
++	   NF_BR_PRI_NAT_SRC_BRIDGED},
++	{ { NULL, NULL }, ebt_nat_src_route, PF_BRIDGE, NF_BR_POST_ROUTING,
++	   NF_BR_PRI_NAT_SRC_OTHER},
++	{ { NULL, NULL }, ebt_nat_dst, PF_BRIDGE, NF_BR_PRE_ROUTING,
++	   NF_BR_PRI_NAT_DST_BRIDGED},
++	{ { NULL, NULL }, ebt_clear_physin, PF_BRIDGE, NF_BR_LOCAL_OUT,
++	   NF_BR_PRI_FILTER_OTHER + 1},
++	{ { NULL, NULL }, ebt_set_physin, PF_BRIDGE, NF_BR_FORWARD,
++	   NF_BR_PRI_FILTER_OTHER + 1}
+ };
+ 
+ static int __init init(void)
+--- linux/net/bridge/netfilter/ebt_nat.c	Mon Apr 22 22:48:15 2002
++++ ebt2.0pre3.004/net/bridge/netfilter/ebt_nat.c	Thu Apr 25 18:49:14 2002
+@@ -15,49 +15,29 @@
+ #include <linux/module.h>
+ #include <net/sock.h>
+ 
+-__u8 ebt_target_snat(struct sk_buff **pskb, unsigned int hooknr,
++static __u8 ebt_target_snat(struct sk_buff **pskb, unsigned int hooknr,
+    const struct net_device *in, const struct net_device *out,
+    const void *data, unsigned int datalen)
+ {
+ 	struct ebt_nat_info *infostuff = (struct ebt_nat_info *) data;
+ 
+-	if (skb_cloned(*pskb)) {
+-		struct sk_buff *nskb = skb_copy(*pskb, GFP_ATOMIC);
+-
+-		if (!nskb)
+-			return EBT_DROP;
+-		if ((*pskb)->sk)
+-			skb_set_owner_w(nskb, (*pskb)->sk);
+-		kfree_skb(*pskb);
+-		*pskb = nskb;
+-	}
+ 	memcpy(((**pskb).mac.ethernet)->h_source, infostuff->mac,
+ 	   ETH_ALEN * sizeof(unsigned char));
+ 	return infostuff->target;
+ }
+ 
+-__u8 ebt_target_dnat(struct sk_buff **pskb, unsigned int hooknr,
++static __u8 ebt_target_dnat(struct sk_buff **pskb, unsigned int hooknr,
+    const struct net_device *in, const struct net_device *out,
+    const void *data, unsigned int datalen)
+ {
+ 	struct ebt_nat_info *infostuff = (struct ebt_nat_info *) data;
+ 
+-	if (skb_cloned(*pskb)) {
+-		struct sk_buff *nskb = skb_copy(*pskb, GFP_ATOMIC);
+-
+-		if (!nskb)
+-			return EBT_DROP;
+-		if ((*pskb)->sk)
+-			skb_set_owner_w(nskb, (*pskb)->sk);
+-		kfree_skb(*pskb);
+-		*pskb = nskb;
+-	}
+ 	memcpy(((**pskb).mac.ethernet)->h_dest, infostuff->mac,
+ 	   ETH_ALEN * sizeof(unsigned char));
+ 	return infostuff->target;
+ }
+ 
+-int ebt_target_snat_check(const char *tablename, unsigned int hooknr,
++static int ebt_target_snat_check(const char *tablename, unsigned int hooknr,
+    const struct ebt_entry *e, void *data, unsigned int datalen)
+ {
+ 	struct ebt_nat_info *infostuff = (struct ebt_nat_info *) data;
+@@ -73,29 +53,29 @@
+ 	return 0;
+ }
+ 
+-int ebt_target_dnat_check(const char *tablename, unsigned int hooknr,
++static int ebt_target_dnat_check(const char *tablename, unsigned int hooknr,
+    const struct ebt_entry *e, void *data, unsigned int datalen)
+ {
+ 	struct ebt_nat_info *infostuff = (struct ebt_nat_info *) data;
+ 
+-	if (strcmp(tablename, "nat"))
++	if ( (strcmp(tablename, "nat") || 
++	   (hooknr != NF_BR_PRE_ROUTING && hooknr != NF_BR_LOCAL_OUT)) &&
++	   (strcmp(tablename, "broute") || hooknr != NF_BR_BROUTING) )
+ 		return -EINVAL;
+ 	if (datalen != sizeof(struct ebt_nat_info))
+ 		return -EINVAL;
+-	if (hooknr != NF_BR_PRE_ROUTING && hooknr != NF_BR_LOCAL_OUT)
+-		return -EINVAL;
+ 	if (infostuff->target >= NUM_STANDARD_TARGETS)
+ 		return -EINVAL;
+ 	return 0;
+ }
+ 
+-struct ebt_target snat =
++static struct ebt_target snat =
+ {
+ 	{NULL, NULL}, EBT_SNAT_TARGET, ebt_target_snat, ebt_target_snat_check,
+ 	NULL, THIS_MODULE
+ };
+ 
+-struct ebt_target dnat =
++static struct ebt_target dnat =
+ {
+ 	{NULL, NULL}, EBT_DNAT_TARGET, ebt_target_dnat, ebt_target_dnat_check,
+ 	NULL, THIS_MODULE
+--- linux/net/bridge/netfilter/ebtables.c	Sat Apr 20 14:05:07 2002
++++ ebt2.0pre3.004/net/bridge/netfilter/ebtables.c	Sat Apr 27 18:10:53 2002
+@@ -122,6 +122,7 @@
+ 		   && ((!out || !out->br_port) ? 1 :
+ 		       FWINV(!ebt_dev_check((char *)
+ 		      (point->logical_out), &out->br_port->br->dev), EBT_ILOGICALOUT))
++
+ 		) {
+ 			if ( (point->bitmask & EBT_SOURCEMAC) &&
+ 			   FWINV(!!memcmp(point->sourcemac,

@@ -1,0 +1,100 @@
+#!/bin/bash
+# Makes a base diff for the ebtables kernel code
+
+# 6 June 2002: added ebt_snat.c, ebt_dnat.c files, removed ebt_nat.c file
+# 31 July 2002: added mark match/target, bridge/br.c, bridge/Makefile;
+#               deleted netsyms
+# 20 August 2002: deleted br_db
+# 18 September 2002: added br_forward.c
+# 3 September 2003: this file is now used for the ebt-brnf patch
+# 6 January 2004: add /include/linux/sysctl.h
+# 18 April 2004: added ipt_REJECT.c
+# 25 August 2004: added netfilter_ipv4.h
+# 25 November 2004: added ebt_ulog.h and ebt_ulog.c
+# 13 March 2005: added ip_tables.h, arp_tables.h and ip6_tables.h
+# 15 September 2005: added br_stp_bpdu.c
+# 9 March 2010: added include/net/ip.h, net/ipv4/netfilter/ip_conntrack_core.c
+
+export FROM=linux-2.4.37.9
+export TO=linux-2.4.37.9-ebt-brnf
+export FILE=ebtables-brnf-13_vs_2.4.37.9.diff
+
+diff -urNp --exclude TAGS $FROM/net/bridge/br_private.h $TO/net/bridge/br_private.h > $FILE
+diff -urNp --exclude TAGS $FROM/include/linux/if_bridge.h $TO/include/linux/if_bridge.h >> $FILE
+diff -urNp --exclude TAGS $FROM/include/net/ip.h $TO/include/net/ip.h >> $FILE
+diff -urNp --exclude TAGS $FROM/net/core/dev.c $TO/net/core/dev.c >> $FILE
+diff -urNp --exclude TAGS $FROM/net/bridge/br_input.c $TO/net/bridge/br_input.c >> $FILE
+diff -urNp --exclude TAGS $FROM/net/bridge/br_stp_bpdu.c $TO/net/bridge/br_stp_bpdu.c >> $FILE
+diff -urNp --exclude TAGS $FROM/net/bridge/br_forward.c $TO/net/bridge/br_forward.c >> $FILE
+diff -urNp --exclude TAGS $FROM/net/bridge/br.c $TO/net/bridge/br.c >> $FILE
+diff -urNp --exclude TAGS $FROM/net/bridge/Makefile $TO/net/bridge/Makefile >> $FILE
+diff -urNp --exclude TAGS $FROM/include/linux/netfilter_bridge.h $TO/include/linux/netfilter_bridge.h >> $FILE
+
+diff -urNp --exclude TAGS $FROM/include/linux/netfilter_ipv4/ip_tables.h $TO/include/linux/netfilter_ipv4/ip_tables.h >> $FILE
+diff -urNp --exclude TAGS $FROM/include/linux/netfilter_ipv6/ip6_tables.h $TO/include/linux/netfilter_ipv6/ip6_tables.h >> $FILE
+diff -urNp --exclude TAGS $FROM/include/linux/netfilter_arp/arp_tables.h $TO/include/linux/netfilter_arp/arp_tables.h >> $FILE
+
+# only needed for 2.4.x
+diff -urNp --exclude TAGS $FROM/net/Makefile $TO/net/Makefile >> $FILE
+diff -urNp --exclude TAGS $FROM/net/Config.in $TO/net/Config.in >> $FILE
+
+diff -urN /dev/null $TO/net/bridge/netfilter/Makefile >> $FILE
+diff -urN /dev/null $TO/net/bridge/netfilter/Config.in >> $FILE
+diff -urN /dev/null $TO/net/bridge/netfilter/ebtable_filter.c >> $FILE
+diff -urN /dev/null $TO/net/bridge/netfilter/ebtable_nat.c >> $FILE
+diff -urN /dev/null $TO/net/bridge/netfilter/ebtable_broute.c >> $FILE
+diff -urN /dev/null $TO/net/bridge/netfilter/ebt_among.c >> $FILE
+diff -urN /dev/null $TO/net/bridge/netfilter/ebt_limit.c >> $FILE
+diff -urN /dev/null $TO/net/bridge/netfilter/ebt_arpreply.c >> $FILE
+diff -urN /dev/null $TO/net/bridge/netfilter/ebt_802_3.c >> $FILE
+diff -urN /dev/null $TO/net/bridge/netfilter/ebt_mark.c >> $FILE
+diff -urN /dev/null $TO/net/bridge/netfilter/ebt_mark_m.c >> $FILE
+diff -urN /dev/null $TO/net/bridge/netfilter/ebt_pkttype.c >> $FILE
+diff -urN /dev/null $TO/net/bridge/netfilter/ebt_stp.c >> $FILE
+diff -urN /dev/null $TO/net/bridge/netfilter/ebt_redirect.c >> $FILE
+diff -urN /dev/null $TO/net/bridge/netfilter/ebt_arp.c >> $FILE
+diff -urN /dev/null $TO/net/bridge/netfilter/ebt_ip.c >> $FILE
+diff -urN /dev/null $TO/net/bridge/netfilter/ebt_vlan.c >> $FILE
+diff -urN /dev/null $TO/net/bridge/netfilter/ebt_log.c >> $FILE
+diff -urN /dev/null $TO/net/bridge/netfilter/ebt_ulog.c >> $FILE
+diff -urN /dev/null $TO/net/bridge/netfilter/ebt_snat.c >> $FILE
+diff -urN /dev/null $TO/net/bridge/netfilter/ebt_dnat.c >> $FILE
+diff -urN /dev/null $TO/net/bridge/netfilter/ebtables.c >> $FILE
+diff -urN /dev/null $TO/include/linux/netfilter_bridge/ebtables.h >> $FILE
+diff -urN /dev/null $TO/include/linux/netfilter_bridge/ebt_among.h >> $FILE
+diff -urN /dev/null $TO/include/linux/netfilter_bridge/ebt_limit.h >> $FILE
+diff -urN /dev/null $TO/include/linux/netfilter_bridge/ebt_arpreply.h >> $FILE
+diff -urN /dev/null $TO/include/linux/netfilter_bridge/ebt_802_3.h >> $FILE
+diff -urN /dev/null $TO/include/linux/netfilter_bridge/ebt_arp.h >> $FILE
+diff -urN /dev/null $TO/include/linux/netfilter_bridge/ebt_ip.h >> $FILE
+diff -urN /dev/null $TO/include/linux/netfilter_bridge/ebt_pkttype.h >> $FILE
+diff -urN /dev/null $TO/include/linux/netfilter_bridge/ebt_stp.h >> $FILE
+diff -urN /dev/null $TO/include/linux/netfilter_bridge/ebt_vlan.h >> $FILE
+diff -urN /dev/null $TO/include/linux/netfilter_bridge/ebt_log.h >> $FILE
+diff -urN /dev/null $TO/include/linux/netfilter_bridge/ebt_ulog.h >> $FILE
+diff -urN /dev/null $TO/include/linux/netfilter_bridge/ebt_nat.h >> $FILE
+diff -urN /dev/null $TO/include/linux/netfilter_bridge/ebt_redirect.h >> $FILE
+diff -urN /dev/null $TO/include/linux/netfilter_bridge/ebt_mark_m.h >> $FILE
+diff -urN /dev/null $TO/include/linux/netfilter_bridge/ebt_mark_t.h >> $FILE
+
+diff -urNp $FROM/include/linux/netfilter.h $TO/include/linux/netfilter.h >> $FILE
+diff -urNp $FROM/include/linux/netfilter_ipv4.h $TO/include/linux/netfilter_ipv4.h >> $FILE
+diff -urNp $FROM/include/linux/netfilter_ipv6.h $TO/include/linux/netfilter_ipv6.h >> $FILE
+diff -urNp $FROM/include/linux/skbuff.h $TO/include/linux/skbuff.h >> $FILE
+diff -urNp $FROM/net/core/netfilter.c $TO/net/core/netfilter.c >> $FILE
+diff -urNp $FROM/net/core/skbuff.c $TO/net/core/skbuff.c >> $FILE
+diff -urNp $FROM/net/ipv4/netfilter/ip_tables.c $TO/net/ipv4/netfilter/ip_tables.c >> $FILE
+diff -urNp $FROM/net/ipv4/netfilter/ip_conntrack_core.c $TO/net/ipv4/netfilter/ip_conntrack_core.c >> $FILE
+diff -urNp $FROM/net/ipv4/ip_output.c $TO/net/ipv4/ip_output.c >> $FILE
+diff -urNp $FROM/net/ipv4/netfilter/ipt_LOG.c $TO/net/ipv4/netfilter/ipt_LOG.c >> $FILE
+diff -urNp $FROM/net/ipv4/netfilter/Makefile $TO/net/ipv4/netfilter/Makefile >> $FILE
+diff -urNp $FROM/net/ipv4/netfilter/Config.in $TO/net/ipv4/netfilter/Config.in >> $FILE
+diff -urN /dev/null $TO/net/bridge/br_netfilter.c >> $FILE
+
+diff -urN /dev/null $TO/net/ipv4/netfilter/ipt_physdev.c >> $FILE
+diff -urN /dev/null $TO/include/linux/netfilter_ipv4/ipt_physdev.h >> $FILE
+
+diff -urNp $FROM/net/8021q/vlan_dev.c $TO/net/8021q/vlan_dev.c >> $FILE
+diff -urNp $FROM/include/linux/sysctl.h $TO/include/linux/sysctl.h >> $FILE
+
+diff -urNp $FROM/net/ipv4/netfilter/ipt_REJECT.c $TO/net/ipv4/netfilter/ipt_REJECT.c >> $FILE

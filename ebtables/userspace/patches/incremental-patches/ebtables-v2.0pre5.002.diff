@@ -1,0 +1,61 @@
+--- ebtables-v2.0pre5.001/Makefile	Mon May 20 13:59:48 2002
++++ ebtables-v2.0pre5.002/Makefile	Mon May 20 14:06:38 2002
+@@ -2,12 +2,19 @@
+ 
+ KERNEL_DIR?=/usr/src/linux
+ PROGNAME:=ebtables
+-PROGVERSION:="2.0pre5 (April 2002)"
++PROGVERSION:="2.0pre5 (May 2002)"
+ 
+ MANDIR?=/usr/local/man
+ CFLAGS:=-Wall -Wunused
+ include extensions/Makefile
+ 
++# Some kernel testers prefer to use a symlink for /usr/include/linux
++ifeq ($(SYMLINK), y)
++KERNEL_INCLUDES=symlink
++else
++KERNEL_INCLUDES=headers
++endif
++
+ .PHONY: headers
+ headers:
+ 	mkdir -p /usr/include/linux/netfilter_bridge
+@@ -18,6 +25,10 @@
+ 	cp -f $(KERNEL_DIR)/include/linux/netfilter_bridge.h \
+ 		/usr/include/linux/netfilter_bridge.h
+ 
++.PHONY: symlink
++symlink:
++	ln -fs $(KERNEL_DIR)/include/linux /usr/include/linux
++
+ communication.o: communication.c include/ebtables_u.h
+ 	$(CC) $(CFLAGS) -c -o $@ $<
+ 
+@@ -36,7 +47,7 @@
+ 	mkdir -p $(@D)
+ 	install -m 0644 -o root -g root $< $@
+ 
+-install: $(MANDIR)/man8/ebtables.8 headers \
++install: $(MANDIR)/man8/ebtables.8 $(KERNEL_INCLUDES) \
+ 	ebtables /etc/ethertypes
+ 
+ clean:
+--- ebtables-v2.0pre5.001/THANKS	Sat Apr 13 17:40:35 2002
++++ ebtables-v2.0pre5.002/THANKS	Mon May 20 13:49:50 2002
+@@ -6,4 +6,4 @@
+ Jason Lunz
+ Tim Gardner
+ Loïc Minier
+-
++Nick Fedchik
+--- ebtables-v2.0pre5.001/ChangeLog	Mon May 20 13:59:48 2002
++++ ebtables-v2.0pre5.002/ChangeLog	Mon May 20 13:49:27 2002
+@@ -1,5 +1,7 @@
++20020520
+ 	* update help for -s and -d
+ 	* add VLAN in ethertypes
++	* add SYMLINK option for compiling
+ 20020501
+ 	* allow -i and --logical-in in BROUTING
+ 	* update the manual page

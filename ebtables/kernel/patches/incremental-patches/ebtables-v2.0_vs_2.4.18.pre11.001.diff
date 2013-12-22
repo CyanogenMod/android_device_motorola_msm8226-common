@@ -1,0 +1,388 @@
+--- linux/net/bridge/netfilter/ebtable_broute.c	Tue Jul 16 18:49:14 2002
++++ ebt2.0pre11.001/net/bridge/netfilter/ebtable_broute.c	Tue Jul  9 20:04:31 2002
+@@ -21,7 +21,7 @@
+ // EBT_ACCEPT means the frame will be bridged
+ // EBT_DROP means the frame will be routed
+ static struct ebt_entries initial_chain =
+-  {0, "BROUTE", 0, EBT_ACCEPT, 0};
++  {0, "BROUTING", 0, EBT_ACCEPT, 0};
+ 
+ static struct ebt_replace initial_table =
+ {
+--- linux/net/bridge/netfilter/ebt_redirect.c	Tue Jul 16 18:49:14 2002
++++ ebt2.0pre11.001/net/bridge/netfilter/ebt_redirect.c	Tue Jul  9 15:41:46 2002
+@@ -22,9 +22,14 @@
+ {
+ 	struct ebt_redirect_info *infostuff = (struct ebt_redirect_info *) data;
+ 
+-	memcpy((**pskb).mac.ethernet->h_dest,
+-	   in->br_port->br->dev.dev_addr, ETH_ALEN);
+-	(*pskb)->pkt_type = PACKET_HOST;
++	if (hooknr != NF_BR_BROUTING)
++		memcpy((**pskb).mac.ethernet->h_dest,
++		   in->br_port->br->dev.dev_addr, ETH_ALEN);
++	else {
++		memcpy((**pskb).mac.ethernet->h_dest,
++		   in->dev_addr, ETH_ALEN);
++		(*pskb)->pkt_type = PACKET_HOST;
++	}
+ 	return infostuff->target;
+ }
+ 
+--- linux/net/bridge/netfilter/ebtables.c	Tue Jul 16 18:49:15 2002
++++ ebt2.0pre11.001/net/bridge/netfilter/ebtables.c	Sun Jul 14 20:13:16 2002
+@@ -105,15 +105,19 @@
+ 	struct ebt_chainstack *cs;
+ 	struct ebt_entries *chaininfo;
+ 	char *base;
++	struct ebt_table_info *private = table->private;
+ 
+ 	read_lock_bh(&table->lock);
+-	cs = table->private->chainstack;
+-	chaininfo = table->private->hook_entry[hook];
+-	nentries = table->private->hook_entry[hook]->nentries;
+-	point = (struct ebt_entry *)(table->private->hook_entry[hook]->data);
++	if (private->chainstack)
++		cs = private->chainstack[cpu_number_map(smp_processor_id())];
++	else
++		cs = NULL;
++	chaininfo = private->hook_entry[hook];
++	nentries = private->hook_entry[hook]->nentries;
++	point = (struct ebt_entry *)(private->hook_entry[hook]->data);
+ 	#define cb_base table->private->counters + \
+ 	   cpu_number_map(smp_processor_id()) * table->private->nentries
+-	counter_base = cb_base + table->private->hook_entry[hook]->counter_offset;
++	counter_base = cb_base + private->hook_entry[hook]->counter_offset;
+ 	#define FWINV(bool,invflg) ((bool) ^ !!(point->invflags & invflg))
+ 	// base for chain jumps
+ 	base = (char *)chaininfo;
+@@ -768,10 +772,22 @@
+ 	if (udc_cnt) {
+ 		// this will get free'd in do_replace()/ebt_register_table()
+ 		// if an error occurs
+-		newinfo->chainstack = (struct ebt_chainstack *)
+-		   vmalloc(udc_cnt * sizeof(struct ebt_chainstack));
++		newinfo->chainstack = (struct ebt_chainstack **)
++		   vmalloc(smp_num_cpus * sizeof(struct ebt_chainstack));
+ 		if (!newinfo->chainstack)
+ 			return -ENOMEM;
++		for (i = 0; i < smp_num_cpus; i++) {
++			newinfo->chainstack[i] =
++			   vmalloc(udc_cnt * sizeof(struct ebt_chainstack));
++			if (!newinfo->chainstack[i]) {
++				while (i)
++					vfree(newinfo->chainstack[--i]);
++				vfree(newinfo->chainstack);
++				newinfo->chainstack = NULL;
++				break;
++			}
++		}
++
+ 		cl_s = (struct ebt_cl_stack *)
+ 		   vmalloc(udc_cnt * sizeof(struct ebt_cl_stack));
+ 		if (!cl_s)
+@@ -825,27 +841,27 @@
+ }
+ 
+ // called under write_lock
+-static inline void get_counters(struct ebt_table_info *info,
+-   struct ebt_counter *counters)
++static inline void get_counters(struct ebt_counter *oldcounters,
++   struct ebt_counter *counters, unsigned int nentries)
+ {
+ 	int i, cpu, counter_base;
+ 
+ 	// counters of cpu 0
+-	memcpy(counters, info->counters,
+-	   sizeof(struct ebt_counter) * info->nentries);
++	memcpy(counters, oldcounters,
++	   sizeof(struct ebt_counter) * nentries);
+ 	// add other counters to those of cpu 0
+ 	for (cpu = 1; cpu < smp_num_cpus; cpu++) {
+-		counter_base = cpu * info->nentries;
+-		for (i = 0; i < info->nentries; i++)
++		counter_base = cpu * nentries;
++		for (i = 0; i < nentries; i++)
+ 			counters[i].pcnt +=
+-			   info->counters[counter_base + i].pcnt;
++			   oldcounters[counter_base + i].pcnt;
+ 	}
+ }
+ 
+ // replace the table
+ static int do_replace(void *user, unsigned int len)
+ {
+-	int ret;
++	int ret, i;
+ 	struct ebt_table_info *newinfo;
+ 	struct ebt_replace tmp;
+ 	struct ebt_table *t;
+@@ -934,7 +950,8 @@
+ 	// we need an atomic snapshot of the counters
+ 	write_lock_bh(&t->lock);
+ 	if (tmp.num_counters)
+-		get_counters(t->private, counterstmp);
++		get_counters(t->private->counters, counterstmp,
++		   t->private->nentries);
+ 
+ 	t->private = newinfo;
+ 	write_unlock_bh(&t->lock);
+@@ -959,8 +976,11 @@
+ 	vfree(table->entries);
+ 	if (table->counters)
+ 		vfree(table->counters);
+-	if (table->chainstack)
++	if (table->chainstack) {
++		for (i = 0; i < smp_num_cpus; i++)
++			vfree(table->chainstack[i]);
+ 		vfree(table->chainstack);
++	}
+ 	vfree(table);
+ 
+ 	if (counterstmp)
+@@ -975,8 +995,11 @@
+ 	if (counterstmp)
+ 		vfree(counterstmp);
+ 	// can be initialized in translate_table()
+-	if (newinfo->chainstack)
++	if (newinfo->chainstack) {
++		for (i = 0; i < smp_num_cpus; i++)
++			vfree(newinfo->chainstack[i]);
+ 		vfree(newinfo->chainstack);
++	}
+ free_entries:
+ 	if (newinfo->entries)
+ 		vfree(newinfo->entries);
+@@ -1067,7 +1090,7 @@
+ int ebt_register_table(struct ebt_table *table)
+ {
+ 	struct ebt_table_info *newinfo;
+-	int ret;
++	int ret, i;
+ 
+ 	if (!table || !table->table ||!table->table->entries ||
+ 	    table->table->entries_size == 0 ||
+@@ -1135,8 +1158,11 @@
+ free_counters:
+ 	if (newinfo->counters)
+ 		vfree(newinfo->counters);
+-	if (newinfo->chainstack)
++	if (newinfo->chainstack) {
++		for (i = 0; i < smp_num_cpus; i++)
++			vfree(newinfo->chainstack[i]);
+ 		vfree(newinfo->chainstack);
++	}
+ free_entries:
+ 	vfree(newinfo->entries);
+ free_newinfo:
+@@ -1146,6 +1172,8 @@
+ 
+ void ebt_unregister_table(struct ebt_table *table)
+ {
++	int i;
++
+ 	if (!table) {
+ 		BUGPRINT("Request to unregister NULL table!!!\n");
+ 		return;
+@@ -1159,8 +1187,11 @@
+ 		vfree(table->private->counters);
+ 	if (table->private->entries)
+ 		vfree(table->private->entries);
+-	if (table->private->chainstack)
++	if (table->private->chainstack) {
++		for (i = 0; i < smp_num_cpus; i++)
++			vfree(table->private->chainstack[i]);
+ 		vfree(table->private->chainstack);
++	}
+ 	vfree(table->private);
+ 	MOD_DEC_USE_COUNT;
+ }
+@@ -1263,52 +1294,65 @@
+ }
+ 
+ // called with ebt_mutex down
+-static int copy_everything_to_user(struct ebt_table *t, void *user, int *len)
++static int copy_everything_to_user(struct ebt_table *t, void *user,
++   int *len, int cmd)
+ {
+ 	struct ebt_replace tmp;
+-	struct ebt_table_info *info = t->private;
+-	struct ebt_counter *counterstmp;
+-	int i;
++	struct ebt_counter *counterstmp, *oldcounters;
++	unsigned int entries_size, nentries;
++	char *entries;
++
++	if (cmd == EBT_SO_GET_ENTRIES) {
++		entries_size = t->private->entries_size;
++		nentries = t->private->nentries;
++		entries = t->private->entries;
++		oldcounters = t->private->counters;
++	} else {
++		entries_size = t->table->entries_size;
++		nentries = t->table->nentries;
++		entries = t->table->entries;
++		oldcounters = t->table->counters;
++	}
+ 
+ 	if (copy_from_user(&tmp, user, sizeof(tmp))) {
+ 		BUGPRINT("Cfu didn't work\n");
+ 		return -EFAULT;
+ 	}
+ 
+-	if (*len != sizeof(struct ebt_replace) + info->entries_size +
+-	   (tmp.num_counters? info->nentries * sizeof(struct ebt_counter): 0)) {
++	if (*len != sizeof(struct ebt_replace) + entries_size +
++	   (tmp.num_counters? nentries * sizeof(struct ebt_counter): 0)) {
+ 		BUGPRINT("Wrong size\n");
+ 		return -EINVAL;
+ 	}
+ 
+-	if (tmp.nentries != info->nentries) {
++	if (tmp.nentries != nentries) {
+ 		BUGPRINT("Nentries wrong\n");
+ 		return -EINVAL;
+ 	}
+ 
+-	if (tmp.entries_size != info->entries_size) {
++	if (tmp.entries_size != entries_size) {
+ 		BUGPRINT("Wrong size\n");
+ 		return -EINVAL;
+ 	}
+ 
+ 	// userspace might not need the counters
+ 	if (tmp.num_counters) {
+-		if (tmp.num_counters != info->nentries) {
++		if (tmp.num_counters != nentries) {
+ 			BUGPRINT("Num_counters wrong\n");
+ 			return -EINVAL;
+ 		}
+ 		counterstmp = (struct ebt_counter *)
+-		   vmalloc(info->nentries * sizeof(struct ebt_counter));
++		   vmalloc(nentries * sizeof(struct ebt_counter));
+ 		if (!counterstmp) {
+ 			BUGPRINT("Couldn't copy counters, out of memory\n");
+ 			return -ENOMEM;
+ 		}
+ 		write_lock_bh(&t->lock);
+-		get_counters(info, counterstmp);
++		get_counters(oldcounters, counterstmp, nentries);
+ 		write_unlock_bh(&t->lock);
+ 
+ 		if (copy_to_user(tmp.counters, counterstmp,
+-		   info->nentries * sizeof(struct ebt_counter))) {
++		   nentries * sizeof(struct ebt_counter))) {
+ 			BUGPRINT("Couldn't copy counters to userspace\n");
+ 			vfree(counterstmp);
+ 			return -EFAULT;
+@@ -1316,23 +1360,17 @@
+ 		vfree(counterstmp);
+ 	}
+ 
+-	if (copy_to_user(tmp.entries, info->entries, info->entries_size)) {
++	if (copy_to_user(tmp.entries, entries, entries_size)) {
+ 		BUGPRINT("Couldn't copy entries to userspace\n");
+ 		return -EFAULT;
+ 	}
+-	// make userspace's life easier
+-	memcpy(tmp.hook_entry, info->hook_entry,
+-	   NF_BR_NUMHOOKS * sizeof(struct ebt_entries *));
+-	for (i = 0; i < NF_BR_NUMHOOKS; i++)
+-		tmp.hook_entry[i] = (struct ebt_entries *)(((char *)
+-		   (info->hook_entry[i])) - info->entries + tmp.entries);
+ 	if (copy_to_user(user, &tmp, sizeof(struct ebt_replace))) {
+ 		BUGPRINT("Couldn't copy ebt_replace to userspace\n");
+ 		return -EFAULT;
+ 	}
+ 	// set the match/watcher/target names right
+-	return EBT_ENTRY_ITERATE(info->entries, info->entries_size,
+-	   ebt_make_names, info->entries, tmp.entries);
++	return EBT_ENTRY_ITERATE(entries, entries_size,
++	   ebt_make_names, entries, tmp.entries);
+ }
+ 
+ static int do_ebt_set_ctl(struct sock *sk,
+@@ -1368,15 +1406,21 @@
+ 
+ 	switch(cmd) {
+ 	case EBT_SO_GET_INFO:
++	case EBT_SO_GET_INIT_INFO:
+ 		if (*len != sizeof(struct ebt_replace)){
+ 			ret = -EINVAL;
+ 			up(&ebt_mutex);
+ 			break;
+ 		}
+-		tmp.nentries = t->private->nentries;
+-		tmp.entries_size = t->private->entries_size;
+-		// userspace needs this to check the chain names
+-		tmp.valid_hooks = t->valid_hooks;
++		if (cmd == EBT_SO_GET_INFO) {
++			tmp.nentries = t->private->nentries;
++			tmp.entries_size = t->private->entries_size;
++			tmp.valid_hooks = t->valid_hooks;
++		} else {
++			tmp.nentries = t->table->nentries;
++			tmp.entries_size = t->table->entries_size;
++			tmp.valid_hooks = t->table->valid_hooks;
++		}
+ 		up(&ebt_mutex);
+ 		if (copy_to_user(user, &tmp, *len) != 0){
+ 			BUGPRINT("c2u Didn't work\n");
+@@ -1387,9 +1431,10 @@
+ 		break;
+ 
+ 	case EBT_SO_GET_ENTRIES:
+-		ret = copy_everything_to_user(t, user, len);
++	case EBT_SO_GET_INIT_ENTRIES:
++		ret = copy_everything_to_user(t, user, len, cmd);
+ 		up(&ebt_mutex);
+-		break;			
++		break;
+ 
+ 	default:
+ 		up(&ebt_mutex);
+--- linux/include/linux/netfilter_bridge/ebtables.h	Tue Jul 16 18:49:15 2002
++++ ebt2.0pre11.001/include/linux/netfilter_bridge/ebtables.h	Sun Jul 14 19:19:09 2002
+@@ -29,7 +29,9 @@
+ 
+ #define EBT_SO_GET_INFO         (EBT_BASE_CTL)
+ #define EBT_SO_GET_ENTRIES      (EBT_SO_GET_INFO+1)
+-#define EBT_SO_GET_MAX          (EBT_SO_GET_ENTRIES+1)
++#define EBT_SO_GET_INIT_INFO    (EBT_SO_GET_ENTRIES+1)
++#define EBT_SO_GET_INIT_ENTRIES (EBT_SO_GET_INIT_INFO+1)
++#define EBT_SO_GET_MAX          (EBT_SO_GET_INIT_ENTRIES+1)
+ 
+ // verdicts >0 are "branches"
+ #define EBT_ACCEPT   -1
+@@ -55,9 +57,9 @@
+ 	// one standard (accept, drop, return) per hook
+ 	int policy;
+ 	// nr. of entries
+-	__u32 nentries;
++	unsigned int nentries;
+ 	// entry list
+-	__u8 data[0];
++	char data[0];
+ };
+ 
+ // used for the bitmask of struct ebt_entry
+@@ -238,7 +240,7 @@
+ 	struct ebt_entries *hook_entry[NF_BR_NUMHOOKS];
+ 	struct ebt_counter *counters;
+ 	// room to maintain the stack used for jumping from and into udc
+-	struct ebt_chainstack *chainstack;
++	struct ebt_chainstack **chainstack;
+ 	char *entries;
+ };
+ 
+--- linux/include/linux/netfilter_bridge/ebt_nat.h	Tue Jul 16 18:49:15 2002
++++ ebt2.0pre11.001/include/linux/netfilter_bridge/ebt_nat.h	Tue Jul 16 18:45:16 2002
+@@ -4,7 +4,7 @@
+ struct ebt_nat_info
+ {
+ 	unsigned char mac[ETH_ALEN];
+-	// EBT_ACCEPT, EBT_DROP or EBT_CONTINUE or EBT_RETURN
++	// EBT_ACCEPT, EBT_DROP, EBT_CONTINUE or EBT_RETURN
+ 	int target;
+ };
+ #define EBT_SNAT_TARGET "snat"

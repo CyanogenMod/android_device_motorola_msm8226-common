@@ -1,0 +1,955 @@
+--- ebtables-v2.0.3/Makefile	Tue Apr  1 22:12:30 2003
++++ ebtables-v2.0.4/Makefile	Mon Apr 21 17:56:21 2003
+@@ -1,7 +1,7 @@
+ # ebtables Makefile
+ 
+ PROGNAME:=ebtables
+-PROGVERSION:=2.0.3
++PROGVERSION:=2.0.4
+ PROGDATE:=April\ 2003
+ 
+ MANDIR?=/usr/local/man
+@@ -14,7 +14,7 @@
+ 
+ KERNEL_INCLUDES?=include/
+ 
+-ETHERTYPESPATH?=/etc/
++ETHERTYPESPATH?=/etc
+ ETHERTYPESFILE:=$(ETHERTYPESPATH)/ethertypes
+ 
+ BINPATH?=/sbin/
+--- ebtables-v2.0.3/ebtables.c	Tue Apr  1 20:08:15 2003
++++ ebtables-v2.0.4/ebtables.c	Sat May 24 23:34:22 2003
+@@ -79,6 +79,7 @@
+ 	{ "Lc"            , no_argument      , 0, 4   },
+ 	{ "Ln"            , no_argument      , 0, 5   },
+ 	{ "Lx"            , no_argument      , 0, 6   },
++	{ "Lmac2"         , no_argument      , 0, 12  },
+ 	{ "zero"          , optional_argument, 0, 'Z' },
+ 	{ "flush"         , optional_argument, 0, 'F' },
+ 	{ "policy"        , required_argument, 0, 'P' },
+@@ -367,6 +368,7 @@
+ 	tables = t;
+ }
+ 
++const char *modprobe = NULL;
+ /*
+  * blatently stolen (again) from iptables.c userspace program
+  * find out where the modprobe utility is located
+@@ -397,7 +399,7 @@
+ 	return NULL;
+ }
+ 
+-int ebtables_insmod(const char *modname, const char *modprobe)
++int ebtables_insmod(const char *modname)
+ {
+ 	char *buf = NULL;
+ 	char *argv[3];
+@@ -465,9 +467,33 @@
+  * we use replace.flags, so we can't use the following values:
+  * 0x01 == OPT_COMMAND, 0x02 == OPT_TABLE, 0x100 == OPT_ZERO
+  */
+-#define LIST_N 0x04
+-#define LIST_C 0x08
+-#define LIST_X 0x10
++#define LIST_N    0x04
++#define LIST_C    0x08
++#define LIST_X    0x10
++#define LIST_MAC2 0x20
++
++void print_mac(const char *mac)
++{
++	if (replace.flags & LIST_MAC2) {
++		int j;
++		for (j = 0; j < ETH_ALEN; j++)
++			printf("%02x%s", (unsigned char)mac[j],
++				(j==ETH_ALEN-1) ? "" : ":");
++	} else
++		printf("%s", ether_ntoa((struct ether_addr *) mac));
++}
++
++void print_mac_and_mask(const char *mac, const char *mask)
++{
++	char hlpmsk[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
++
++	print_mac(mac);
++	if (memcmp(mask, hlpmsk, 6)) {
++		printf("/");
++		print_mac(mask);
++	}
++}
++
+ /*
+  * helper function for list_rules()
+  */
+@@ -535,8 +561,6 @@
+ 			}
+ 		}
+ 		if (hlp->bitmask & EBT_SOURCEMAC) {
+-			char hlpmsk[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+-
+ 			printf("-s ");
+ 			if (hlp->invflags & EBT_ISOURCE)
+ 				printf("! ");
+@@ -555,19 +579,11 @@
+ 				printf("Broadcast");
+ 				goto endsrc;
+ 			}
+-			printf("%s", ether_ntoa((struct ether_addr *)
+-			   hlp->sourcemac));
+-			if (memcmp(hlp->sourcemsk, hlpmsk, 6)) {
+-				printf("/");
+-				printf("%s", ether_ntoa((struct ether_addr *)
+-				   hlp->sourcemsk));
+-			}
++			print_mac_and_mask(hlp->sourcemac, hlp->sourcemsk);
+ endsrc:
+ 			printf(" ");
+ 		}
+ 		if (hlp->bitmask & EBT_DESTMAC) {
+-			char hlpmsk[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+-
+ 			printf("-d ");
+ 			if (hlp->invflags & EBT_IDEST)
+ 				printf("! ");
+@@ -586,13 +602,7 @@
+ 				printf("Broadcast");
+ 				goto enddst;
+ 			}
+-			printf("%s", ether_ntoa((struct ether_addr *)
+-			   hlp->destmac));
+-			if (memcmp(hlp->destmsk, hlpmsk, 6)) {
+-				printf("/");
+-				printf("%s", ether_ntoa((struct ether_addr *)
+-				   hlp->destmsk));
+-			}
++			print_mac_and_mask(hlp->destmac, hlp->destmsk);
+ enddst:
+ 			printf(" ");
+ 		}
+@@ -1081,7 +1091,7 @@
+ 	/*
+ 	 * handle '-D chain rulenr' command
+ 	 */
+-	if (rule_nr != -1) {
++	if (rule_nr != 0) {
+ 		if (rule_nr > entries->nentries)
+ 			return -1;
+ 		/*
+@@ -1186,12 +1196,12 @@
+ 	struct ebt_u_watcher_list *w_l;
+ 	struct ebt_u_entries *entries = to_chain(), *entries2;
+ 
+-	if (rule_nr != -1) { /* command -I */
+-		if (--rule_nr > entries->nentries)
+-			print_error("rule nr too high: %d > %d", rule_nr + 1,
+-			   entries->nentries + 1);
+-	} else
+-		rule_nr = entries->nentries;
++	if (rule_nr <= 0)
++		rule_nr += entries->nentries;
++	else
++		rule_nr--;
++	if (rule_nr > entries->nentries || rule_nr < 0)
++		print_error("The specified rule number is incorrect");
+ 	/*
+ 	 * we're adding one rule
+ 	 */
+@@ -1282,6 +1292,14 @@
+ 	struct ebt_u_entry **u_e, *u_e2;
+ 	struct ebt_u_entries *entries = to_chain(), *entries2;
+ 
++	if (begin < 0)
++		begin += entries->nentries + 1;
++	if (end < 0)
++		end += entries->nentries + 1;
++
++	if (begin < 0 || begin > end || end > entries->nentries)
++		print_error("Sorry, wrong rule numbers");
++
+ 	if ((begin = check_rule_exists(begin)) == -1 ||
+ 	    (end = check_rule_exists(end)) == -1)
+ 		print_error("Sorry, rule does not exist");
+@@ -1535,24 +1553,22 @@
+ 	if (colon) {
+ 		*colon = '\0';
+ 		if (*(colon + 1) == '\0')
+-			*rule_nr_end = -1;
++			*rule_nr_end = -1; /* until the last rule */
+ 		else {
+ 			*rule_nr_end = strtol(colon + 1, &buffer, 10);
+-			if (*buffer != '\0' || *rule_nr_end < 0)
++			if (*buffer != '\0' || *rule_nr_end == 0)
+ 				return -1;
+ 		}
+ 	}
+ 	if (colon == argv)
+-		*rule_nr = 1;
++		*rule_nr = 1; /* beginning with the first rule */
+ 	else {
+ 		*rule_nr = strtol(argv, &buffer, 10);
+-		if (*buffer != '\0' || *rule_nr < 0)
++		if (*buffer != '\0' || *rule_nr == 0)
+ 			return -1;
+ 	}
+ 	if (!colon)
+ 		*rule_nr_end = *rule_nr;
+-	if (*rule_nr_end != -1 && *rule_nr > *rule_nr_end)
+-		return -1;
+ 	return 0;
+ }
+ 
+@@ -1576,7 +1592,7 @@
+ 	*flags |= mask;
+ }
+ 
+-static void get_kernel_table(const char *modprobe)
++static void get_kernel_table()
+ {
+ 	if ( !(table = find_table(replace.name)) )
+ 		print_error("Bad table name");
+@@ -1584,7 +1600,7 @@
+ 	 * get the kernel's information
+ 	 */
+ 	if (get_table(&replace)) {
+-		ebtables_insmod("ebtables", modprobe);
++		ebtables_insmod("ebtables");
+ 		if (get_table(&replace))
+ 			print_error("The kernel doesn't support the ebtables "
+ 			"%s table", replace.name);
+@@ -1620,15 +1636,14 @@
+ 	 */
+ 	int zerochain = -1;
+ 	int policy = 0;
+-	int rule_nr = -1; /* used for -[D,I] */
+-	int rule_nr_end = -1; /* used for -I */
++	int rule_nr = 0; /* used for -[D,I] */
++	int rule_nr_end = 0; /* used for -I */
+ 	struct ebt_u_target *t;
+ 	struct ebt_u_match *m;
+ 	struct ebt_u_watcher *w;
+ 	struct ebt_u_match_list *m_l;
+ 	struct ebt_u_watcher_list *w_l;
+ 	struct ebt_u_entries *entries;
+-	const char *modprobe = NULL;
+ 
+ 	opterr = 0;
+ 
+@@ -1674,7 +1689,7 @@
+ 			if (replace.flags & OPT_COMMAND)
+ 				print_error("Multiple commands not allowed");
+ 			replace.flags |= OPT_COMMAND;
+-			get_kernel_table(modprobe);
++			get_kernel_table();
+ 			if (optarg[0] == '-' || !strcmp(optarg, "!"))
+ 				print_error("No chain name specified");
+ 			if (c == 'N') {
+@@ -1758,7 +1773,8 @@
+ 			}
+ 
+ 			if (c == 'D' && optind < argc &&
+-			    argv[optind][0] != '-') {
++			    (argv[optind][0] != '-' ||
++			    (argv[optind][1] >= '0' && argv[optind][1] <= '9'))) {
+ 				if (parse_delete_rule(argv[optind],
+ 				    &rule_nr, &rule_nr_end))
+ 					print_error("Problem with the "
+@@ -1766,11 +1782,12 @@
+ 				optind++;
+ 			}
+ 			if (c == 'I') {
+-				if (optind >= argc || argv[optind][0] == '-')
++				if (optind >= argc || (argv[optind][0] == '-' &&
++				    (argv[optind][1] < '0' || argv[optind][1] > '9')))
+ 					print_error("No rulenr for -I"
+ 					            " specified");
+ 				rule_nr = strtol(argv[optind], &buffer, 10);
+-				if (*buffer != '\0' || rule_nr < 0)
++				if (*buffer != '\0')
+ 					print_error("Problem with the "
+ 					            "specified rule number");
+ 				optind++;
+@@ -1812,7 +1829,7 @@
+ 					            " not allowed");
+ 				replace.flags |= OPT_COMMAND;
+ 			}
+-			get_kernel_table(modprobe);
++			get_kernel_table();
+ 			i = -1;
+ 			if (optarg) {
+ 				if ( (i = get_hooknr(optarg)) == -1 )
+@@ -2108,6 +2125,12 @@
+ 				print_error("--Lx not compatible with --Ln");
+ 			replace.flags |= LIST_X;
+ 			break;
++		case 12 : /* Lmac2 */
++			check_option(&replace.flags, LIST_MAC2);
++			if (replace.command != 'L')
++				print_error("Use --Lmac2 with -L");
++			replace.flags |= LIST_MAC2;
++			break;
+ 		case 8 : /* atomic-commit */
+ 			replace.command = c;
+ 			if (replace.flags & OPT_COMMAND)
+@@ -2136,7 +2159,6 @@
+ 			 * possible memory leak here
+ 			 */
+ 			replace.filename = NULL;
+-			ebtables_insmod("ebtables", modprobe);
+ 			break;
+ 		case 7 : /* atomic-init */
+ 		case 10: /* atomic-save */
+@@ -2153,7 +2175,7 @@
+ 				tmp = replace.filename;
+ 				/* get the kernel table */
+ 				replace.filename = NULL;
+-				get_kernel_table(modprobe);
++				get_kernel_table();
+ 				replace.filename = tmp;
+ 			}
+ 			if (replace.nentries) {
+@@ -2320,11 +2342,8 @@
+ 				e = e->next;
+ 			}
+ 		}
+-	} else if (replace.command == 'D') {
+-		if (rule_nr != -1 && rule_nr_end == -1)
+-			rule_nr_end = entries->nentries;
++	} else if (replace.command == 'D')
+ 		delete_rule(rule_nr, rule_nr_end);
+-	}
+ 	/*
+ 	 * commands -N, -E, -X, --atomic-commit, --atomic-commit, --atomic-save,
+ 	 * --init-table fall through
+--- ebtables-v2.0.3/communication.c	Tue Apr  1 20:08:23 2003
++++ ebtables-v2.0.4/communication.c	Sun May  4 18:54:44 2003
+@@ -263,10 +263,19 @@
+ 	/* give the data to the kernel */
+ 	optlen = sizeof(struct ebt_replace) + repl->entries_size;
+ 	get_sockfd();
+-	if (setsockopt(sockfd, IPPROTO_IP, EBT_SO_SET_ENTRIES, repl, optlen))
+-		print_error("The kernel doesn't support a certain ebtables"
+-		  " extension, consider recompiling your kernel or insmod"
+-		  " the extension");
++	if (!setsockopt(sockfd, IPPROTO_IP, EBT_SO_SET_ENTRIES, repl, optlen))
++		return;
++	if (u_repl->command == 8) { /* the ebtables module may not
++	                            * yet be loaded with --atomic-commit */
++		ebtables_insmod("ebtables");
++		if (!setsockopt(sockfd, IPPROTO_IP, EBT_SO_SET_ENTRIES,
++		    repl, optlen))
++			return;
++	}
++
++	print_error("The kernel doesn't support a certain ebtables"
++		    " extension, consider recompiling your kernel or insmod"
++		    " the extension");
+ }
+ 
+ static void store_counters_in_file(char *filename, struct ebt_u_replace *repl)
+@@ -323,6 +332,7 @@
+ 			 * So, we just copy
+ 			 */
+ 			new->pcnt = old->pcnt;
++			new->bcnt = old->bcnt;
+ 			/* we've used an old counter */
+ 			old++;
+ 			/* we've set a new counter */
+--- ebtables-v2.0.3/extensions/ebt_arp.c	Fri Jan 10 00:20:17 2003
++++ ebtables-v2.0.4/extensions/ebt_arp.c	Sun May 25 11:58:48 2003
+@@ -4,6 +4,7 @@
+ #include <getopt.h>
+ #include "../include/ebtables_u.h"
+ #include "../include/ethernetdb.h"
++#include <linux/if_ether.h>
+ #include <linux/netfilter_bridge/ebt_arp.h>
+ 
+ #define ARP_OPCODE '1'
+@@ -11,6 +12,8 @@
+ #define ARP_PTYPE  '3'
+ #define ARP_IP_S   '4'
+ #define ARP_IP_D   '5'
++#define ARP_MAC_S  '6'
++#define ARP_MAC_D  '7'
+ static struct option opts[] =
+ {
+ 	{ "arp-opcode"    , required_argument, 0, ARP_OPCODE },
+@@ -19,6 +22,8 @@
+ 	{ "arp-ptype"     , required_argument, 0, ARP_PTYPE  },
+ 	{ "arp-ip-src"    , required_argument, 0, ARP_IP_S   },
+ 	{ "arp-ip-dst"    , required_argument, 0, ARP_IP_D   },
++	{ "arp-mac-src"   , required_argument, 0, ARP_MAC_S  },
++	{ "arp-mac-dst"   , required_argument, 0, ARP_MAC_D  },
+ 	{ 0 }
+ };
+ 
+@@ -43,14 +48,16 @@
+ 
+ 	printf(
+ "arp options:\n"
+-"--arp-opcode opcode            : ARP opcode (integer or string)\n"
+-"--arp-htype type               : ARP hardware type (integer or string)\n"
+-"--arp-ptype type               : ARP protocol type (hexadecimal or string)\n"
+-"--arp-ip-src [!] address[/mask]: ARP IP source specification\n"
+-"--arp-ip-dst [!] address[/mask]: ARP IP target specification\n"
++"--arp-opcode opcode             : ARP opcode (integer or string)\n"
++"--arp-htype type                : ARP hardware type (integer or string)\n"
++"--arp-ptype type                : ARP protocol type (hexadecimal or string)\n"
++"--arp-ip-src  [!] address[/mask]: ARP IP source specification\n"
++"--arp-ip-dst  [!] address[/mask]: ARP IP target specification\n"
++"--arp-mac-src [!] address[/mask]: ARP MAC source specification\n"
++"--arp-mac-dst [!] address[/mask]: ARP MAC target specification\n"
+ " opcode strings: \n");
+ 	for (i = 0; i < NUMOPCODES; i++)
+-		printf("%d = %s\n", i + 1, opcodes[i]);
++		printf(" %d = %s\n", i + 1, opcodes[i]);
+ 	printf(
+ " hardware type string: 1 = Ethernet\n"
+ " protocol type string: see "_PATH_ETHERTYPES"\n");
+@@ -67,11 +74,16 @@
+ /* defined in ebt_ip.c */
+ void parse_ip_address(char *address, uint32_t *addr, uint32_t *msk);
+ 
++/* defined in ebtables.c */
++int getmac_and_mask(char *from, char *to, char *mask);
++
+ #define OPT_OPCODE 0x01
+ #define OPT_HTYPE  0x02
+ #define OPT_PTYPE  0x04
+ #define OPT_IP_S   0x08
+ #define OPT_IP_D   0x10
++#define OPT_MAC_S  0x20
++#define OPT_MAC_D  0x40
+ static int parse(int c, char **argv, int argc, const struct ebt_u_entry *entry,
+    unsigned int *flags, struct ebt_entry_match **match)
+ {
+@@ -80,6 +92,8 @@
+ 	char *end;
+ 	uint32_t *addr;
+ 	uint32_t *mask;
++	char *maddr;
++	char *mmask;
+ 
+ 	switch (c) {
+ 	case ARP_OPCODE:
+@@ -172,6 +186,32 @@
+ 			print_error("Missing ARP IP address argument");
+ 		parse_ip_address(argv[optind - 1], addr, mask);
+ 		break;
++
++	case ARP_MAC_S:
++	case ARP_MAC_D:
++		if (c == ARP_MAC_S) {
++			check_option(flags, OPT_MAC_S);
++			maddr = arpinfo->smaddr;
++			mmask = arpinfo->smmsk;
++			arpinfo->bitmask |= EBT_ARP_SRC_MAC;
++		} else {
++			check_option(flags, OPT_MAC_D);
++			maddr = arpinfo->dmaddr;
++			mmask = arpinfo->dmmsk;
++			arpinfo->bitmask |= EBT_ARP_DST_MAC;
++		}
++		if (check_inverse(optarg)) {
++			if (c == ARP_MAC_S)
++				arpinfo->invflags |= EBT_ARP_SRC_MAC;
++			else
++				arpinfo->invflags |= EBT_ARP_DST_MAC;
++		}
++		if (optind > argc)
++			print_error("Missing ARP MAC address argument");
++		if (getmac_and_mask(argv[optind - 1], maddr, mmask))
++			print_error("Problem with ARP MAC address argument");
++		break;
++
+ 	default:
+ 		return 0;
+ 	}
+@@ -243,6 +283,20 @@
+ 			   (i == 3) ? "" : ".");
+ 		printf("%s ", mask_to_dotted(arpinfo->dmsk));
+ 	}
++	if (arpinfo->bitmask & EBT_ARP_SRC_MAC) {
++		printf("--arp-mac-src ");
++		if (arpinfo->invflags & EBT_ARP_SRC_MAC)
++			printf("! ");
++		print_mac_and_mask(arpinfo->smaddr, arpinfo->smmsk);
++		printf(" ");
++	}
++	if (arpinfo->bitmask & EBT_ARP_DST_MAC) {
++		printf("--arp-mac-dst ");
++		if (arpinfo->invflags & EBT_ARP_DST_MAC)
++			printf("! ");
++		print_mac_and_mask(arpinfo->dmaddr, arpinfo->dmmsk);
++		printf(" ");
++	}
+ }
+ 
+ static int compare(const struct ebt_entry_match *m1,
+@@ -277,6 +331,18 @@
+ 		if (arpinfo1->daddr != arpinfo2->daddr)
+ 			return 0;
+ 		if (arpinfo1->dmsk != arpinfo2->dmsk)
++			return 0;
++	}
++	if (arpinfo1->bitmask & EBT_ARP_SRC_MAC) {
++		if (arpinfo1->smaddr != arpinfo2->smaddr)
++			return 0;
++		if (arpinfo1->smmsk != arpinfo2->smmsk)
++			return 0;
++	}
++	if (arpinfo1->bitmask & EBT_ARP_DST_MAC) {
++		if (arpinfo1->dmaddr != arpinfo2->dmaddr)
++			return 0;
++		if (arpinfo1->dmmsk != arpinfo2->dmmsk)
+ 			return 0;
+ 	}
+ 	return 1;
+--- /dev/null	Thu Aug 24 11:00:32 2000
++++ ebtables-v2.0.4/extensions/ebt_pkttype.c	Thu May  1 13:59:15 2003
+@@ -0,0 +1,136 @@
++/*
++ *  ebtables ebt_pkttype
++ *
++ *  Authors:
++ *   Bart De Schuymer <bdschuym@pandora.be>
++ *
++ */
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <getopt.h>
++#include <netdb.h>
++#include "../include/ebtables_u.h"
++#include <linux/if_packet.h>
++#include <linux/netfilter_bridge/ebt_pkttype.h>
++
++char *classes[] =
++{
++	"host",
++	"broadcast",
++	"multicast",
++	"otherhost",
++	"outgoing",
++	"loopback",
++	"fastroute",
++	"\0"
++};
++
++static struct option opts[] =
++{
++	{ "pkttype-type"        , required_argument, 0, '1' },
++	{ 0 }
++};
++
++static void print_help()
++{
++	printf(
++"pkttype options:\n"
++"--pkttype-type    [!] type: class the packet belongs to\n"
++"Possible values: broadcast, multicast, host, otherhost any byte value.\n");
++}
++
++static void init(struct ebt_entry_match *match)
++{
++	struct ebt_pkttype_info *pt = (struct ebt_pkttype_info *)match->data;
++
++	pt->invert = 0;
++}
++
++static int parse(int c, char **argv, int argc, const struct ebt_u_entry *entry,
++   unsigned int *flags, struct ebt_entry_match **match)
++{
++	struct ebt_pkttype_info *ptinfo = (struct ebt_pkttype_info *)(*match)->data;
++	char *end;
++	long int i;
++
++	switch (c) {
++	case '1':
++		check_option(flags, 1);
++		if (check_inverse(optarg))
++			ptinfo->invert = 1;
++		if (optind > argc)
++			print_error("Missing pkttype class specification");
++
++		i = strtol(argv[optind - 1], &end, 16);
++		if (*end != '\0') {
++			int j = 0;
++			i = -1;
++			while (classes[j][0])
++				if (!strcasecmp(argv[optind - 1], classes[j++])) {
++					i = j - 1;
++					break;
++				}
++		}
++		if (i < 0 || i > 255)
++			print_error("Problem with specified pkttype class");
++		ptinfo->pkt_type = (uint8_t)i;
++
++		break;
++	default:
++		return 0;
++	}
++	return 1;
++}
++
++static void final_check(const struct ebt_u_entry *entry,
++   const struct ebt_entry_match *match, const char *name,
++   unsigned int hookmask, unsigned int time)
++{
++}
++
++static void print(const struct ebt_u_entry *entry,
++   const struct ebt_entry_match *match)
++{
++	struct ebt_pkttype_info *pt = (struct ebt_pkttype_info *)match->data;
++	int i = 0;
++
++	printf("--pkttype-type %s", pt->invert ? "! " : "");
++	while (classes[i++][0]);
++	if (pt->pkt_type < i - 1)
++		printf("%s ", classes[pt->pkt_type]);
++	else
++		printf("%d ", pt->pkt_type);
++}
++
++static int compare(const struct ebt_entry_match *m1,
++   const struct ebt_entry_match *m2)
++{
++	struct ebt_pkttype_info *pt1 = (struct ebt_pkttype_info *)m1->data;
++	struct ebt_pkttype_info *pt2 = (struct ebt_pkttype_info *)m2->data;
++
++	if (pt1->invert != pt2->invert ||
++	    pt1->pkt_type != pt2->pkt_type)
++		return 0;
++	return 1;
++}
++
++static struct ebt_u_match pkttype_match =
++{
++	EBT_PKTTYPE_MATCH,
++	sizeof(struct ebt_pkttype_info),
++	print_help,
++	init,
++	parse,
++	final_check,
++	print,
++	compare,
++	opts
++};
++
++static void _init(void) __attribute((constructor));
++static void _init(void)
++{
++	register_match(&pkttype_match);
++}
+--- /dev/null	Thu Aug 24 11:00:32 2000
++++ ebtables-v2.0.4/extensions/ebt_802_3.c	Mon May 12 19:08:29 2003
+@@ -0,0 +1,145 @@
++#include <stdio.h>
++#include <string.h>
++#include <stdlib.h>
++#include <getopt.h>
++#include "../include/ebtables_u.h"
++#include "../include/ethernetdb.h"
++#include <linux/netfilter_bridge/ebt_802_3.h>
++
++#define _802_3_SAP '1'
++#define _802_3_TYPE '2'
++
++static struct option opts[] =
++{
++	{ "802_3-sap"   , required_argument, 0, _802_3_SAP },
++	{ "802_3-type"  , required_argument, 0, _802_3_TYPE },
++	{ 0 }
++};
++
++static void print_help()
++{
++	printf(
++"802_3 options:\n"
++"--802_3-sap [!] protocol       : 802.3 DSAP/SSAP- 1 byte value (hex)\n"
++"  DSAP and SSAP are always the same.  One SAP applies to both fields\n"
++"--802_3-type [!] protocol      : 802.3 SNAP Type- 2 byte value (hex)\n"
++"  Type implies SAP value 0xaa\n");
++}
++
++static void init(struct ebt_entry_match *match)
++{
++	struct ebt_802_3_info *info = (struct ebt_802_3_info *)match->data;
++
++	info->invflags = 0;
++	info->bitmask = 0;
++}
++
++static int parse(int c, char **argv, int argc, const struct ebt_u_entry *entry,
++   unsigned int *flags, struct ebt_entry_match **match)
++{
++	struct ebt_802_3_info *info = (struct ebt_802_3_info *) (*match)->data;
++	unsigned int i;
++	char *end;
++
++	switch (c) {
++		case _802_3_SAP:
++			check_option(flags, _802_3_SAP);
++			if (check_inverse(optarg))
++				info->invflags |= EBT_802_3_SAP;
++
++			if (optind > argc)
++				print_error("Missing 802.3-sap argument");
++			i = strtoul(argv[optind - 1], &end, 16);
++			if (i > 255 || *end != '\0') 
++				print_error("Problem with specified "
++				            "sap hex value, %x",i);
++			info->sap = i; /* one byte, so no byte order worries */
++			info->bitmask |= EBT_802_3_SAP;
++			break;
++		case _802_3_TYPE:
++			check_option(flags, _802_3_TYPE);
++			if (check_inverse(optarg))
++				info->invflags |= EBT_802_3_TYPE;
++			if (optind > argc)
++				print_error("Missing 802.3-type argument");
++			i = strtoul(argv[optind - 1], &end, 16);
++			if (i > 65535 || *end != '\0') {
++				print_error("Problem with the specified "
++					    "type hex value, %x",i);
++			}
++			info->type = htons(i);
++			info->bitmask |= EBT_802_3_TYPE;
++			break;
++		default:
++			return 0;
++	}
++	return 1;
++}
++
++static void final_check(const struct ebt_u_entry *entry,
++   const struct ebt_entry_match *match, const char *name,
++   unsigned int hookmask, unsigned int time)
++{
++	if (!(entry->bitmask & EBT_802_3))
++		print_error("For 802.3 DSAP/SSAP filtering the protocol "
++			    "must be LENGTH");
++}
++
++static void print(const struct ebt_u_entry *entry,
++   const struct ebt_entry_match *match)
++{
++	struct ebt_802_3_info *info = (struct ebt_802_3_info *)match->data;
++
++	if (info->bitmask & EBT_802_3_SAP) {
++		printf("--802_3-sap ");
++		if (info->invflags & EBT_802_3_SAP)
++			printf("! ");
++		printf("0x%.2x ", info->sap);
++	}
++	if (info->bitmask & EBT_802_3_TYPE) {
++		printf("--802_3-type ");
++		if (info->invflags & EBT_802_3_TYPE)
++			printf("! ");
++		printf("0x%.4x ", ntohs(info->type));
++	}
++}
++
++static int compare(const struct ebt_entry_match *m1,
++   const struct ebt_entry_match *m2)
++{
++	struct ebt_802_3_info *info1 = (struct ebt_802_3_info *)m1->data;
++	struct ebt_802_3_info *info2 = (struct ebt_802_3_info *)m2->data;
++
++	if (info1->bitmask != info2->bitmask)
++		return 0;
++	if (info1->invflags != info2->invflags)
++		return 0;
++	if (info1->bitmask & EBT_802_3_SAP) {
++		if (info1->sap != info2->sap) 
++			return 0;
++	}
++	if (info1->bitmask & EBT_802_3_TYPE) {
++		if (info1->type != info2->type)
++			return 0;
++	}
++	return 1;
++}
++
++static struct ebt_u_match _802_3_match = 
++{
++	EBT_802_3_MATCH,
++	sizeof(struct ebt_802_3_info),
++	print_help,
++	init,
++	parse,
++	final_check,
++	print,
++	compare,
++	opts
++};
++
++static void _init(void) __attribute__ ((constructor));
++static void _init(void)
++{
++	        register_match(&_802_3_match);
++}
+--- ebtables-v2.0.3/extensions/Makefile	Fri Nov 22 20:44:37 2002
++++ ebtables-v2.0.4/extensions/Makefile	Mon May 12 18:55:42 2003
+@@ -1,6 +1,6 @@
+ #! /usr/bin/make
+ 
+-EXT_FUNC+=nat arp ip standard log redirect vlan mark_m mark
++EXT_FUNC+=802_3 nat arp ip standard log redirect vlan mark_m mark pkttype
+ EXT_TABLES+=filter nat broute
+ EXT_OBJS+=$(foreach T,$(EXT_FUNC), extensions/ebt_$(T).o)
+ EXT_OBJS+=$(foreach T,$(EXT_TABLES), extensions/ebtable_$(T).o)
+--- ebtables-v2.0.3/ChangeLog	Tue Apr  1 20:07:24 2003
++++ ebtables-v2.0.4/ChangeLog	Sun Jun  1 18:50:53 2003
+@@ -1,3 +1,14 @@
++20030601
++	* added --Lmac2
++	* <csv_at_bluetail.com> Chris Vitale: basic 802.3/802.2 filtering
++	  (experimental, kernel files are in the CVS)
++
++20030503
++	* added negative rule counter support
++	* bugfix: bcnt was not updated correctly
++	* <blancher_at_cartel-securite.fr> Cedric Blancher: add ARP MAC
++	  matching support
++	* added pkttype match
+ 20030402
+ 	* fixed check bug in ebt_ip.c (report from
+ 	  joe_judge_at_guardium.com).
+--- ebtables-v2.0.3/ebtables.8	Tue Apr  1 20:15:04 2003
++++ ebtables-v2.0.4/ebtables.8	Sat May  3 23:16:34 2003
+@@ -26,27 +26,27 @@
+ .SH NAME
+ ebtables (v.2.0) \- Ethernet bridge frame table administration
+ .SH SYNOPSIS
+-.BR "ebtables [-t table] -[ADI] " "chain rule-specification [match-extensions] [watcher-extensions] TARGET"
++.BR "ebtables " [ "-t table" ] " -" [ ADI ] " chain rule-specification " [ match-extensions "] [" watcher-extensions ] " TARGET"
+ .br
+-.BR "ebtables [-t table] -P " "chain " "ACCEPT | DROP | RETURN"
++.BR "ebtables " [ "-t table" ] " -P chain ACCEPT " | " DROP " | " RETURN"
+ .br
+-.BR "ebtables [-t table] -F [" "chain" "]"
++.BR "ebtables " [ "-t table" ] " -F " [ chain ]
+ .br
+-.BR "ebtables [-t table] -Z [" "chain" "]"
++.BR "ebtables " [ "-t table" ] " -Z " [ chain ]
+ .br
+-.BR "ebtables [-t table] -L [-Z] [" chain "] [ [" --Ln "] [" --Lc "] ] " | " [" --Lx "]"
++.BR "ebtables " [ "-t table" ] " -L " [ -Z "] [" " chain" "] [ [ [" --Ln "] [" --Lc "] ] | [" --Lx "] ] [" --Lmac2 "]"
+ .br
+-.BR "ebtables [-t table] -[NX] " chain
++.BR "ebtables " [ "-t table" ] " -" [ NX ] " chain"
+ .br
+-.BR "ebtables [-t table] -E " "old-chain-name new-chain-name"
++.BR "ebtables " [ "-t table" ] " -E old-chain-name new-chain-name"
+ .br
+-.BR "ebtables [-t table] --init-table"
++.BR "ebtables " [ "-t table" ] " --init-table"
+ .br
+-.BR "ebtables [-t table] [--atomic-file file] --atomic-commit
++.BR "ebtables " [ "-t table" "] [" "--atomic-file file" ] " --atomic-commit"
+ .br
+-.BR "ebtables [-t table] [--atomic-file file] --atomic-init"
++.BR "ebtables " [ "-t table" "] [" "--atomic-file file" ] " --atomic-init"
+ .br
+-.BR "ebtables [-t table] [--atomic-file file] --atomic-save"
++.BR "ebtables " [ "-t table" "] [" "--atomic-file file" ] " --atomic-save"
+ .br
+ .SH DESCRIPTION
+ .B ebtables
+@@ -171,12 +171,17 @@
+ .B "-D, --delete"
+ Delete the specified rule from the selected chain. There are two ways to
+ use this command. The first is by specifying an interval of rule numbers
+-to delete, syntax: start_nr[:end_nr]. The second usage is by specifying
+-the complete rule as it would have been specified when it was added.
++to delete, syntax: start_nr[:end_nr]. Using negative numbers is allowed, for more
++details about using negative numbers, see the -I command. The second usage is by
++specifying the complete rule as it would have been specified when it was added.
+ .TP
+ .B "-I, --insert"
+ Insert the specified rule into the selected chain at the specified rule number.
+-The number one, 1, means the head of the chain.
++If the current number of rules equals N, then the specified number can be
++between -N and N+1. For a positive number i, it holds that i and i-N-1 specify the
++same place in the chain where the rule should be inserted. The number 0 specifies
++the place past the last rule in the chain and using this number is therefore
++equivalent with using the -A command.
+ .TP
+ .B "-P, --policy"
+ Set the policy for the chain to the given target. The policy can be
+@@ -235,8 +240,14 @@
+ .B "--Ln"
+ and
+ .B "--Lc"
+-chain listing options, 
+-.B "-L."
++chain listing options.
++.br
++.B "--Lmac2"
++.br
++Shows all MAC addresses with the same length, adding leading zeroes
++if necessary. The default representation omits zeroes in the addresses
++when they are not needed.
++.br
+ All necessary
+ .B ebtables
+ commands for making the current list of
+@@ -247,7 +258,7 @@
+ supplied for the
+ .B "-L"
+ command while using the
+-.B "-Lx"
++.B "--Lx"
+ option.
+ .TP
+ .B "-N, --new-chain"
+@@ -483,6 +494,12 @@
+ .TP
+ .BR "--arp-ip-dst " "[!] \fIaddress\fP[/\fImask\fP]"
+ The ARP IP destination address specification.
++.TP
++.BR "--arp-mac-src " "[!] \fIaddress\fP[/\fImask\fP]"
++The ARP MAC source address specification.
++.TP
++.BR "--arp-mac-dst " "[!] \fIaddress\fP[/\fImask\fP]"
++The ARP MAC destination address specification.
+ .SS ip
+ Specify ip fields. These will only work if the protocol equals
+ .BR IPv4 .
+@@ -530,6 +547,14 @@
+ mark value. If only a mask is specified (start with '/') the logical AND
+ of the mark value of the frame and the user-specified mark is taken and
+ the result is compared with zero.
++.SS pkttype
++.TP
++.BR "--pkttype-type " "[!] \fItype\fP"
++Matches on the Ethernet "class" of the frame, which is determined by the
++generic networking code. Possible values: broadcast (MAC destination is
++broadcast address), multicast (MAC destination is multicast address),
++host (MAC destination is the receiving network device) or otherhost
++(none of the above).
+ .SS vlan
+ Specify 802.1Q Tag Control Information fields.
+ The protocol rule specification (frame type) should be set to
+--- ebtables-v2.0.3/include/ebtables_u.h	Sun Jan 19 12:37:52 2003
++++ ebtables-v2.0.4/include/ebtables_u.h	Sun May  4 18:51:43 2003
+@@ -208,10 +208,14 @@
+ void deliver_table(struct ebt_u_replace *repl);
+ void check_option(unsigned int *flags, unsigned int mask);
+ int check_inverse(const char option[]);
++void print_mac(const char *mac);
++void print_mac_and_mask(const char *mac, const char *mask);
++int ebtables_insmod(const char *modname);
+ void __print_bug(char *file, int line, char *format, ...);
+ #define print_bug(format, args...) \
+    __print_bug(__FILE__, __LINE__, format, ##args)
+-#define print_error(format,args...) {printf(format".\n",##args); exit(-1);}
++#define print_error(format,args...) {printf(format,##args);\
++   printf(".\n");exit(-1);}
+ #define print_memory() {printf("Ebtables: " __FILE__ \
+    " %s %d :Out of memory.\n", __FUNCTION__, __LINE__); exit(-1);}
+ 

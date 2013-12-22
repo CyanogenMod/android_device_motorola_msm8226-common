@@ -1,0 +1,16 @@
+#!/bin/bash
+#This needs to be executed from within the work version
+currdir=.
+olddir=../ebtables2/userspace/ebtables2
+regexp="find $currdir -name \"*.c\";"
+regexp=$regexp"find $currdir -name \"*.h\";find $currdir -name \"Makefile\";"
+regexp=$regexp"find $currdir -name \"ethertypes\";find $currdir -name \"ChangeLog\";"
+regexp=$regexp"find $currdir -name \"COPYING\";find $currdir -name \"INSTALL\";"
+regexp=$regexp"find $currdir -name \"THANKS\";find $currdir -name \"perf_test\" -type f;"
+regexp=$regexp"find $currdir -name \"*.8\";find $currdir -name \"ebtables-save\";"
+regexp=$regexp"find $currdir -name \"ebtables-config\";find $currdir -name \"*sysv\";"
+regexp=$regexp"find $currdir -name \"ebtables.spec\";"
+for a in `eval $regexp`
+do
+  diff -purN $olddir/$a $currdir/$a
+done

@@ -1,0 +1,2 @@
+The net/Makefile is actually unchanged w.r.t. 2.5.x, but 2.4.x changes the
+net/Makefile so we must have the 2.5.x here.

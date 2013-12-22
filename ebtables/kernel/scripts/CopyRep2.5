@@ -1,0 +1,32 @@
+#!/bin/bash
+# Copies the repository files to the working kernel directory
+# This is used on a freshly untarred kernel
+
+# 23 August 2002 - this is for the files vs kernel 2.5
+
+# Change these 2 to the appropriate directories
+# FROM points to the CVS base of ebtables
+# TO points to the base of the kernel source tree where we want the files
+export FROM=/ebtables-cvs/ebtables2/
+export TO=/usr/src/linux-2.5.37
+
+mkdir -p $TO/net/bridge/netfilter
+mkdir -p $TO/include/linux/netfilter_bridge
+
+# the non-ebtables specific files shouldn't change often
+# /bin/cp -r -f $FROM/kernel/linux2.5/* $TO/
+/bin/cp -r -f $FROM/kernel/linux2.5/net/bridge/netfilter/* $TO/net/bridge/netfilter/
+/bin/cp -r -f $FROM/kernel/linux2.5/include/linux/netfilter_bridge/* $TO/include/linux/netfilter_bridge/
+/bin/rm -r -f $TO/net/bridge/netfilter/CVS
+/bin/rm -r -f $TO/include/linux/netfilter_bridge/CVS
+
+/bin/cp -r -f $FROM/br-nf-bds/linux2.5/* $TO/
+/bin/rm -r -f $TO/CVS
+/bin/rm -r -f $TO/include/CVS
+/bin/rm -r -f $TO/include/linux/CVS
+/bin/rm -r -f $TO/net/CVS
+/bin/rm -r -f $TO/net/bridge/CVS
+/bin/rm -r -f $TO/core/CVS
+/bin/rm -r -f $TO/ipv4/CVS
+
+

@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<TITLE>Bridge-netfilter Frequently Asked Questions</TITLE>
+	<LINK rel="SHORTCUT ICON" href="">
+	<LINK rel="STYLESHEET" type="text/css" href="brnf.css">
+	<META name="description" content="Bridge-netfilter Frequently Asked Questions">
+	<META name="author" content="Bart De Schuymer">
+	<META name="keywords" content="Linux, netfilter, firewall, bridge, brouter, ebtables, iptables">
+	<META name="keywords" content="FAQ, kernel, ebtables, br-nf, brnf, bridge-nf, ethernet, nat, chains, rules, tables">
+</HEAD>
+<BODY>
+	<DIV class="banner" align="center">
+		<H1>Bridge-netfilter Frequently (and less frequently) Asked Questions</H1>
+	</DIV>
+	<A name="top"></A>
+	<P>Last modified: January 02, 2004</P>
+	<H2>Questions</H2>
+	<OL>
+		<LI class="question"><A href="#quiz0">Connection tracking</A></LI>
+		<LI class="question"><A href="#quiz1">General</A></LI>
+	</OL>
+	<H2>Answers</H2>
+	<OL>
+		<LI class="question">
+			<B><A name="quiz0">Connection tracking</A></B> 
+			<DL>
+				<DT>
+What happens when I enable connection tracking?
+				</DT>
+				<DD>
+By default, all IP packets will be seen by the connection
+tracking code. This code is called on the PF_INET/PRE_ROUTING
+and PF_INET/LOCAL_OUT hooks. For bridged packets, only the
+PRE_ROUTING connection tracking is important.
+				</DD>
+			</DL>
+			<DL>
+				<DT>
+What are the disadvantages of connection tracking on a bridging
+firewall?
+				</DT>
+				<DD>
+					<OL>
+						<LI>
+For an IP packet entering a bridge device, connection tracking
+is called before the bridge code decides what to do with the
+packet. This means that IP packets that will be discarded by
+the bridge code are tracked by connection tracking. For a router,
+the same is true, but a bridge also sees the traffic between
+hosts on the same side of a network. It's possible to prevent
+these packets from being seen by connection tracking: you can
+either drop them in the ebtables nat PREROUTING chain or use the
+iptables NOTRACK target.
+						</LI>
+						<LI>
+Fragmented IP packets (typically UDP traffic like NFS) are
+defragmented by the connection tracking code and refragmented
+before sending them out. This slows down traffic, but the
+transparancy of the firewall isn't diminished.
+						</LI>
+					</OL>
+				</DD>
+			</DL>
+			<A class=navbar href="#top">[Back to the top]</A>
+			<HR>
+		</LI>
+		<LI class="question">
+			<B><A name="quiz1">General</A></B> 
+			<DL>
+				<DT>
+What happens with IP DNAT on a to be bridged packet?
+				</DT>
+				<DD>
+If IP DNAT happened then the bridge-nf code asks the routing
+table where the packet should be sent. If it has to be sent
+over another device (not the bridge device) then the packet is
+routed (an implicit redirect). If the routing table sends the
+packet to the bridge device, then the packet is bridged but the
+MAC destination is correctly changed.
+				</DD>
+			</DL>
+			<DL>
+				<DT>
+How can I disable bridge-nf?
+				</DT>
+				<DD>
+If you don't want iptables and arptables to see bridged traffic,
+you can disable bridge-nf in the 2.6 kernel at compile time by
+disabling "Bridged IP/ARP packets filtering".
+				</DD>
+			</DL>
+			<DL>
+				<DT>
+Can I disable/enable bridge-nf specifics on-the-fly?
+				</DT>
+				<DD>
+As of kernel version 2.6.1, there are three sysctl entries for
+bridge-nf behavioral control (they can be found under
+/proc/sys/net/bridge/):
+					<UL>
+						<LI>
+bridge-nf-call-arptables - pass (1) or don't pass (0) bridged
+ARP traffic to arptables' FORWARD chain.
+						</LI>
+						<LI>
+bridge-nf-call-iptables - pass (1) or don't pass (0) bridged
+IPv4 traffic to iptables' chains.
+						</LI>
+						<LI>
+bridge-nf-filter-vlan-tagged - pass (1) or don't pass (0)
+bridged vlan-tagged ARP/IP traffic to arptables/iptables.
+						</LI>
+					</UL>
+				</DD>
+			</DL>
+			
+			<DL>
+				<DT>
+Do {ip,arp}tables see VLAN tagged IP/ARP traffic on an untagged
+bridge?
+				</DT>
+				<DD>
+Yes. Kernel versions 2.6.0-test7 and above have this
+functionality. For disabling this, see the above question.
+				</DD>
+				<DT>
+How do I let vlan-tagged traffic go through a vlan bridge port
+and the other traffic through a non-vlan bridge port?
+				</DT>
+				<DD>
+Suppose eth0 and eth0.15 are ports of br0. Without countermeasures
+all traffic, including traffic vlan-tagged with tag 15, entering
+the physical device eth0 will go through the bridge port eth0. To
+make the 15-tagged traffic go through the eth0.15 bridge port, use
+the following ebtables rule:
+<PRE>
+ebtables -t broute -A BROUTING -i eth0 --vlan-id 15 -j DROP
+</PRE>
+With the above rule, 15-tagged traffic will enter the bridge on
+the physical device eth0, will then be brouted and enter the
+bridge port eth0.15 after which it is bridged. The packet thus
+enters the BROUTING chain twice, the first time with input
+device eth0 and the second time with input device eth0.15. The
+other chains are only traversed once. All other traffic will
+be bridged with input device eth0.
+				</DD>
+				<DT>
+Do {ip,arp}tables see encapsulated 802.2/802.3 IP/ARP traffic?
+				</DT>
+				<DD>
+No. Adding this shouldn't be that hard though.
+				</DD>
+				<DT>
+Does ip6tables see any bridge IPv6 traffic?
+				</DT>
+				<DD>
+Nope, it's on the todo-list.
+				</DD>
+			</DL>
+			<A class=navbar href="#top">[Back to the top]</A>
+			<HR>
+		</LI>
+	</OL>
+</BODY>
+</HTML>

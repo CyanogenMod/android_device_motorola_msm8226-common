@@ -1,0 +1,1152 @@
+--- linux/net/core/dev.c	Wed Jul 31 19:15:22 2002
++++ ebt2.0-rc1/net/core/dev.c	Wed Jul 31 19:04:30 2002
+@@ -1385,13 +1385,6 @@
+ 
+ #if defined(CONFIG_BRIDGE) || defined(CONFIG_BRIDGE_MODULE)
+ int (*br_handle_frame_hook)(struct sk_buff *skb) = NULL;
+-#if defined(CONFIG_BRIDGE_EBT_BROUTE) || \
+-    defined(CONFIG_BRIDGE_EBT_BROUTE_MODULE)
+-unsigned int (*broute_decision) (unsigned int hook, struct sk_buff **pskb,
+-			const struct net_device *in,
+-			const struct net_device *out,
+-			int (*okfn)(struct sk_buff *)) = NULL;
+-#endif
+ #endif
+ 
+ static __inline__ int handle_bridge(struct sk_buff *skb,
+--- linux/net/bridge/br.c	Wed Jul 31 19:10:53 2002
++++ ebt2.0-rc1/net/bridge/br.c	Wed Jul 31 19:04:30 2002
+@@ -28,6 +28,14 @@
+ #include "../atm/lec.h"
+ #endif
+ 
++#if defined(CONFIG_BRIDGE_EBT_BROUTE) || \
++    defined(CONFIG_BRIDGE_EBT_BROUTE_MODULE)
++unsigned int (*broute_decision) (unsigned int hook, struct sk_buff **pskb,
++                        const struct net_device *in,
++                        const struct net_device *out,
++                        int (*okfn)(struct sk_buff *)) = NULL;
++#endif
++
+ void br_dec_use_count()
+ {
+ 	MOD_DEC_USE_COUNT;
+@@ -82,7 +90,12 @@
+ #endif
+ }
+ 
++#if defined(CONFIG_BRIDGE_EBT_BROUTE) || \
++    defined(CONFIG_BRIDGE_EBT_BROUTE_MODULE)
++EXPORT_SYMBOL(broute_decision);
++#else
+ EXPORT_NO_SYMBOLS;
++#endif
+ 
+ module_init(br_init)
+ module_exit(br_deinit)
+--- linux/net/bridge/Makefile	Wed Jul 31 19:10:53 2002
++++ ebt2.0-rc1/net/bridge/Makefile	Wed Jul 31 19:04:30 2002
+@@ -7,6 +7,12 @@
+ #
+ # Note 2! The CFLAGS definition is now in the main makefile...
+ 
++ifneq ($(CONFIG_BRIDGE_EBT_BROUTE),n)
++ifneq ($(CONFIG_BRIDGE_EBT_BROUTE),)
++export-objs := br.o
++endif
++endif
++
+ O_TARGET	:= bridge.o
+ obj-y		:= br.o br_device.o br_fdb.o br_forward.o br_if.o br_input.o \
+ 			br_ioctl.o br_notify.o br_stp.o br_stp_bpdu.o \
+--- linux/include/linux/netfilter_bridge.h	Wed Jul 31 19:15:22 2002
++++ ebt2.0-rc1/include/linux/netfilter_bridge.h	Wed Jul 31 19:04:30 2002
+@@ -28,8 +28,7 @@
+         NF_BR_PRI_FILTER_OTHER = 200,
+         NF_BR_PRI_NAT_DST_BRIDGED = -300,
+         NF_BR_PRI_NAT_DST_OTHER = 100,
+-        NF_BR_PRI_NAT_SRC_BRIDGED = -100,
+-        NF_BR_PRI_NAT_SRC_OTHER = 300,
++        NF_BR_PRI_NAT_SRC = 300,
+         NF_BR_PRI_LAST = INT_MAX,
+ };
+ 
+--- linux/net/netsyms.c	Wed Jul 31 19:15:22 2002
++++ ebt2.0-rc1/net/netsyms.c	Mon Feb 25 20:38:14 2002
+@@ -228,10 +228,6 @@
+ 
+ #if defined(CONFIG_BRIDGE) || defined(CONFIG_BRIDGE_MODULE)
+ EXPORT_SYMBOL(br_handle_frame_hook);
+-#if defined(CONFIG_BRIDGE_EBT_BROUTE) || \
+-    defined(CONFIG_BRIDGE_EBT_BROUTE_MODULE)
+-EXPORT_SYMBOL(broute_decision);
+-#endif
+ #ifdef CONFIG_INET
+ EXPORT_SYMBOL(br_ioctl_hook);
+ #endif
+--- linux/net/Makefile	Wed Jul 31 19:15:22 2002
++++ ebt2.0-rc1/net/Makefile	Wed Jul 31 19:04:30 2002
+@@ -28,7 +28,7 @@
+ endif
+ 
+ ifneq ($(CONFIG_BRIDGE),n)
+-ifneq ($CONFIG_BRIDGE),)
++ifneq ($(CONFIG_BRIDGE),)
+ subdir-$(CONFIG_BRIDGE)		+= bridge/netfilter
+ endif
+ endif
+--- linux/net/bridge/netfilter/Makefile	Wed Jul 31 19:15:22 2002
++++ ebt2.0-rc1/net/bridge/netfilter/Makefile	Wed Jul 31 19:04:30 2002
+@@ -9,7 +9,7 @@
+ 
+ O_TARGET	:= netfilter.o
+ 
+-export-objs = ebtables.o
++export-objs := ebtables.o
+ 
+ obj-$(CONFIG_BRIDGE_EBT) += ebtables.o
+ obj-$(CONFIG_BRIDGE_EBT_T_FILTER) += ebtable_filter.o
+@@ -19,8 +19,10 @@
+ obj-$(CONFIG_BRIDGE_EBT_IPF) += ebt_ip.o
+ obj-$(CONFIG_BRIDGE_EBT_ARPF) += ebt_arp.o
+ obj-$(CONFIG_BRIDGE_EBT_VLANF) += ebt_vlan.o
++obj-$(CONFIG_BRIDGE_EBT_MARKF) += ebt_mark_m.o
+ obj-$(CONFIG_BRIDGE_EBT_LOG) += ebt_log.o
+ obj-$(CONFIG_BRIDGE_EBT_SNAT) += ebt_snat.o
+ obj-$(CONFIG_BRIDGE_EBT_DNAT) += ebt_dnat.o
+ obj-$(CONFIG_BRIDGE_EBT_REDIRECT) += ebt_redirect.o
++obj-$(CONFIG_BRIDGE_EBT_MARK_T) += ebt_mark.o
+ include $(TOPDIR)/Rules.make
+--- linux/net/bridge/netfilter/Config.in	Wed Jul 31 19:15:22 2002
++++ ebt2.0-rc1/net/bridge/netfilter/Config.in	Wed Jul 31 19:04:30 2002
+@@ -9,8 +9,10 @@
+ dep_tristate '    ebt: IP filter support' CONFIG_BRIDGE_EBT_IPF $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: ARP filter support' CONFIG_BRIDGE_EBT_ARPF $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: 802.1Q VLAN filter support (EXPERIMENTAL)' CONFIG_BRIDGE_EBT_VLANF $CONFIG_BRIDGE_EBT
++dep_tristate '    ebt: mark filter support' CONFIG_BRIDGE_EBT_MARKF $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: snat target support' CONFIG_BRIDGE_EBT_SNAT $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: dnat target support' CONFIG_BRIDGE_EBT_DNAT $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: redirect target support' CONFIG_BRIDGE_EBT_REDIRECT $CONFIG_BRIDGE_EBT
++dep_tristate '    ebt: mark target support' CONFIG_BRIDGE_EBT_MARK_T $CONFIG_BRIDGE_EBT
+ dep_tristate '  Bridge: ethernet database' CONFIG_BRIDGE_DB $CONFIG_BRIDGE
+ 
+--- linux/net/bridge/netfilter/ebtable_nat.c	Wed Jul 31 19:15:22 2002
++++ ebt2.0-rc1/net/bridge/netfilter/ebtable_nat.c	Wed Jul 31 19:04:30 2002
+@@ -42,16 +42,6 @@
+   RW_LOCK_UNLOCKED, check, NULL
+ };
+ 
+-// used for snat to know if the frame comes from FORWARD or LOCAL_OUT.
+-// needed because of the bridge-nf patch (that allows use of iptables
+-// on bridged traffic)
+-// if the packet is routed, we want the ebtables stuff on POSTROUTING
+-// to be executed _after_ the iptables stuff. when it's bridged, it's
+-// the way around
+-static struct net_device __fake_net_device = {
+-        hard_header_len:        ETH_HLEN
+-};
+-
+ static unsigned int
+ ebt_nat_dst (unsigned int hook, struct sk_buff **pskb,
+    const struct net_device *in, const struct net_device *out,
+@@ -60,50 +50,11 @@
+ 	return ebt_do_table(hook, pskb, in, out, &frame_nat);
+ }
+ 
+-// let snat know this frame is routed
+-static unsigned int ebt_clear_physin (unsigned int hook, struct sk_buff **pskb,
+-   const struct net_device *in, const struct net_device *out,
+-   int (*okfn)(struct sk_buff *))
+-{
+-	(*pskb)->physindev = NULL;
+-	return NF_ACCEPT;
+-}
+-
+-// let snat know this frame is bridged
+-static unsigned int ebt_set_physin (unsigned int hook, struct sk_buff **pskb,
+-   const struct net_device *in, const struct net_device *out,
+-   int (*okfn)(struct sk_buff *))
+-{
+-	(*pskb)->physindev = &__fake_net_device;
+-	return NF_ACCEPT;
+-}
+-
+ static unsigned int ebt_nat_src (unsigned int hook, struct sk_buff **pskb,
+ 			const struct net_device *in,
+ 			const struct net_device *out,
+ 			int (*okfn)(struct sk_buff *))
+ {
+-	// this is a routed packet
+-	if ((*pskb)->physindev == NULL)
+-		return NF_ACCEPT;
+-	if ((*pskb)->physindev != &__fake_net_device)
+-		printk("ebtables (br_nat_src): physindev hack "
+-		       "doesn't work - BUG\n");
+-
+-	return ebt_do_table(hook, pskb, in, out, &frame_nat);
+-}
+-
+-static unsigned int ebt_nat_src_route (unsigned int hook, struct sk_buff **pskb,
+-   const struct net_device *in, const struct net_device *out,
+-   int (*okfn)(struct sk_buff *))
+-{
+-	// this is a bridged packet
+-	if ((*pskb)->physindev == &__fake_net_device)
+-		return NF_ACCEPT;
+-	if ((*pskb)->physindev)
+-		printk("ebtables (br_nat_src_route): physindev hack "
+-		       "doesn't work - BUG\n");
+-
+ 	return ebt_do_table(hook, pskb, in, out, &frame_nat);
+ }
+ 
+@@ -111,15 +62,9 @@
+ 	{ { NULL, NULL }, ebt_nat_dst, PF_BRIDGE, NF_BR_LOCAL_OUT,
+ 	   NF_BR_PRI_NAT_DST_OTHER},
+ 	{ { NULL, NULL }, ebt_nat_src, PF_BRIDGE, NF_BR_POST_ROUTING,
+-	   NF_BR_PRI_NAT_SRC_BRIDGED},
+-	{ { NULL, NULL }, ebt_nat_src_route, PF_BRIDGE, NF_BR_POST_ROUTING,
+-	   NF_BR_PRI_NAT_SRC_OTHER},
++	   NF_BR_PRI_NAT_SRC},
+ 	{ { NULL, NULL }, ebt_nat_dst, PF_BRIDGE, NF_BR_PRE_ROUTING,
+ 	   NF_BR_PRI_NAT_DST_BRIDGED},
+-	{ { NULL, NULL }, ebt_clear_physin, PF_BRIDGE, NF_BR_LOCAL_OUT,
+-	   NF_BR_PRI_FILTER_OTHER + 1},
+-	{ { NULL, NULL }, ebt_set_physin, PF_BRIDGE, NF_BR_FORWARD,
+-	   NF_BR_PRI_FILTER_OTHER + 1}
+ };
+ 
+ static int __init init(void)
+--- linux/net/bridge/netfilter/ebt_redirect.c	Wed Jul 31 19:15:22 2002
++++ ebt2.0-rc1/net/bridge/netfilter/ebt_redirect.c	Wed Jul 31 19:04:30 2002
+@@ -38,6 +38,10 @@
+ {
+ 	struct ebt_redirect_info *infostuff = (struct ebt_redirect_info *) data;
+ 
++	if ((hookmask & (1 << NF_BR_NUMHOOKS)) &&
++	   infostuff->target == EBT_RETURN)
++		return -EINVAL;
++	hookmask &= ~(1 << NF_BR_NUMHOOKS);
+ 	if ( (strcmp(tablename, "nat") || hookmask & ~(1 << NF_BR_PRE_ROUTING)) &&
+ 	     (strcmp(tablename, "broute") || hookmask & ~(1 << NF_BR_BROUTING)) )
+ 		return -EINVAL;
+--- /dev/null	Thu Aug 24 11:00:32 2000
++++ ebt2.0-rc1/net/bridge/netfilter/ebt_mark.c	Wed Jul 31 19:04:30 2002
+@@ -0,0 +1,73 @@
++/*
++ *  ebt_mark_t
++ *
++ *	Authors:
++ *	Bart De Schuymer <bart.de.schuymer@pandora.be>
++ *
++ *  July, 2002
++ *
++ */
++
++// The mark target can be used in any chain
++// I believe adding a mangle table just for marking is total overkill
++// Marking a frame doesn't really change anything in the frame anyway
++// The target member of the struct ebt_vlan_info provides the same
++// functionality as a separate table
++
++#include <linux/netfilter_bridge/ebtables.h>
++#include <linux/netfilter_bridge/ebt_mark_t.h>
++#include <linux/netfilter_bridge.h>
++#include <linux/skbuff.h>
++#include <linux/module.h>
++#include <net/sock.h>
++#include "../br_private.h"
++
++static int ebt_target_mark(struct sk_buff **pskb, unsigned int hooknr,
++   const struct net_device *in, const struct net_device *out,
++   const void *data, unsigned int datalen)
++{
++	struct ebt_mark_t_info *infostuff = (struct ebt_mark_t_info *) data;
++
++	if ((*pskb)->nfmark != infostuff->mark) {
++		(*pskb)->nfmark = infostuff->mark;
++		(*pskb)->nfcache |= NFC_ALTERED;
++	}
++	return infostuff->target;
++}
++
++static int ebt_target_mark_check(const char *tablename, unsigned int hookmask,
++   const struct ebt_entry *e, void *data, unsigned int datalen)
++{
++	struct ebt_mark_t_info *infostuff = (struct ebt_mark_t_info *) data;
++
++	if ((hookmask & (1 << NF_BR_NUMHOOKS)) &&
++	   infostuff->target == EBT_RETURN)
++		return -EINVAL;
++	hookmask &= ~(1 << NF_BR_NUMHOOKS);
++	if (datalen != sizeof(struct ebt_mark_t_info))
++		return -EINVAL;
++	if (infostuff->target < -NUM_STANDARD_TARGETS || infostuff->target >= 0)
++		return -EINVAL;
++	return 0;
++}
++
++static struct ebt_target mark_target =
++{
++	{NULL, NULL}, EBT_MARK_TARGET, ebt_target_mark,
++	ebt_target_mark_check, NULL, THIS_MODULE
++};
++
++static int __init init(void)
++{
++	return ebt_register_target(&mark_target);
++}
++
++static void __exit fini(void)
++{
++	ebt_unregister_target(&mark_target);
++}
++
++module_init(init);
++module_exit(fini);
++EXPORT_NO_SYMBOLS;
++MODULE_LICENSE("GPL");
+--- /dev/null	Thu Aug 24 11:00:32 2000
++++ ebt2.0-rc1/net/bridge/netfilter/ebt_mark_m.c	Wed Jul 31 19:04:30 2002
+@@ -0,0 +1,62 @@
++/*
++ *  ebt_mark_m
++ *
++ *	Authors:
++ *	Bart De Schuymer <bart.de.schuymer@pandora.be>
++ *
++ *  July, 2002
++ *
++ */
++
++#include <linux/netfilter_bridge/ebtables.h>
++#include <linux/netfilter_bridge/ebt_mark_m.h>
++#include <linux/module.h>
++
++static int ebt_filter_mark(const struct sk_buff *skb,
++   const struct net_device *in, const struct net_device *out, const void *data,
++   unsigned int datalen, const struct ebt_counter *c)
++{
++	struct ebt_mark_m_info *info = (struct ebt_mark_m_info *) data;
++
++	if (info->bitmask & EBT_MARK_OR)
++		return !(!!(skb->nfmark & info->mask) ^ info->invert);
++	return !(((skb->nfmark & info->mask) == info->mark) ^ info->invert);
++}
++
++static int ebt_mark_check(const char *tablename, unsigned int hookmask,
++   const struct ebt_entry *e, void *data, unsigned int datalen)
++{
++        struct ebt_mark_m_info *info = (struct ebt_mark_m_info *) data;
++
++	if (info->bitmask & ~EBT_MARK_MASK)
++		return -EINVAL;
++	if ((info->bitmask & EBT_MARK_OR) && (info->bitmask & EBT_MARK_AND))
++		return -EINVAL;
++	if (!info->bitmask)
++		return -EINVAL;
++	if (datalen != sizeof(struct ebt_mark_m_info)) {
++		return -EINVAL;
++	}
++	return 0;
++}
++
++static struct ebt_match filter_mark =
++{
++	{NULL, NULL}, EBT_MARK_MATCH, ebt_filter_mark, ebt_mark_check, NULL,
++	THIS_MODULE
++};
++
++static int __init init(void)
++{
++	return ebt_register_match(&filter_mark);
++}
++
++static void __exit fini(void)
++{
++	ebt_unregister_match(&filter_mark);
++}
++
++module_init(init);
++module_exit(fini);
++EXPORT_NO_SYMBOLS;
++MODULE_LICENSE("GPL");
+--- linux/net/bridge/netfilter/ebt_snat.c	Wed Jul 31 19:15:22 2002
++++ ebt2.0-rc1/net/bridge/netfilter/ebt_snat.c	Wed Jul 31 19:04:30 2002
+@@ -31,6 +31,10 @@
+ {
+ 	struct ebt_nat_info *infostuff = (struct ebt_nat_info *) data;
+ 
++	if ((hookmask & (1 << NF_BR_NUMHOOKS)) &&
++	   infostuff->target == EBT_RETURN)
++		return -EINVAL;
++	hookmask &= ~(1 << NF_BR_NUMHOOKS);
+ 	if (strcmp(tablename, "nat"))
+ 		return -EINVAL;
+ 	if (datalen != sizeof(struct ebt_nat_info))
+--- linux/net/bridge/netfilter/ebt_dnat.c	Wed Jul 31 19:15:22 2002
++++ ebt2.0-rc1/net/bridge/netfilter/ebt_dnat.c	Wed Jul 31 19:04:30 2002
+@@ -31,6 +31,10 @@
+ {
+ 	struct ebt_nat_info *infostuff = (struct ebt_nat_info *) data;
+ 
++	if ((hookmask & (1 << NF_BR_NUMHOOKS)) &&
++	   infostuff->target == EBT_RETURN)
++		return -EINVAL;
++	hookmask &= ~(1 << NF_BR_NUMHOOKS);
+ 	if ( (strcmp(tablename, "nat") ||
+ 	   (hookmask & ~((1 << NF_BR_PRE_ROUTING) | (1 << NF_BR_LOCAL_OUT)))) &&
+ 	   (strcmp(tablename, "broute") || hookmask & ~(1 << NF_BR_BROUTING)) )
+--- linux/net/bridge/netfilter/ebtables.c	Wed Jul 31 19:15:22 2002
++++ ebt2.0-rc1/net/bridge/netfilter/ebtables.c	Wed Jul 31 19:04:30 2002
+@@ -4,7 +4,7 @@
+  *  Author:
+  *  Bart De Schuymer		<bart.de.schuymer@pandora.be>
+  *
+- *  ebtables.c,v 2.0, April, 2002
++ *  ebtables.c,v 2.0, July, 2002
+  *
+  *  This code is stongly inspired on the iptables code which is
+  *  Copyright (C) 1999 Paul `Rusty' Russell & Michael J. Neuling
+@@ -50,6 +50,21 @@
+                                          ": out of memory: "format, ## args)
+ // #define MEMPRINT(format, args...)
+ 
++
++
++// Each cpu has its own set of counters, so there is no need for write_lock in
++// the softirq
++// For reading or updating the counters, the user context needs to
++// get a write_lock
++
++// The size of each set of counters is altered to get cache alignment
++#define SMP_ALIGN(x) (((x) + SMP_CACHE_BYTES-1) & ~(SMP_CACHE_BYTES-1))
++#define COUNTER_OFFSET(n) (SMP_ALIGN(n * sizeof(struct ebt_counter)))
++#define COUNTER_BASE(c, n, cpu) ((struct ebt_counter *)(((char *)c) + \
++   COUNTER_OFFSET(n) * cpu))
++
++
++
+ static void print_string(char *str);
+ 
+ static DECLARE_MUTEX(ebt_mutex);
+@@ -62,10 +77,8 @@
+ { {NULL, NULL}, EBT_STANDARD_TARGET, NULL, NULL, NULL, NULL};
+ 
+ static inline int ebt_do_watcher (struct ebt_entry_watcher *w,
+-	    const struct sk_buff *skb,
+-	    const struct net_device *in,
+-	    const struct net_device *out,
+-	    const struct ebt_counter *c)
++   const struct sk_buff *skb, const struct net_device *in,
++   const struct net_device *out, const struct ebt_counter *c)
+ {
+ 	w->u.watcher->watcher(skb, in, out, w->data,
+ 	   w->watcher_size, c);
+@@ -74,10 +87,8 @@
+ }
+ 
+ static inline int ebt_do_match (struct ebt_entry_match *m,
+-	    const struct sk_buff *skb,
+-	    const struct net_device *in,
+-	    const struct net_device *out,
+-	    const struct ebt_counter *c)
++   const struct sk_buff *skb, const struct net_device *in,
++   const struct net_device *out, const struct ebt_counter *c)
+ {
+ 	return m->u.match->match(skb, in, out, m->data,
+ 	   m->match_size, c);
+@@ -89,7 +100,51 @@
+ 		return 0;
+ 	if (!device)
+ 		return 1;
+-	return strncmp(entry, device->name, IFNAMSIZ);
++	return !!strncmp(entry, device->name, IFNAMSIZ);
++}
++
++#define FWINV(bool,invflg) ((bool) ^ !!(p->invflags & invflg))
++// process standard matches
++static inline int ebt_basic_match(struct ebt_entry *p, struct ethhdr *h,
++   const struct net_device *in, const struct net_device *out)
++{
++	int verdict, i;
++
++	if (p->bitmask & EBT_802_3) {
++		if (FWINV(ntohs(h->h_proto) >= 1536, EBT_IPROTO))
++			return 1;
++	} else if (!(p->bitmask & EBT_NOPROTO) &&
++	   FWINV(p->ethproto != h->h_proto, EBT_IPROTO))
++		return 1;
++
++	if (FWINV(ebt_dev_check(p->in, in), EBT_IIN))
++		return 1;
++	if (FWINV(ebt_dev_check(p->out, out), EBT_IOUT))
++		return 1;
++	if ((!in || !in->br_port) ? 0 : FWINV(ebt_dev_check(
++	   p->logical_in, &in->br_port->br->dev), EBT_ILOGICALIN))
++		return 1;
++	if ((!out || !out->br_port) ? 0 : FWINV(ebt_dev_check(
++	   (p->logical_out), &out->br_port->br->dev), EBT_ILOGICALOUT))
++		return 1;
++	
++	if (p->bitmask & EBT_SOURCEMAC) {
++		verdict = 0;
++		for (i = 0; i < 6; i++)
++			verdict |= (h->h_source[i] ^ p->sourcemac[i]) &
++			   p->sourcemsk[i];
++		if (FWINV(verdict != 0, EBT_ISOURCE) )
++			return 1;
++	}
++	if (p->bitmask & EBT_DESTMAC) {
++		verdict = 0;
++		for (i = 0; i < 6; i++)
++			verdict |= (h->h_dest[i] ^ p->destmac[i]) &
++			   p->destmsk[i];
++		if (FWINV(verdict != 0, EBT_IDEST) )
++			return 1;
++	}
++	return 0;
+ }
+ 
+ // Do some firewalling
+@@ -97,9 +152,9 @@
+    const struct net_device *in, const struct net_device *out,
+    struct ebt_table *table)
+ {
+-	int i, j, nentries;
++	int i, nentries;
+ 	struct ebt_entry *point;
+-	struct ebt_counter *counter_base;
++	struct ebt_counter *counter_base, *cb_base;
+ 	struct ebt_entry_target *t;
+ 	int verdict, sp = 0;
+ 	struct ebt_chainstack *cs;
+@@ -108,6 +163,8 @@
+ 	struct ebt_table_info *private = table->private;
+ 
+ 	read_lock_bh(&table->lock);
++	cb_base = COUNTER_BASE(private->counters, private->nentries, \
++	   cpu_number_map(smp_processor_id()));
+ 	if (private->chainstack)
+ 		cs = private->chainstack[cpu_number_map(smp_processor_id())];
+ 	else
+@@ -115,117 +172,83 @@
+ 	chaininfo = private->hook_entry[hook];
+ 	nentries = private->hook_entry[hook]->nentries;
+ 	point = (struct ebt_entry *)(private->hook_entry[hook]->data);
+-	#define cb_base table->private->counters + \
+-	   cpu_number_map(smp_processor_id()) * table->private->nentries
+ 	counter_base = cb_base + private->hook_entry[hook]->counter_offset;
+-	#define FWINV(bool,invflg) ((bool) ^ !!(point->invflags & invflg))
+ 	// base for chain jumps
+ 	base = (char *)chaininfo;
+ 	i = 0;
+- 	while (i < nentries) {
+-		if ( ( point->bitmask & EBT_NOPROTO ||
+-		   FWINV(point->ethproto == ((**pskb).mac.ethernet)->h_proto,
+-		      EBT_IPROTO)
+-		   || FWINV(ntohs(((**pskb).mac.ethernet)->h_proto) < 1536 &&
+-		      (point->bitmask & EBT_802_3), EBT_IPROTO) )
+-		   && FWINV(!ebt_dev_check((char *)(point->in), in), EBT_IIN)
+-		   && FWINV(!ebt_dev_check((char *)(point->out), out), EBT_IOUT)
+-		   && ((!in || !in->br_port) ? 1 : FWINV(!ebt_dev_check((char *)
+-		      (point->logical_in), &in->br_port->br->dev), EBT_ILOGICALIN))
+-		   && ((!out || !out->br_port) ? 1 :
+-		       FWINV(!ebt_dev_check((char *)
+-		      (point->logical_out), &out->br_port->br->dev), EBT_ILOGICALOUT))
+-
+-		) {
+-			if (point->bitmask & EBT_SOURCEMAC) {
+-				verdict = 0;
+-				for (j = 0; j < 6; j++)
+-					verdict |= (((**pskb).mac.ethernet)->
+-					   h_source[j] ^ point->sourcemac[j]) &
+-					   point->sourcemsk[j];
+-				if (FWINV(!!verdict, EBT_ISOURCE) )
+-					goto letscontinue;
+-			}
++	while (i < nentries) {
++		if (ebt_basic_match(point, (**pskb).mac.ethernet, in, out))
++			goto letscontinue;
+ 
+-			if (point->bitmask & EBT_DESTMAC) {
+-				verdict = 0;
+-				for (j = 0; j < 6; j++)
+-					verdict |= (((**pskb).mac.ethernet)->
+-					   h_dest[j] ^ point->destmac[j]) &
+-					   point->destmsk[j];
+-				if (FWINV(!!verdict, EBT_IDEST) )
+-					goto letscontinue;
+-			}
++		if (EBT_MATCH_ITERATE(point, ebt_do_match, *pskb, in,
++		   out, counter_base + i) != 0)
++			goto letscontinue;
+ 
+-			if (EBT_MATCH_ITERATE(point, ebt_do_match, *pskb, in,
+-			   out, counter_base + i) != 0)
+-				goto letscontinue;
++		// increase counter
++		(*(counter_base + i)).pcnt++;
+ 
+-			// increase counter
+-			(*(counter_base + i)).pcnt++;
++		// these should only watch: not modify, nor tell us
++		// what to do with the packet
++		EBT_WATCHER_ITERATE(point, ebt_do_watcher, *pskb, in,
++		   out, counter_base + i);
+ 
+-			// these should only watch: not modify, nor tell us
+-			// what to do with the packet
+-			EBT_WATCHER_ITERATE(point, ebt_do_watcher, *pskb, in,
+-			   out, counter_base + i);
+-
+-			t = (struct ebt_entry_target *)
+-			   (((char *)point) + point->target_offset);
+-			// standard target
+-			if (!t->u.target->target)
+-				verdict =
+-				   ((struct ebt_standard_target *)t)->verdict;
+-			else
+-				verdict = t->u.target->target(pskb, hook,
+-				   in, out, t->data, t->target_size);
+-			if (verdict == EBT_ACCEPT) {
+-				read_unlock_bh(&table->lock);
+-				return NF_ACCEPT;
+-			}
+-			if (verdict == EBT_DROP) {
+-				read_unlock_bh(&table->lock);
+-				return NF_DROP;
+-			}
+-			if (verdict == EBT_RETURN) {
++		t = (struct ebt_entry_target *)
++		   (((char *)point) + point->target_offset);
++		// standard target
++		if (!t->u.target->target)
++			verdict = ((struct ebt_standard_target *)t)->verdict;
++		else
++			verdict = t->u.target->target(pskb, hook,
++			   in, out, t->data, t->target_size);
++		if (verdict == EBT_ACCEPT) {
++			read_unlock_bh(&table->lock);
++			return NF_ACCEPT;
++		}
++		if (verdict == EBT_DROP) {
++			read_unlock_bh(&table->lock);
++			return NF_DROP;
++		}
++		if (verdict == EBT_RETURN) {
+ letsreturn:
+-				if (sp == 0)
+-					// act like this is EBT_CONTINUE
+-					goto letscontinue;
+-				sp--;
+-				// put all the local variables right
+-				i = cs[sp].n;
+-				chaininfo = cs[sp].chaininfo;
+-				nentries = chaininfo->nentries;
+-				point = cs[sp].e;
+-				counter_base = cb_base +
+-				   chaininfo->counter_offset;
+-				continue;
+-			}
+-			if (verdict == EBT_CONTINUE)
++			if (sp == 0) {
++				BUGPRINT("RETURN on base chain");
++				// act like this is EBT_CONTINUE
+ 				goto letscontinue;
+-			if (verdict < 0) {
+-				BUGPRINT("bogus standard verdict\n");
+-				read_unlock_bh(&table->lock);
+-				return NF_DROP;
+-			}
+-			// jump to a udc
+-			cs[sp].n = i + 1;
+-			cs[sp].chaininfo = chaininfo;
+-			cs[sp].e = (struct ebt_entry *)
+-			   (((char *)point) + point->next_offset);
+-			i = 0;
+-			chaininfo = (struct ebt_entries *) (base + verdict);
+-			if (chaininfo->distinguisher) {
+-				BUGPRINT("jump to non-chain\n");
+-				read_unlock_bh(&table->lock);
+-				return NF_DROP;
+ 			}
++			sp--;
++			// put all the local variables right
++			i = cs[sp].n;
++			chaininfo = cs[sp].chaininfo;
+ 			nentries = chaininfo->nentries;
+-			point = (struct ebt_entry *)chaininfo->data;
+-			counter_base = cb_base + chaininfo->counter_offset;
+-			sp++;
++			point = cs[sp].e;
++			counter_base = cb_base +
++			   chaininfo->counter_offset;
+ 			continue;
+ 		}
++		if (verdict == EBT_CONTINUE)
++			goto letscontinue;
++		if (verdict < 0) {
++			BUGPRINT("bogus standard verdict\n");
++			read_unlock_bh(&table->lock);
++			return NF_DROP;
++		}
++		// jump to a udc
++		cs[sp].n = i + 1;
++		cs[sp].chaininfo = chaininfo;
++		cs[sp].e = (struct ebt_entry *)
++		   (((char *)point) + point->next_offset);
++		i = 0;
++		chaininfo = (struct ebt_entries *) (base + verdict);
++		if (chaininfo->distinguisher) {
++			BUGPRINT("jump to non-chain\n");
++			read_unlock_bh(&table->lock);
++			return NF_DROP;
++		}
++		nentries = chaininfo->nentries;
++		point = (struct ebt_entry *)chaininfo->data;
++		counter_base = cb_base + chaininfo->counter_offset;
++		sp++;
++		continue;
+ letscontinue:
+ 		point = (struct ebt_entry *)
+ 		   (((char *)point) + point->next_offset);
+@@ -284,7 +307,6 @@
+ 		request_module(modulename);
+ 		ret = find_inlist_lock_noload(head, name, error, mutex);
+ 	}
+-
+ 	return ret;
+ }
+ #endif
+@@ -320,9 +342,12 @@
+ 	struct ebt_match *match;
+ 	int ret;
+ 
++	if (((char *)m) + m->match_size + sizeof(struct ebt_entry_match) >
++	   ((char *)e) + e->watchers_offset)
++		return -EINVAL;
+ 	m->u.name[EBT_FUNCTION_MAXNAMELEN - 1] = '\0';
+ 	match = find_match_lock(m->u.name, &ret, &ebt_mutex);
+-	if (!match) 
++	if (!match)
+ 		return ret;
+ 	m->u.match = match;
+ 	if (match->me)
+@@ -346,9 +371,12 @@
+ 	struct ebt_watcher *watcher;
+ 	int ret;
+ 
++	if (((char *)w) + w->watcher_size + sizeof(struct ebt_entry_watcher) >
++	   ((char *)e) + e->target_offset)
++		return -EINVAL;
+ 	w->u.name[EBT_FUNCTION_MAXNAMELEN - 1] = '\0';
+ 	watcher = find_watcher_lock(w->u.name, &ret, &ebt_mutex);
+-	if (!watcher) 
++	if (!watcher)
+ 		return ret;
+ 	w->u.watcher = watcher;
+ 	if (watcher->me)
+@@ -547,14 +575,16 @@
+ 		else
+ 			break;
+ 	}
++	// (1 << NF_BR_NUMHOOKS) tells the check functions the rule is on
++	// a base chain
+ 	if (i < NF_BR_NUMHOOKS)
+-		hookmask = (1 << hook);
++		hookmask = (1 << hook) | (1 << NF_BR_NUMHOOKS);
+ 	else {
+ 		for (i = 0; i < udc_cnt; i++)
+ 			if ((char *)(cl_s[i].cs.chaininfo) > (char *)e)
+ 				break;
+ 		if (i == 0)
+-			hookmask = (1 << hook);
++			hookmask = (1 << hook) | (1 << NF_BR_NUMHOOKS);
+ 		else
+ 			hookmask = cl_s[i - 1].hookmask;
+ 	}
+@@ -589,9 +619,10 @@
+ 			ret = -EFAULT;
+ 			goto cleanup_watchers;
+ 		}
+-	} else if (t->u.target->check &&
+-	   t->u.target->check(name, hookmask, e, t->data,
+-	   t->target_size) != 0) {
++	} else if ((e->target_offset + t->target_size +
++	   sizeof(struct ebt_entry_target) > e->next_offset) ||
++	   (t->u.target->check &&
++	   t->u.target->check(name, hookmask, e, t->data, t->target_size) != 0)){
+ 		if (t->u.target->me)
+ 			__MOD_DEC_USE_COUNT(t->u.target->me);
+ 		ret = -EFAULT;
+@@ -611,7 +642,7 @@
+ {
+ 	struct ebt_entry_target *t;
+ 
+-	if (e->bitmask == 0)
++	if ((e->bitmask & EBT_ENTRY_OR_ENTRIES) == 0)
+ 		return 0;
+ 	// we're done
+ 	if (cnt && (*cnt)-- == 0)
+@@ -643,7 +674,8 @@
+ 			// put back values of the time when this chain was called
+ 			e = cl_s[chain_nr].cs.e;
+ 			if (cl_s[chain_nr].from != -1)
+-				nentries = cl_s[cl_s[chain_nr].from].cs.chaininfo->nentries;
++				nentries =
++				cl_s[cl_s[chain_nr].from].cs.chaininfo->nentries;
+ 			else
+ 				nentries = chain->nentries;
+ 			pos = cl_s[chain_nr].cs.n;
+@@ -679,6 +711,7 @@
+ 				BUGPRINT("loop\n");
+ 				return -1;
+ 			}
++			// this can't be 0, so the above test is correct
+ 			cl_s[i].cs.n = pos + 1;
+ 			pos = 0;
+ 			cl_s[i].cs.e = ((void *)e + e->next_offset);
+@@ -784,7 +817,7 @@
+ 					vfree(newinfo->chainstack[--i]);
+ 				vfree(newinfo->chainstack);
+ 				newinfo->chainstack = NULL;
+-				break;
++				return -ENOMEM;
+ 			}
+ 		}
+ 
+@@ -824,7 +857,6 @@
+ 	//   beginning of a chain. This can only occur in chains that
+ 	//   are not accessible from any base chains, so we don't care.
+ 
+-	// we just don't trust anything
+ 	repl->name[EBT_TABLE_MAXNAMELEN - 1] = '\0';
+ 	// used to know what we need to clean up if something goes wrong
+ 	i = 0;
+@@ -841,27 +873,27 @@
+ }
+ 
+ // called under write_lock
+-static inline void get_counters(struct ebt_counter *oldcounters,
++static void get_counters(struct ebt_counter *oldcounters,
+    struct ebt_counter *counters, unsigned int nentries)
+ {
+-	int i, cpu, counter_base;
++	int i, cpu;
++	struct ebt_counter *counter_base;
+ 
+ 	// counters of cpu 0
+ 	memcpy(counters, oldcounters,
+ 	   sizeof(struct ebt_counter) * nentries);
+ 	// add other counters to those of cpu 0
+ 	for (cpu = 1; cpu < smp_num_cpus; cpu++) {
+-		counter_base = cpu * nentries;
++		counter_base = COUNTER_BASE(oldcounters, nentries, cpu);
+ 		for (i = 0; i < nentries; i++)
+-			counters[i].pcnt +=
+-			   oldcounters[counter_base + i].pcnt;
++			counters[i].pcnt += counter_base[i].pcnt;
+ 	}
+ }
+ 
+ // replace the table
+ static int do_replace(void *user, unsigned int len)
+ {
+-	int ret, i;
++	int ret, i, countersize;
+ 	struct ebt_table_info *newinfo;
+ 	struct ebt_replace tmp;
+ 	struct ebt_table *t;
+@@ -869,7 +901,7 @@
+ 	// used to be able to unlock earlier
+ 	struct ebt_table_info *table;
+ 
+- 	if (copy_from_user(&tmp, user, sizeof(tmp)) != 0)
++	if (copy_from_user(&tmp, user, sizeof(tmp)) != 0)
+ 		return -EFAULT;
+ 
+ 	if (len != sizeof(tmp) + tmp.entries_size) {
+@@ -881,28 +913,19 @@
+ 		BUGPRINT("Entries_size never zero\n");
+ 		return -EINVAL;
+ 	}
++	countersize = COUNTER_OFFSET(tmp.nentries) * smp_num_cpus;
+ 	newinfo = (struct ebt_table_info *)
+-	   vmalloc(sizeof(struct ebt_table_info));
++	   vmalloc(sizeof(struct ebt_table_info) + countersize);
+ 	if (!newinfo)
+ 		return -ENOMEM;
+ 
+-	if (tmp.nentries) {
+-		newinfo->counters = (struct ebt_counter *)vmalloc(
+-		   sizeof(struct ebt_counter) * tmp.nentries * smp_num_cpus);
+-		if (!newinfo->counters) {
+-			ret = -ENOMEM;
+-			goto free_newinfo;
+-		}
+-		memset(newinfo->counters, 0,
+-		   sizeof(struct ebt_counter) * tmp.nentries * smp_num_cpus);
+-	}
+-	else
+-		newinfo->counters = NULL;
++	if (countersize)
++		memset(newinfo->counters, 0, countersize);
+ 
+ 	newinfo->entries = (char *)vmalloc(tmp.entries_size);
+ 	if (!newinfo->entries) {
+ 		ret = -ENOMEM;
+-		goto free_counters;
++		goto free_newinfo;
+ 	}
+ 	if (copy_from_user(
+ 	   newinfo->entries, tmp.entries, tmp.entries_size) != 0) {
+@@ -933,7 +956,7 @@
+ 
+ 	t = find_table_lock(tmp.name, &ret, &ebt_mutex);
+ 	if (!t)
+-		goto free_unlock;
++		goto free_iterate;
+ 
+ 	// the table doesn't like it
+ 	if (t->check && (ret = t->check(newinfo, tmp.valid_hooks)))
+@@ -974,8 +997,6 @@
+ 	   ebt_cleanup_entry, NULL);
+ 
+ 	vfree(table->entries);
+-	if (table->counters)
+-		vfree(table->counters);
+ 	if (table->chainstack) {
+ 		for (i = 0; i < smp_num_cpus; i++)
+ 			vfree(table->chainstack[i]);
+@@ -989,6 +1010,7 @@
+ 
+ free_unlock:
+ 	up(&ebt_mutex);
++free_iterate:
+ 	EBT_ENTRY_ITERATE(newinfo->entries, newinfo->entries_size,
+ 	   ebt_cleanup_entry, NULL);
+ free_counterstmp:
+@@ -1003,9 +1025,6 @@
+ free_entries:
+ 	if (newinfo->entries)
+ 		vfree(newinfo->entries);
+-free_counters:
+-	if (newinfo->counters)
+-		vfree(newinfo->counters);
+ free_newinfo:
+ 	if (newinfo)
+ 		vfree(newinfo);
+@@ -1090,7 +1109,7 @@
+ int ebt_register_table(struct ebt_table *table)
+ {
+ 	struct ebt_table_info *newinfo;
+-	int ret, i;
++	int ret, i, countersize;
+ 
+ 	if (!table || !table->table ||!table->table->entries ||
+ 	    table->table->entries_size == 0 ||
+@@ -1099,8 +1118,9 @@
+ 		return -EINVAL;
+ 	}
+ 
++	countersize = COUNTER_OFFSET(table->table->nentries) * smp_num_cpus;
+ 	newinfo = (struct ebt_table_info *)
+-	   vmalloc(sizeof(struct ebt_table_info));
++	   vmalloc(sizeof(struct ebt_table_info) + countersize);
+ 	ret = -ENOMEM;
+ 	if (!newinfo)
+ 		return -ENOMEM;
+@@ -1112,24 +1132,15 @@
+ 	memcpy(newinfo->entries, table->table->entries,
+ 	   table->table->entries_size);
+ 
+-	if (table->table->nentries) {
+-		newinfo->counters = (struct ebt_counter *)
+-		   vmalloc(table->table->nentries *
+-		   sizeof(struct ebt_counter) * smp_num_cpus);
+-		if (!newinfo->counters)
+-			goto free_entries;
+-		memset(newinfo->counters, 0, table->table->nentries *
+-		   sizeof(struct ebt_counter) * smp_num_cpus);
+-	}
+-	else
+-		newinfo->counters = NULL;
++	if (countersize)
++		memset(newinfo->counters, 0, countersize);
+ 
+ 	// fill in newinfo and parse the entries
+ 	newinfo->chainstack = NULL;
+ 	ret = translate_table(table->table, newinfo);
+ 	if (ret != 0) {
+ 		BUGPRINT("Translate_table failed\n");
+-		goto free_counters;
++		goto free_chainstack;
+ 	}
+ 
+ 	if (table->check && table->check(newinfo, table->valid_hooks)) {
+@@ -1141,7 +1152,7 @@
+ 	table->lock = RW_LOCK_UNLOCKED;
+ 	ret = down_interruptible(&ebt_mutex);
+ 	if (ret != 0)
+-		goto free_counters;
++		goto free_chainstack;
+ 
+ 	if (list_named_find(&ebt_tables, table->name)) {
+ 		ret = -EEXIST;
+@@ -1155,15 +1166,12 @@
+ 	return 0;
+ free_unlock:
+ 	up(&ebt_mutex);
+-free_counters:
+-	if (newinfo->counters)
+-		vfree(newinfo->counters);
++free_chainstack:
+ 	if (newinfo->chainstack) {
+ 		for (i = 0; i < smp_num_cpus; i++)
+ 			vfree(newinfo->chainstack[i]);
+ 		vfree(newinfo->chainstack);
+ 	}
+-free_entries:
+ 	vfree(newinfo->entries);
+ free_newinfo:
+ 	vfree(newinfo);
+@@ -1183,8 +1191,6 @@
+ 	up(&ebt_mutex);
+ 	EBT_ENTRY_ITERATE(table->private->entries,
+ 	   table->private->entries_size, ebt_cleanup_entry, NULL);
+-	if (table->private->counters)
+-		vfree(table->private->counters);
+ 	if (table->private->entries)
+ 		vfree(table->private->entries);
+ 	if (table->private->chainstack) {
+@@ -1219,7 +1225,6 @@
+ 	}
+ 
+ 	hlp.name[EBT_TABLE_MAXNAMELEN - 1] = '\0';
+-
+ 	t = find_table_lock(hlp.name, &ret, &ebt_mutex);
+ 	if (!t)
+ 		goto free_tmp;
+@@ -1344,7 +1349,7 @@
+ 		counterstmp = (struct ebt_counter *)
+ 		   vmalloc(nentries * sizeof(struct ebt_counter));
+ 		if (!counterstmp) {
+-			BUGPRINT("Couldn't copy counters, out of memory\n");
++			MEMPRINT("Couldn't copy counters, out of memory\n");
+ 			return -ENOMEM;
+ 		}
+ 		write_lock_bh(&t->lock);
+--- linux/include/linux/netfilter_bridge/ebtables.h	Wed Jul 31 19:15:22 2002
++++ ebt2.0-rc1/include/linux/netfilter_bridge/ebtables.h	Wed Jul 31 19:04:30 2002
+@@ -12,9 +12,9 @@
+ 
+ #ifndef __LINUX_BRIDGE_EFF_H
+ #define __LINUX_BRIDGE_EFF_H
+-#include <linux/if.h> // IFNAMSIZ
++#include <linux/if.h>
+ #include <linux/netfilter_bridge.h>
+-#include <linux/if_ether.h> // ETH_ALEN
++#include <linux/if_ether.h>
+ 
+ #define EBT_TABLE_MAXNAMELEN 32
+ #define EBT_CHAIN_MAXNAMELEN EBT_TABLE_MAXNAMELEN
+@@ -46,10 +46,10 @@
+ };
+ 
+ struct ebt_entries {
+-	// this field is always set to zero (including userspace).
++	// this field is always set to zero
+ 	// See EBT_ENTRY_OR_ENTRIES.
+ 	// Must be same size as ebt_entry.bitmask
+-	__u32 distinguisher;
++	unsigned int distinguisher;
+ 	// the chain name
+ 	char name[EBT_CHAIN_MAXNAMELEN];
+ 	// counter offset for this chain
+@@ -133,27 +133,27 @@
+ // one entry
+ struct ebt_entry {
+ 	// this needs to be the first field
+-	__u32 bitmask;
+-	__u32 invflags;
++	unsigned int bitmask;
++	unsigned int invflags;
+ 	__u16 ethproto;
+ 	// the physical in-dev
+-	__u8 in[IFNAMSIZ];
++	char in[IFNAMSIZ];
+ 	// the logical in-dev
+-	__u8 logical_in[IFNAMSIZ];
++	char logical_in[IFNAMSIZ];
+ 	// the physical out-dev
+-	__u8 out[IFNAMSIZ];
++	char out[IFNAMSIZ];
+ 	// the logical out-dev
+-	__u8 logical_out[IFNAMSIZ];
+-	__u8 sourcemac[ETH_ALEN];
+-	__u8 sourcemsk[ETH_ALEN];
+-	__u8 destmac[ETH_ALEN];
+-	__u8 destmsk[ETH_ALEN];
++	char logical_out[IFNAMSIZ];
++	unsigned char sourcemac[ETH_ALEN];
++	unsigned char sourcemsk[ETH_ALEN];
++	unsigned char destmac[ETH_ALEN];
++	unsigned char destmsk[ETH_ALEN];
+ 	// sizeof ebt_entry + matches
+-	__u16 watchers_offset;
++	unsigned int watchers_offset;
+ 	// sizeof ebt_entry + matches + watchers
+-	__u16 target_offset;
++	unsigned int target_offset;
+ 	// sizeof ebt_entry + matches + watchers + target
+-	__u16 next_offset;
++	unsigned int next_offset;
+ 	unsigned char elems[0];
+ };
+ 
+@@ -238,10 +238,10 @@
+ 	unsigned int nentries;
+ 	// pointers to the start of the chains
+ 	struct ebt_entries *hook_entry[NF_BR_NUMHOOKS];
+-	struct ebt_counter *counters;
+ 	// room to maintain the stack used for jumping from and into udc
+ 	struct ebt_chainstack **chainstack;
+ 	char *entries;
++	struct ebt_counter counters[0] __attribute__((aligned(SMP_CACHE_BYTES)));
+ };
+ 
+ struct ebt_table
+--- /dev/null	Thu Aug 24 11:00:32 2000
++++ ebt2.0-rc1/include/linux/netfilter_bridge/ebt_mark_t.h	Wed Jul 31 19:04:30 2002
+@@ -0,0 +1,12 @@
++#ifndef __LINUX_BRIDGE_EBT_MARK_T_H
++#define __LINUX_BRIDGE_EBT_MARK_T_H
++
++struct ebt_mark_t_info
++{
++	unsigned long mark;
++	// EBT_ACCEPT, EBT_DROP or EBT_CONTINUE or EBT_RETURN
++	int target;
++};
++#define EBT_MARK_TARGET "mark"
++
++#endif
+--- /dev/null	Thu Aug 24 11:00:32 2000
++++ ebt2.0-rc1/include/linux/netfilter_bridge/ebt_mark_m.h	Wed Jul 31 19:04:30 2002
+@@ -0,0 +1,15 @@
++#ifndef __LINUX_BRIDGE_EBT_MARK_M_H
++#define __LINUX_BRIDGE_EBT_MARK_M_H
++
++#define EBT_MARK_AND 0x01
++#define EBT_MARK_OR 0x02
++#define EBT_MARK_MASK (EBT_MARK_AND | EBT_MARK_OR)
++struct ebt_mark_m_info
++{
++	unsigned long mark, mask;
++	__u8 invert;
++	__u8 bitmask;
++};
++#define EBT_MARK_MATCH "mark_m"
++
++#endif

@@ -1,0 +1,67 @@
+#!/usr/bin/perl -w
+# A script that imports text arptables rules. Similar to iptables-restore.
+
+use strict;
+my $tool = "__EXEC_PATH__/arptables";
+my $table;
+my $rc;
+my $line;
+
+# ==============================
+# clear_arptables
+# - sets policy to accept
+# - flushes chains
+# - removes custom chains
+# ==============================
+sub clear_arptables {
+	$rc = `$tool -P INPUT ACCEPT`;
+	unless($? == 0) { print "ERROR: $rc\n"; exit -1 };
+	$rc = `$tool -P FORWARD ACCEPT`;
+	unless($? == 0) { print "ERROR: $rc\n"; exit -1 };
+	$rc = `$tool -P OUTPUT ACCEPT`;
+	unless($? == 0) { print "ERROR: $rc\n"; exit -1 };
+
+	$rc = `$tool -F`;
+	unless($? == 0) { print "ERROR: $rc\n"; exit -1 };
+
+	$rc = `$tool -L`;
+	unless($? == 0) { print "ERROR: $rc\n"; exit -1 };
+	
+	foreach $line (split("\n",$rc)) {
+		unless ($line =~ m/Chain\s(.*?)\s\(.*references\)/) { next; }
+		$rc = `$tool -X $1`;
+		unless($? == 0) { print "ERROR: $rc\n"; exit -1 };
+	}
+}
+# ==============================
+
+
+unless (-x $tool) { print "ERROR: $tool isn't executable\n"; exit -1; };
+&clear_arptables();
+
+$line = 0;
+while(<>) {
+    $line++;
+    if(m/^#/) { next; };
+    if(m/^$/) { next; };
+
+    if(m/^\*(.*)/) {
+        $table = $1;
+        next;
+    }
+
+    # Process a chain directive
+    if(m/^\:(.*?)\s(.*)/) {
+	# is it a user or a built in chain ?
+	if ("$2" eq "-") { 
+        	$rc = `$tool -t $table -N $1`;
+	        unless($? == 0) {print "ERROR(line $line): $rc\n"; exit -1};
+		next; 
+	}
+        $rc = `$tool -t $table -P $1 $2`;
+        unless($? == 0) {print "ERROR(line $line): $rc\n"; exit -1};
+        next;
+    }
+    $rc = `$tool -t $table $_`;
+    unless($? == 0) {print "ERROR(line $line): $rc\n"; exit -1};
+}

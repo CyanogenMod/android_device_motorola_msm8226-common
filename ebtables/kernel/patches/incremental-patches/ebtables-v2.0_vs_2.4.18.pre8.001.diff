@@ -1,0 +1,518 @@
+--- linux/net/bridge/netfilter/Makefile	Thu Jun  6 19:51:14 2002
++++ ebt2.0pre8.001/net/bridge/netfilter/Makefile	Thu Jun  6 19:06:22 2002
+@@ -20,6 +20,7 @@
+ obj-$(CONFIG_BRIDGE_EBT_ARPF) += ebt_arp.o
+ obj-$(CONFIG_BRIDGE_EBT_VLANF) += ebt_vlan.o
+ obj-$(CONFIG_BRIDGE_EBT_LOG) += ebt_log.o
+-obj-$(CONFIG_BRIDGE_EBT_NAT) += ebt_nat.o
++obj-$(CONFIG_BRIDGE_EBT_SNAT) += ebt_snat.o
++obj-$(CONFIG_BRIDGE_EBT_DNAT) += ebt_dnat.o
+ obj-$(CONFIG_BRIDGE_EBT_REDIRECT) += ebt_redirect.o
+ include $(TOPDIR)/Rules.make
+--- linux/net/bridge/netfilter/Config.in	Thu Jun  6 19:51:14 2002
++++ ebt2.0pre8.001/net/bridge/netfilter/Config.in	Thu Jun  6 19:06:22 2002
+@@ -9,7 +9,8 @@
+ dep_tristate '    ebt: IP filter support' CONFIG_BRIDGE_EBT_IPF $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: ARP filter support' CONFIG_BRIDGE_EBT_ARPF $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: 802.1Q VLAN filter support (EXPERIMENTAL)' CONFIG_BRIDGE_EBT_VLANF $CONFIG_BRIDGE_EBT
+-dep_tristate '    ebt: nat target support' CONFIG_BRIDGE_EBT_NAT $CONFIG_BRIDGE_EBT
++dep_tristate '    ebt: snat target support' CONFIG_BRIDGE_EBT_SNAT $CONFIG_BRIDGE_EBT
++dep_tristate '    ebt: dnat target support' CONFIG_BRIDGE_EBT_DNAT $CONFIG_BRIDGE_EBT
+ dep_tristate '    ebt: redirect target support' CONFIG_BRIDGE_EBT_REDIRECT $CONFIG_BRIDGE_EBT
+ dep_tristate '  Bridge: ethernet database' CONFIG_BRIDGE_DB $CONFIG_BRIDGE
+ 
+--- linux/net/bridge/netfilter/ebt_nat.c	Thu Jun  6 19:51:14 2002
++++ /dev/null	Thu Aug 24 11:00:32 2000
+@@ -1,106 +0,0 @@
+-/*
+- *  ebt_nat
+- *
+- *	Authors:
+- *	Bart De Schuymer <bart.de.schuymer@pandora.be>
+- *
+- *  April, 2002
+- *
+- */
+-
+-#include <linux/netfilter_bridge/ebtables.h>
+-#include <linux/netfilter_bridge/ebt_nat.h>
+-#include <linux/netfilter_bridge.h>
+-#include <linux/skbuff.h>
+-#include <linux/module.h>
+-#include <net/sock.h>
+-
+-static __u8 ebt_target_snat(struct sk_buff **pskb, unsigned int hooknr,
+-   const struct net_device *in, const struct net_device *out,
+-   const void *data, unsigned int datalen)
+-{
+-	struct ebt_nat_info *infostuff = (struct ebt_nat_info *) data;
+-
+-	memcpy(((**pskb).mac.ethernet)->h_source, infostuff->mac,
+-	   ETH_ALEN * sizeof(unsigned char));
+-	return infostuff->target;
+-}
+-
+-static __u8 ebt_target_dnat(struct sk_buff **pskb, unsigned int hooknr,
+-   const struct net_device *in, const struct net_device *out,
+-   const void *data, unsigned int datalen)
+-{
+-	struct ebt_nat_info *infostuff = (struct ebt_nat_info *) data;
+-
+-	memcpy(((**pskb).mac.ethernet)->h_dest, infostuff->mac,
+-	   ETH_ALEN * sizeof(unsigned char));
+-	return infostuff->target;
+-}
+-
+-static int ebt_target_snat_check(const char *tablename, unsigned int hooknr,
+-   const struct ebt_entry *e, void *data, unsigned int datalen)
+-{
+-	struct ebt_nat_info *infostuff = (struct ebt_nat_info *) data;
+-
+-	if (strcmp(tablename, "nat"))
+-		return -EINVAL;
+-	if (datalen != sizeof(struct ebt_nat_info))
+-		return -EINVAL;
+-	if (hooknr != NF_BR_POST_ROUTING)
+-		return -EINVAL;
+-	if (infostuff->target >= NUM_STANDARD_TARGETS)
+-		return -EINVAL;
+-	return 0;
+-}
+-
+-static int ebt_target_dnat_check(const char *tablename, unsigned int hooknr,
+-   const struct ebt_entry *e, void *data, unsigned int datalen)
+-{
+-	struct ebt_nat_info *infostuff = (struct ebt_nat_info *) data;
+-
+-	if ( (strcmp(tablename, "nat") || 
+-	   (hooknr != NF_BR_PRE_ROUTING && hooknr != NF_BR_LOCAL_OUT)) &&
+-	   (strcmp(tablename, "broute") || hooknr != NF_BR_BROUTING) )
+-		return -EINVAL;
+-	if (datalen != sizeof(struct ebt_nat_info))
+-		return -EINVAL;
+-	if (infostuff->target >= NUM_STANDARD_TARGETS)
+-		return -EINVAL;
+-	return 0;
+-}
+-
+-static struct ebt_target snat =
+-{
+-	{NULL, NULL}, EBT_SNAT_TARGET, ebt_target_snat, ebt_target_snat_check,
+-	NULL, THIS_MODULE
+-};
+-
+-static struct ebt_target dnat =
+-{
+-	{NULL, NULL}, EBT_DNAT_TARGET, ebt_target_dnat, ebt_target_dnat_check,
+-	NULL, THIS_MODULE
+-};
+-
+-static int __init init(void)
+-{
+-	int ret;
+-	ret = ebt_register_target(&snat);
+-	if (ret != 0)
+-		return ret;
+-	ret = ebt_register_target(&dnat);
+-	if (ret == 0)
+-		return 0;
+-	ebt_unregister_target(&snat);
+-	return ret;
+-}
+-
+-static void __exit fini(void)
+-{
+-	ebt_unregister_target(&snat);
+-	ebt_unregister_target(&dnat);
+-}
+-
+-module_init(init);
+-module_exit(fini);
+-EXPORT_NO_SYMBOLS;
+-MODULE_LICENSE("GPL");
+--- /dev/null	Thu Aug 24 11:00:32 2000
++++ ebt2.0pre8.001/net/bridge/netfilter/ebt_snat.c	Thu Jun  6 19:06:22 2002
+@@ -0,0 +1,64 @@
++/*
++ *  ebt_snat
++ *
++ *	Authors:
++ *	Bart De Schuymer <bart.de.schuymer@pandora.be>
++ *
++ *  June, 2002
++ *
++ */
++
++#include <linux/netfilter_bridge/ebtables.h>
++#include <linux/netfilter_bridge/ebt_nat.h>
++#include <linux/netfilter_bridge.h>
++#include <linux/skbuff.h>
++#include <linux/module.h>
++#include <net/sock.h>
++
++static __u8 ebt_target_snat(struct sk_buff **pskb, unsigned int hooknr,
++   const struct net_device *in, const struct net_device *out,
++   const void *data, unsigned int datalen)
++{
++	struct ebt_nat_info *infostuff = (struct ebt_nat_info *) data;
++
++	memcpy(((**pskb).mac.ethernet)->h_source, infostuff->mac,
++	   ETH_ALEN * sizeof(unsigned char));
++	return infostuff->target;
++}
++
++static int ebt_target_snat_check(const char *tablename, unsigned int hooknr,
++   const struct ebt_entry *e, void *data, unsigned int datalen)
++{
++	struct ebt_nat_info *infostuff = (struct ebt_nat_info *) data;
++
++	if (strcmp(tablename, "nat"))
++		return -EINVAL;
++	if (datalen != sizeof(struct ebt_nat_info))
++		return -EINVAL;
++	if (hooknr != NF_BR_POST_ROUTING)
++		return -EINVAL;
++	if (infostuff->target >= NUM_STANDARD_TARGETS)
++		return -EINVAL;
++	return 0;
++}
++
++static struct ebt_target snat =
++{
++	{NULL, NULL}, EBT_SNAT_TARGET, ebt_target_snat, ebt_target_snat_check,
++	NULL, THIS_MODULE
++};
++
++static int __init init(void)
++{
++	return ebt_register_target(&snat);
++}
++
++static void __exit fini(void)
++{
++	ebt_unregister_target(&snat);
++}
++
++module_init(init);
++module_exit(fini);
++EXPORT_NO_SYMBOLS;
++MODULE_LICENSE("GPL");
+--- /dev/null	Thu Aug 24 11:00:32 2000
++++ ebt2.0pre8.001/net/bridge/netfilter/ebt_dnat.c	Thu Jun  6 19:06:22 2002
+@@ -0,0 +1,64 @@
++/*
++ *  ebt_dnat
++ *
++ *	Authors:
++ *	Bart De Schuymer <bart.de.schuymer@pandora.be>
++ *
++ *  June, 2002
++ *
++ */
++
++#include <linux/netfilter_bridge/ebtables.h>
++#include <linux/netfilter_bridge/ebt_nat.h>
++#include <linux/netfilter_bridge.h>
++#include <linux/skbuff.h>
++#include <linux/module.h>
++#include <net/sock.h>
++
++static __u8 ebt_target_dnat(struct sk_buff **pskb, unsigned int hooknr,
++   const struct net_device *in, const struct net_device *out,
++   const void *data, unsigned int datalen)
++{
++	struct ebt_nat_info *infostuff = (struct ebt_nat_info *) data;
++
++	memcpy(((**pskb).mac.ethernet)->h_dest, infostuff->mac,
++	   ETH_ALEN * sizeof(unsigned char));
++	return infostuff->target;
++}
++
++static int ebt_target_dnat_check(const char *tablename, unsigned int hooknr,
++   const struct ebt_entry *e, void *data, unsigned int datalen)
++{
++	struct ebt_nat_info *infostuff = (struct ebt_nat_info *) data;
++
++	if ( (strcmp(tablename, "nat") || 
++	   (hooknr != NF_BR_PRE_ROUTING && hooknr != NF_BR_LOCAL_OUT)) &&
++	   (strcmp(tablename, "broute") || hooknr != NF_BR_BROUTING) )
++		return -EINVAL;
++	if (datalen != sizeof(struct ebt_nat_info))
++		return -EINVAL;
++	if (infostuff->target >= NUM_STANDARD_TARGETS)
++		return -EINVAL;
++	return 0;
++}
++
++static struct ebt_target dnat =
++{
++	{NULL, NULL}, EBT_DNAT_TARGET, ebt_target_dnat, ebt_target_dnat_check,
++	NULL, THIS_MODULE
++};
++
++static int __init init(void)
++{
++	return ebt_register_target(&dnat);
++}
++
++static void __exit fini(void)
++{
++	ebt_unregister_target(&dnat);
++}
++
++module_init(init);
++module_exit(fini);
++EXPORT_NO_SYMBOLS;
++MODULE_LICENSE("GPL");
+--- linux/net/bridge/netfilter/ebtables.c	Thu Jun  6 19:51:15 2002
++++ ebt2.0pre8.001/net/bridge/netfilter/ebtables.c	Thu Jun  6 19:06:22 2002
+@@ -19,6 +19,7 @@
+ #include <linux/sched.h>
+ #include <linux/tty.h>
+ 
++#include <linux/kmod.h>
+ #include <linux/module.h>
+ #include <linux/vmalloc.h>
+ #include <linux/skbuff.h>
+@@ -195,6 +196,76 @@
+ 	return NF_DROP;
+ }
+ 
++/* If it succeeds, returns element and locks mutex */
++static inline void *
++find_inlist_lock_noload(struct list_head *head,
++			const char *name,
++			int *error,
++			struct semaphore *mutex)
++{
++	void *ret;
++
++	*error = down_interruptible(mutex);
++	if (*error != 0)
++		return NULL;
++
++	ret = list_named_find(head, name);
++	if (!ret) {
++		*error = -ENOENT;
++		up(mutex);
++	}
++	return ret;
++}
++
++#ifndef CONFIG_KMOD
++#define find_inlist_lock(h,n,p,e,m) find_inlist_lock_noload((h),(n),(e),(m))
++#else
++static void *
++find_inlist_lock(struct list_head *head,
++		 const char *name,
++		 const char *prefix,
++		 int *error,
++		 struct semaphore *mutex)
++{
++	void *ret;
++
++	ret = find_inlist_lock_noload(head, name, error, mutex);
++	if (!ret) {
++		char modulename[EBT_FUNCTION_MAXNAMELEN + strlen(prefix) + 1];
++		strcpy(modulename, prefix);
++		strcat(modulename, name);
++		request_module(modulename);
++		ret = find_inlist_lock_noload(head, name, error, mutex);
++	}
++
++	return ret;
++}
++#endif
++
++static inline struct ebt_table *
++find_table_lock(const char *name, int *error, struct semaphore *mutex)
++{
++	return find_inlist_lock(&ebt_tables, name, "ebtable_", error, mutex);
++}
++
++static inline struct ebt_match *
++find_match_lock(const char *name, int *error, struct semaphore *mutex)
++{
++	return find_inlist_lock(&ebt_matches, name, "ebt_", error, mutex);
++}
++
++static inline struct ebt_watcher *
++find_watcher_lock(const char *name, int *error, struct semaphore *mutex)
++{
++	return find_inlist_lock(&ebt_watchers, name, "ebt_", error, mutex);
++}
++
++static inline struct ebt_target *
++find_target_lock(const char *name, int *error, struct semaphore *mutex)
++{
++	return find_inlist_lock(&ebt_targets, name, "ebt_", error, mutex);
++}
++
+ static inline int
+ ebt_check_match(struct ebt_entry_match *m, struct ebt_entry *e,
+    const char *name, unsigned int hook, unsigned int *cnt)
+@@ -203,25 +274,20 @@
+ 	int ret;
+ 
+ 	m->u.name[EBT_FUNCTION_MAXNAMELEN - 1] = '\0';
+-	ret = down_interruptible(&ebt_mutex);
+-	if (ret != 0)
+-		return -EFAULT;
+-	if (!(match = (struct ebt_match *)
+-	   list_named_find(&ebt_matches, m->u.name))) {
+-		up(&ebt_mutex);
+-		return -ENOENT;
+-	}
++	match = find_match_lock(m->u.name, &ret, &ebt_mutex);
++	if (!match) 
++		return ret;
+ 	m->u.match = match;
++	if (match->me)
++		__MOD_INC_USE_COUNT(match->me);
++	up(&ebt_mutex);
+ 	if (match->check &&
+-	   match->check(name, hook, e, m->data,
+-	   m->match_size) != 0) {
++	   match->check(name, hook, e, m->data, m->match_size) != 0) {
+ 		BUGPRINT("match->check failed\n");
+-		up(&ebt_mutex);
++		if (match->me)
++			__MOD_DEC_USE_COUNT(match->me);
+ 		return -EINVAL;
+ 	}
+-	if (match->me)
+-		__MOD_INC_USE_COUNT(match->me);
+-	up(&ebt_mutex);
+ 	(*cnt)++;
+ 	return 0;
+ }
+@@ -233,26 +299,21 @@
+ 	struct ebt_watcher *watcher;
+ 	int ret;
+ 
+-	ret = down_interruptible(&ebt_mutex);
+-	if (ret != 0)
+-		return -EFAULT;
+ 	w->u.name[EBT_FUNCTION_MAXNAMELEN - 1] = '\0';
+-	if (!(watcher = (struct ebt_watcher *)
+-	   list_named_find(&ebt_watchers, w->u.name))) {
+-		up(&ebt_mutex);
+-		return -ENOENT;
+-	}
++	watcher = find_watcher_lock(w->u.name, &ret, &ebt_mutex);
++	if (!watcher) 
++		return ret;
+ 	w->u.watcher = watcher;
++	if (watcher->me)
++		__MOD_INC_USE_COUNT(watcher->me);
++	up(&ebt_mutex);
+ 	if (watcher->check &&
+-	   watcher->check(name, hook, e, w->data,
+-	   w->watcher_size) != 0) {
++	   watcher->check(name, hook, e, w->data, w->watcher_size) != 0) {
+ 		BUGPRINT("watcher->check failed\n");
+-		up(&ebt_mutex);
++		if (watcher->me)
++			__MOD_DEC_USE_COUNT(watcher->me);
+ 		return -EINVAL;
+ 	}
+-	if (watcher->me)
+-		__MOD_INC_USE_COUNT(watcher->me);
+-	up(&ebt_mutex);
+ 	(*cnt)++;
+ 	return 0;
+ }
+@@ -402,16 +463,10 @@
+ 	if (ret != 0)
+ 		goto cleanup_watchers;
+ 	t = (struct ebt_entry_target *)(((char *)e) + e->target_offset);
+-	ret = down_interruptible(&ebt_mutex);
+-	if (ret != 0)
+-		goto cleanup_watchers;
+ 	t->u.name[EBT_FUNCTION_MAXNAMELEN - 1] = '\0';
+-	if (!(target = (struct ebt_target *)
+-	   list_named_find(&ebt_targets, t->u.name))) {
+-		ret = -ENOENT;
+-		up(&ebt_mutex);
++	target = find_target_lock(t->u.name, &ret, &ebt_mutex);
++	if (!target) 
+ 		goto cleanup_watchers;
+-	}
+ 	if (target->me)
+ 		__MOD_INC_USE_COUNT(target->me);
+ 	up(&ebt_mutex);
+@@ -545,8 +600,8 @@
+ 	ret = EBT_ENTRY_ITERATE(newinfo->entries, newinfo->entries_size,
+ 	   ebt_check_entry, newinfo, repl->name, &i, repl->valid_hooks);
+ 	if (ret != 0) {
+-		BUGPRINT("ebt_check_entry gave fault back\n");
+-		EBT_ENTRY_ITERATE(newinfo->entries, newinfo->entries_size, ebt_cleanup_entry, &i);
++		EBT_ENTRY_ITERATE(newinfo->entries, newinfo->entries_size,
++		   ebt_cleanup_entry, &i);
+ 	}
+ 	return ret;
+ }
+@@ -640,17 +695,9 @@
+ 	if (ret != 0)
+ 		goto free_counterstmp;
+ 
+-	ret = down_interruptible(&ebt_mutex);
+-
+-	if (ret != 0)
+-		goto free_cleanup;
+-
+-	if (!(t = (struct ebt_table *)list_named_find(&ebt_tables, tmp.name))) {
+-		ret = -ENOENT;
+-		// give some help to the poor user
+-		print_string("The table is not present, try insmod\n");
++	t = find_table_lock(tmp.name, &ret, &ebt_mutex);
++	if (!t)
+ 		goto free_unlock;
+-	}
+ 
+ 	// the table doesn't like it
+ 	if (t->check && (ret = t->check(newinfo, tmp.valid_hooks)))
+@@ -700,7 +747,6 @@
+ 
+ free_unlock:
+ 	up(&ebt_mutex);
+-free_cleanup:
+ 	EBT_ENTRY_ITERATE(newinfo->entries, newinfo->entries_size,
+ 	   ebt_cleanup_entry, NULL);
+ free_counterstmp:
+@@ -912,14 +958,10 @@
+ 	}
+ 
+ 	hlp.name[EBT_TABLE_MAXNAMELEN - 1] = '\0';
+-	ret = down_interruptible(&ebt_mutex);
+-	if (ret != 0)
+-		goto free_tmp;
+ 
+-	if (!(t = (struct ebt_table *)list_named_find(&ebt_tables, hlp.name))) {
+-		ret = -EINVAL;
+-		goto unlock_mutex;
+-	}
++	t = find_table_lock(hlp.name, &ret, &ebt_mutex);
++	if (!t)
++		goto free_tmp;
+ 
+ 	if (hlp.num_counters != t->private->nentries) {
+ 		BUGPRINT("Wrong nr of counters\n");
+@@ -1092,15 +1134,9 @@
+ 	if (copy_from_user(&tmp, user, sizeof(tmp)))
+ 		return -EFAULT;
+ 
+-	ret = down_interruptible(&ebt_mutex);
+-	if (ret != 0)
++	t = find_table_lock(tmp.name, &ret, &ebt_mutex);
++	if (!t)
+ 		return ret;
+-
+-	if (!(t = (struct ebt_table *)list_named_find(&ebt_tables, tmp.name))) {
+-		print_string("Table not found, try insmod\n");
+-		up(&ebt_mutex);
+-		return -EINVAL;
+-	}
+ 
+ 	switch(cmd) {
+ 	case EBT_SO_GET_INFO:

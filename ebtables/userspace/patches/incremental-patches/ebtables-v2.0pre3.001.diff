@@ -1,0 +1,245 @@
+Adjust to the kernel's wish that the size members represent the size
+of the actual data.
+
+Make a little note in the man page about the chain naming.
+
+--- ebtables-v2.0pre2/ebtables.c	Sat Apr 13 17:37:00 2002
++++ ebtables-v2.0pre3.001/ebtables.c	Fri Apr 19 19:44:33 2002
+@@ -253,14 +253,14 @@
+ 
+ void register_match(struct ebt_u_match *m)
+ {
+-	int size = m->size;
++	int size = m->size + sizeof(struct ebt_entry_match);
+ 	struct ebt_u_match **i;
+ 
+ 	m->m = (struct ebt_entry_match *)malloc(size);
+ 	if (!m->m)
+ 		print_memory();
+ 	strcpy(m->m->u.name, m->name);
+-	m->m->match_size = size;
++	m->m->match_size = m->size;
+ 	ebt_options = merge_options
+ 	   (ebt_options, m->extra_ops, &(m->option_offset));
+ 	m->init(m->m);
+@@ -272,14 +272,14 @@
+ 
+ void register_watcher(struct ebt_u_watcher *w)
+ {
+-	int size = w->size;
++	int size = w->size + sizeof(struct ebt_entry_watcher);
+ 	struct ebt_u_watcher **i;
+ 
+ 	w->w = (struct ebt_entry_watcher *)malloc(size);
+ 	if (!w->w)
+ 		print_memory();
+ 	strcpy(w->w->u.name, w->name);
+-	w->w->watcher_size = size;
++	w->w->watcher_size = w->size;
+ 	ebt_options = merge_options
+ 	   (ebt_options, w->extra_ops, &(w->option_offset));
+ 	w->init(w->w);
+@@ -291,14 +291,14 @@
+ 
+ void register_target(struct ebt_u_target *t)
+ {
+-	int size = t->size;
++	int size = t->size + sizeof(struct ebt_entry_target);
+ 	struct ebt_u_target **i;
+ 
+ 	t->t = (struct ebt_entry_target *)malloc(size);
+ 	if (!t->t)
+ 		print_memory();
+ 	strcpy(t->t->u.name, t->name);
+-	t->t->target_size = size;
++	t->t->target_size = t->size;
+ 	ebt_options = merge_options
+ 	   (ebt_options, t->extra_ops, &(t->option_offset));
+ 	t->init(t->t);
+--- ebtables-v2.0pre2/communication.c	Wed Apr 10 22:10:49 2002
++++ ebtables-v2.0pre3.001/communication.c	Fri Apr 19 22:02:45 2002
+@@ -68,15 +68,18 @@
+ 			entries_size += sizeof(struct ebt_entry);
+ 			m_l = e->m_list;
+ 			while (m_l) {
+-				entries_size += m_l->m->match_size;
++				entries_size += m_l->m->match_size +
++				   sizeof(struct ebt_entry_match);
+ 				m_l = m_l->next;
+ 			}
+ 			w_l = e->w_list;
+ 			while (w_l) {
+-				entries_size += w_l->w->watcher_size;
++				entries_size += w_l->w->watcher_size +
++				   sizeof(struct ebt_entry_watcher);
+ 				w_l = w_l->next;
+ 			}
+-			entries_size += e->t->target_size;
++			entries_size += e->t->target_size +
++			   sizeof(struct ebt_entry_target);
+ 			e = e->next;
+ 		}
+ 		// a little sanity check
+@@ -120,20 +123,26 @@
+ 			p += sizeof(struct ebt_entry);
+ 			m_l = e->m_list;
+ 			while (m_l) {
+-				memcpy(p, m_l->m, m_l->m->match_size);
+-				p += m_l->m->match_size;
++				memcpy(p, m_l->m, m_l->m->match_size +
++				   sizeof(struct ebt_entry_match));
++				p += m_l->m->match_size +
++				   sizeof(struct ebt_entry_match);
+ 				m_l = m_l->next;
+ 			}
+ 			tmp->watchers_offset = p - base;
+ 			w_l = e->w_list;
+ 			while (w_l) {
+-				memcpy(p, w_l->w, w_l->w->watcher_size);
+-				p += w_l->w->watcher_size;
++				memcpy(p, w_l->w, w_l->w->watcher_size +
++				   sizeof(struct ebt_entry_watcher));
++				p += w_l->w->watcher_size +
++				   sizeof(struct ebt_entry_watcher);
+ 				w_l = w_l->next;
+ 			}
+ 			tmp->target_offset = p - base;
+-			memcpy(p, e->t, e->t->target_size);
+-			p += e->t->target_size;
++			memcpy(p, e->t, e->t->target_size +
++			   sizeof(struct ebt_entry_target));
++			p += e->t->target_size +
++			   sizeof(struct ebt_entry_target);
+ 			tmp->next_offset = p - base;
+ 			e = e->next;
+ 		}
+@@ -229,10 +238,11 @@
+ 	   malloc(sizeof(struct ebt_u_match_list));
+ 	if (!new)
+ 		print_memory();
+-	new->m = (struct ebt_entry_match *)malloc(m->match_size);
++	new->m = (struct ebt_entry_match *)
++	   malloc(m->match_size + sizeof(struct ebt_entry_match));
+ 	if (!new->m)
+ 		print_memory();
+-	memcpy(new->m, m, m->match_size);
++	memcpy(new->m, m, m->match_size + sizeof(struct ebt_entry_match));
+ 	new->next = NULL;
+ 	**l = new;
+ 	*l = &new->next;
+@@ -248,13 +258,15 @@
+ {
+ 	struct ebt_u_watcher_list *new;
+ 
+-	new = (struct ebt_u_watcher_list *)malloc(sizeof(struct ebt_u_watcher_list));
++	new = (struct ebt_u_watcher_list *)
++	   malloc(sizeof(struct ebt_u_watcher_list));
+ 	if (!new)
+ 		print_memory();
+-	new->w = (struct ebt_entry_watcher *)malloc(w->watcher_size);
++	new->w = (struct ebt_entry_watcher *)
++	   malloc(w->watcher_size + sizeof(struct ebt_entry_watcher));
+ 	if (!new->w)
+ 		print_memory();
+-	memcpy(new->w, w, w->watcher_size);
++	memcpy(new->w, w, w->watcher_size + sizeof(struct ebt_entry_watcher));
+ 	new->next = NULL;
+ 	**l = new;
+ 	*l = &new->next;
+@@ -297,13 +309,15 @@
+ 		EBT_WATCHER_ITERATE(e, ebt_translate_watcher, &w_l);
+ 
+ 		t = (struct ebt_entry_target *)(((char *)e) + e->target_offset);
+-		new->t = (struct ebt_entry_target *)malloc(t->target_size);
++		new->t = (struct ebt_entry_target *)
++		   malloc(t->target_size + sizeof(struct ebt_entry_target));
+ 		if (!new->t)
+ 			print_memory();
+ 		if (find_target(t->u.name) == NULL)
+ 			print_error("Kernel target %s unsupported by "
+ 			            "userspace tool", t->u.name);
+-		memcpy(new->t, t, t->target_size);
++		memcpy(new->t, t, t->target_size +
++		   sizeof(struct ebt_entry_target));
+ 
+ 		// I love pointers
+ 		**u_e = new;
+@@ -419,7 +433,8 @@
+ 
+ 	get_sockfd();
+ 
+-	if (setsockopt(sockfd, IPPROTO_IP, BRDB_SO_SET_ALLOWDB, decision, optlen))
++	if (setsockopt(sockfd, IPPROTO_IP, BRDB_SO_SET_ALLOWDB,
++	   decision, optlen))
+ 		print_error("Sorry, br_db code probably not in kernel, "
+ 		            "try insmod br_db");
+ }
+--- ebtables-v2.0pre2/extensions/ebt_nat.c	Thu Apr 11 18:12:55 2002
++++ ebtables-v2.0pre3.001/extensions/ebt_nat.c	Fri Apr 19 19:41:04 2002
+@@ -161,7 +161,7 @@
+ static struct ebt_u_target dnat_target =
+ {
+ 	EBT_DNAT_TARGET,
+-	sizeof(struct ebt_nat_info) + sizeof(struct ebt_entry_target),
++	sizeof(struct ebt_nat_info),
+ 	print_help_d,
+ 	init_d,
+ 	parse_d,
+--- ebtables-v2.0pre2/extensions/ebt_ip.c	Wed Apr 10 23:28:40 2002
++++ ebtables-v2.0pre3.001/extensions/ebt_ip.c	Fri Apr 19 19:40:18 2002
+@@ -301,7 +301,7 @@
+ static struct ebt_u_match ip_match =
+ {
+ 	EBT_IP_MATCH,
+-	sizeof(struct ebt_ip_info) + sizeof(struct ebt_entry_match),
++	sizeof(struct ebt_ip_info),
+ 	print_help,
+ 	init,
+ 	parse,
+--- ebtables-v2.0pre2/extensions/ebt_arp.c	Wed Apr 10 23:05:29 2002
++++ ebtables-v2.0pre3.001/extensions/ebt_arp.c	Fri Apr 19 19:40:40 2002
+@@ -272,7 +272,7 @@
+ static struct ebt_u_match arp_match =
+ {
+ 	EBT_ARP_MATCH,
+-	sizeof(struct ebt_arp_info) + sizeof(struct ebt_entry_match),
++	sizeof(struct ebt_arp_info),
+ 	print_help,
+ 	init,
+ 	parse,
+--- ebtables-v2.0pre2/extensions/ebt_log.c	Wed Apr 10 23:51:18 2002
++++ ebtables-v2.0pre3.001/extensions/ebt_log.c	Fri Apr 19 19:40:52 2002
+@@ -179,7 +179,7 @@
+ static struct ebt_u_watcher log_watcher =
+ {
+ 	EBT_LOG_WATCHER,
+-	sizeof(struct ebt_log_info) + sizeof(struct ebt_entry_watcher),
++	sizeof(struct ebt_log_info),
+ 	print_help,
+ 	init,
+ 	parse,
+--- ebtables-v2.0pre2/extensions/ebt_standard.c	Thu Apr 11 18:14:07 2002
++++ ebtables-v2.0pre3.001/extensions/ebt_standard.c	Fri Apr 19 19:44:54 2002
+@@ -53,7 +53,7 @@
+ static struct ebt_u_target standard =
+ {
+ 	EBT_STANDARD_TARGET,
+-	sizeof(struct ebt_standard_target),
++	sizeof(struct ebt_standard_target) - sizeof(struct ebt_entry_target),
+ 	print_help,
+ 	init,
+ 	parse,
+--- ebtables-v2.0pre2/ebtables.8	Sun Apr 14 14:58:15 2002
++++ ebtables-v2.0pre3.001/ebtables.8	Thu Apr 18 18:44:40 2002
+@@ -86,7 +86,10 @@
+ .B OUTPUT 
+ (for altering locally generated frames before they are bridged) and 
+ .B POSTROUTING
+-(for altering frames as they are about to go out).
++(for altering frames as they are about to go out). A small note on the naming
++of chains POSTROUTING and PREROUTING: it would be more accurate to call them
++PREFORWARDING and POSTFORWARDING, but for all those who come from the iptables
++world to ebtables it is easier to have the same names.
+ .SH OPTIONS
+ The options can be divided into several different groups.
+ .SS COMMANDS

@@ -1,0 +1,16 @@
+
+
+--------------------------------------------------------------------------------
+
+  Library for ethernet bridge tables
+  Version 0.1.0
+
+  Copyright 2005 by Jens Götze
+  All rights reserved.
+
+--------------------------------------------------------------------------------
+
+
+For compile start ./autogen.sh
+
+

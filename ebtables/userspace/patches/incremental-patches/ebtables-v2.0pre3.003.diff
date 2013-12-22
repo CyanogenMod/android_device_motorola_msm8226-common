@@ -1,0 +1,66 @@
+* Add brouter support
+* Give better advice when a table is not found by the kernel
+
+--- ebtables-v2.0pre3.002/Makefile	Sun Apr 14 15:03:11 2002
++++ ebtables-v2.0pre3.003/Makefile	Mon Apr 22 20:05:21 2002
+@@ -2,7 +2,7 @@
+ 
+ KERNEL_DIR?=/usr/src/linux
+ PROGNAME:=ebtables
+-PROGVERSION:="2.0pre2 (April 2002)"
++PROGVERSION:="2.0pre3 (April 2002)"
+ 
+ MANDIR?=/usr/local/man
+ CFLAGS:=-Wall -Wunused
+--- ebtables-v2.0pre3.002/ebtables.c	Mon Apr 22 20:08:03 2002
++++ ebtables-v2.0pre3.003/ebtables.c	Sat Apr 20 20:07:42 2002
+@@ -48,7 +48,8 @@
+ 	[NF_BR_LOCAL_IN]"INPUT",
+ 	[NF_BR_FORWARD]"FORWARD",
+ 	[NF_BR_LOCAL_OUT]"OUTPUT",
+-	[NF_BR_POST_ROUTING]"POSTROUTING"
++	[NF_BR_POST_ROUTING]"POSTROUTING",
++	[NF_BR_BROUTING]"BROUTING"
+ };
+ 
+ // default command line options
+--- ebtables-v2.0pre3.002/communication.c	Mon Apr 22 20:08:03 2002
++++ ebtables-v2.0pre3.003/communication.c	Sun Apr 21 15:38:38 2002
+@@ -375,7 +375,8 @@
+ 	strcpy(repl.name, u_repl->name);
+ 	if (getsockopt(sockfd, IPPROTO_IP, EBT_SO_GET_INFO, &repl, &optlen))
+ 		print_error("A kernel module needed by your command is probably"
+-		            " not loaded. Try insmod ebtables or the like");
++		            " not loaded. Try insmod ebtables or"
++		            " insmod ebtable_%s", repl.name);
+ 
+ 	if ( !(repl.entries = (char *) malloc(repl.entries_size)) )
+ 		print_memory();
+--- /dev/null	Thu Aug 24 11:00:32 2000
++++ ebtables-v2.0pre3.003/extensions/ebtable_broute.c	Sat Apr 20 20:12:26 2002
+@@ -0,0 +1,25 @@
++#include <stdio.h>
++#include <sys/socket.h>
++#include "../include/ebtables_u.h"
++
++
++static void print_help(char **hn)
++{
++	printf("Supported chain for the nat table:\n");
++	printf("%s\n",hn[NF_BR_BROUTING]);
++}
++
++static struct
++ebt_u_table table =
++{
++	"broute",
++	NULL,
++	print_help,
++	NULL
++};
++
++static void _init(void) __attribute__ ((constructor));
++static void _init(void)
++{
++	register_table(&table);
++}

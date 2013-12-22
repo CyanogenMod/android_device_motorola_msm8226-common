@@ -1,0 +1,50 @@
+---
+Here are the source code and patches for the kernel files ebtables
+changes/creates.
+
+Bart De Schuymer,
+June 1, 2002
+---
+All kernel code in linux/ is tagged like this example:
+ebtables_kernel-2-0-pre7
+
+June 1, 2002
+---
+Release candidates are tagged like this:
+ebtables_kernel-2-0-rc1
+
+July 31, 2002
+---
+Added the linux2.5 directory, which contains files that are different
+between the 2.4 patch (linux/) and the 2.5 patch (linux2.5).
+Added the br-nf-bds2.5 directory, containing the different files for
+the 2.5 patch
+The repository should now contain files compilable against 2.4.20-pre4 and
+2.5.31.
+
+August 23, 2002
+---
+Release candidates for 2.5 are tagged like this:
+ebtables_kernel-2-0-dev-rc2
+
+August 30, 2002
+---
+
+Stable releases are tagged like this:
+ebtables_kernel-2-0
+
+September 19, 2002
+---
+
+The repository contains files compilable against 2.4.20-pre5 and 2.5.35.
+
+September 19, 2002
+---
+
+Further releases like this:
+ebtables_kernel-2-0-001
+
+October 17, 2002
+---
+
+

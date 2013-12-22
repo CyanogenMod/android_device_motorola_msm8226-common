@@ -1,0 +1,315 @@
+--- linux-2.4.20-pre5-old/include/linux/if_bridge.h	Wed Sep 18 21:04:46 2002
++++ linux-2.4.20-pre5-ebtables/include/linux/if_bridge.h	Wed Sep 18 21:01:01 2002
+@@ -103,12 +103,8 @@
+ 
+ extern int (*br_ioctl_hook)(unsigned long arg);
+ extern int (*br_handle_frame_hook)(struct sk_buff *skb);
+-#if defined(CONFIG_BRIDGE_EBT_BROUTE) || \
+-    defined(CONFIG_BRIDGE_EBT_BROUTE_MODULE)
+-extern unsigned int (*broute_decision) (unsigned int hook, struct sk_buff **pskb,
+-   const struct net_device *in, const struct net_device *out,
+-   int (*okfn)(struct sk_buff *));
+-#endif
++extern int (*br_should_route_hook)(struct sk_buff **pskb);
++
+ #endif
+ 
+ #endif
+--- linux-2.4.20-pre5-old/net/core/dev.c	Wed Sep 18 21:04:46 2002
++++ linux-2.4.20-pre5-ebtables/net/core/dev.c	Wed Sep 18 21:01:01 2002
+@@ -1473,6 +1473,7 @@
+ 		ret = handle_bridge(skb, pt_prev);
+ 		if (br_handle_frame_hook(skb) == 0)
+ 			return ret;
++		pt_prev = NULL;
+ 	}
+ #endif
+ 
+--- linux-2.4.20-pre5-old/net/bridge/br_input.c	Wed Sep 18 21:04:46 2002
++++ linux-2.4.20-pre5-ebtables/net/bridge/br_input.c	Wed Sep 18 21:01:01 2002
+@@ -19,15 +19,14 @@
+ #include <linux/if_bridge.h>
+ #include <linux/netfilter_bridge.h>
+ #include "br_private.h"
+-#if defined(CONFIG_BRIDGE_EBT_BROUTE) || \
+-    defined(CONFIG_BRIDGE_EBT_BROUTE_MODULE)
+-#include <linux/netfilter.h>
+-#endif
+ 
+ unsigned char bridge_ula[6] = { 0x01, 0x80, 0xc2, 0x00, 0x00, 0x00 };
+ 
+ static int br_pass_frame_up_finish(struct sk_buff *skb)
+ {
++#ifdef CONFIG_NETFILTER_DEBUG
++	skb->nf_debug = 0;
++#endif
+ 	netif_rx(skb);
+ 
+ 	return 0;
+@@ -150,12 +149,9 @@
+ 		goto handle_special_frame;
+ 
+ 	if (p->state == BR_STATE_FORWARDING) {
+-#if defined(CONFIG_BRIDGE_EBT_BROUTE) || \
+-    defined(CONFIG_BRIDGE_EBT_BROUTE_MODULE)
+-		if (broute_decision && broute_decision(NF_BR_BROUTING, &skb,
+-		   skb->dev, NULL, NULL) == NF_DROP)
++		if (br_should_route_hook && br_should_route_hook(&skb))
+ 			return -1;
+-#endif
++
+ 		NF_HOOK(PF_BRIDGE, NF_BR_PRE_ROUTING, skb, skb->dev, NULL,
+ 			br_handle_frame_finish);
+ 		read_unlock(&br->lock);
+--- linux-2.4.20-pre5-old/net/bridge/br_forward.c	Sat Aug  3 02:39:46 2002
++++ linux-2.4.20-pre5-ebtables/net/bridge/br_forward.c	Wed Sep 18 21:01:01 2002
+@@ -49,6 +49,9 @@
+ static void __br_deliver(struct net_bridge_port *to, struct sk_buff *skb)
+ {
+ 	skb->dev = to->dev;
++#ifdef CONFIG_NETFILTER_DEBUG
++	skb->nf_debug = 0;
++#endif
+ 	NF_HOOK(PF_BRIDGE, NF_BR_LOCAL_OUT, skb, NULL, skb->dev,
+ 			__br_forward_finish);
+ }
+--- linux-2.4.20-pre5-old/net/bridge/br.c	Wed Sep 18 21:04:46 2002
++++ linux-2.4.20-pre5-ebtables/net/bridge/br.c	Wed Sep 18 21:01:01 2002
+@@ -28,13 +28,7 @@
+ #include "../atm/lec.h"
+ #endif
+ 
+-#if defined(CONFIG_BRIDGE_EBT_BROUTE) || \
+-    defined(CONFIG_BRIDGE_EBT_BROUTE_MODULE)
+-unsigned int (*broute_decision) (unsigned int hook, struct sk_buff **pskb,
+-                        const struct net_device *in,
+-                        const struct net_device *out,
+-                        int (*okfn)(struct sk_buff *)) = NULL;
+-#endif
++int (*br_should_route_hook) (struct sk_buff **pskb) = NULL;
+ 
+ void br_dec_use_count()
+ {
+@@ -82,12 +76,7 @@
+ #endif
+ }
+ 
+-#if defined(CONFIG_BRIDGE_EBT_BROUTE) || \
+-    defined(CONFIG_BRIDGE_EBT_BROUTE_MODULE)
+-EXPORT_SYMBOL(broute_decision);
+-#else
+-EXPORT_NO_SYMBOLS;
+-#endif
++EXPORT_SYMBOL(br_should_route_hook);
+ 
+ module_init(br_init)
+ module_exit(br_deinit)
+--- linux-2.4.20-pre5-old/net/bridge/Makefile	Wed Sep 18 21:04:46 2002
++++ linux-2.4.20-pre5-ebtables/net/bridge/Makefile	Wed Sep 18 21:01:01 2002
+@@ -7,11 +7,7 @@
+ #
+ # Note 2! The CFLAGS definition is now in the main makefile...
+ 
+-ifneq ($(CONFIG_BRIDGE_EBT_BROUTE),n)
+-ifneq ($(CONFIG_BRIDGE_EBT_BROUTE),)
+ export-objs := br.o
+-endif
+-endif
+ 
+ O_TARGET	:= bridge.o
+ obj-y		:= br.o br_device.o br_fdb.o br_forward.o br_if.o br_input.o \
+--- linux-2.4.20-pre5-old/include/linux/netfilter_bridge.h	Wed Sep 18 21:04:46 2002
++++ linux-2.4.20-pre5-ebtables/include/linux/netfilter_bridge.h	Wed Sep 18 21:01:01 2002
+@@ -23,13 +23,13 @@
+ #define NF_BR_NUMHOOKS		6
+ 
+ enum nf_br_hook_priorities {
+-        NF_BR_PRI_FIRST = INT_MIN,
+-        NF_BR_PRI_FILTER_BRIDGED = -200,
+-        NF_BR_PRI_FILTER_OTHER = 200,
+-        NF_BR_PRI_NAT_DST_BRIDGED = -300,
+-        NF_BR_PRI_NAT_DST_OTHER = 100,
+-        NF_BR_PRI_NAT_SRC = 300,
+-        NF_BR_PRI_LAST = INT_MAX,
++	NF_BR_PRI_FIRST = INT_MIN,
++	NF_BR_PRI_FILTER_BRIDGED = -200,
++	NF_BR_PRI_FILTER_OTHER = 200,
++	NF_BR_PRI_NAT_DST_BRIDGED = -300,
++	NF_BR_PRI_NAT_DST_OTHER = 100,
++	NF_BR_PRI_NAT_SRC = 300,
++	NF_BR_PRI_LAST = INT_MAX,
+ };
+ 
+ #endif
+--- linux-2.4.20-pre5-old/net/bridge/netfilter/Makefile	Wed Sep 18 21:04:46 2002
++++ linux-2.4.20-pre5-ebtables/net/bridge/netfilter/Makefile	Wed Sep 18 21:01:01 2002
+@@ -11,7 +11,7 @@
+ 
+ export-objs := ebtables.o
+ 
+-obj-$(CONFIG_BRIDGE_EBT) += ebtables.o
++obj-$(CONFIG_BRIDGE_NF_EBTABLES) += ebtables.o
+ obj-$(CONFIG_BRIDGE_EBT_T_FILTER) += ebtable_filter.o
+ obj-$(CONFIG_BRIDGE_EBT_T_NAT) += ebtable_nat.o
+ obj-$(CONFIG_BRIDGE_EBT_BROUTE) += ebtable_broute.o
+--- linux-2.4.20-pre5-old/net/bridge/netfilter/Config.in	Wed Sep 18 21:04:46 2002
++++ linux-2.4.20-pre5-ebtables/net/bridge/netfilter/Config.in	Wed Sep 18 21:01:01 2002
+@@ -1,17 +1,16 @@
+ #
+ # Bridge netfilter configuration
+ #
+-dep_tristate '  Bridge: ebtables' CONFIG_BRIDGE_EBT $CONFIG_BRIDGE
+-dep_tristate '    ebt: filter table support' CONFIG_BRIDGE_EBT_T_FILTER $CONFIG_BRIDGE_EBT
+-dep_tristate '    ebt: nat table support' CONFIG_BRIDGE_EBT_T_NAT $CONFIG_BRIDGE_EBT
+-dep_tristate '    ebt: broute table support' CONFIG_BRIDGE_EBT_BROUTE $CONFIG_BRIDGE_EBT
+-dep_tristate '    ebt: log support' CONFIG_BRIDGE_EBT_LOG $CONFIG_BRIDGE_EBT
+-dep_tristate '    ebt: IP filter support' CONFIG_BRIDGE_EBT_IPF $CONFIG_BRIDGE_EBT
+-dep_tristate '    ebt: ARP filter support' CONFIG_BRIDGE_EBT_ARPF $CONFIG_BRIDGE_EBT
+-dep_tristate '    ebt: 802.1Q VLAN filter support (EXPERIMENTAL)' CONFIG_BRIDGE_EBT_VLANF $CONFIG_BRIDGE_EBT
+-dep_tristate '    ebt: mark filter support' CONFIG_BRIDGE_EBT_MARKF $CONFIG_BRIDGE_EBT
+-dep_tristate '    ebt: snat target support' CONFIG_BRIDGE_EBT_SNAT $CONFIG_BRIDGE_EBT
+-dep_tristate '    ebt: dnat target support' CONFIG_BRIDGE_EBT_DNAT $CONFIG_BRIDGE_EBT
+-dep_tristate '    ebt: redirect target support' CONFIG_BRIDGE_EBT_REDIRECT $CONFIG_BRIDGE_EBT
+-dep_tristate '    ebt: mark target support' CONFIG_BRIDGE_EBT_MARK_T $CONFIG_BRIDGE_EBT
+-
++dep_tristate '  Bridge: ebtables' CONFIG_BRIDGE_NF_EBTABLES $CONFIG_BRIDGE
++dep_tristate '    ebt: filter table support' CONFIG_BRIDGE_EBT_T_FILTER $CONFIG_BRIDGE_NF_EBTABLES
++dep_tristate '    ebt: nat table support' CONFIG_BRIDGE_EBT_T_NAT $CONFIG_BRIDGE_NF_EBTABLES
++dep_tristate '    ebt: broute table support' CONFIG_BRIDGE_EBT_BROUTE $CONFIG_BRIDGE_NF_EBTABLES
++dep_tristate '    ebt: log support' CONFIG_BRIDGE_EBT_LOG $CONFIG_BRIDGE_NF_EBTABLES
++dep_tristate '    ebt: IP filter support' CONFIG_BRIDGE_EBT_IPF $CONFIG_BRIDGE_NF_EBTABLES
++dep_tristate '    ebt: ARP filter support' CONFIG_BRIDGE_EBT_ARPF $CONFIG_BRIDGE_NF_EBTABLES
++dep_tristate '    ebt: 802.1Q VLAN filter support (EXPERIMENTAL)' CONFIG_BRIDGE_EBT_VLANF $CONFIG_BRIDGE_NF_EBTABLES
++dep_tristate '    ebt: mark filter support' CONFIG_BRIDGE_EBT_MARKF $CONFIG_BRIDGE_NF_EBTABLES
++dep_tristate '    ebt: snat target support' CONFIG_BRIDGE_EBT_SNAT $CONFIG_BRIDGE_NF_EBTABLES
++dep_tristate '    ebt: dnat target support' CONFIG_BRIDGE_EBT_DNAT $CONFIG_BRIDGE_NF_EBTABLES
++dep_tristate '    ebt: redirect target support' CONFIG_BRIDGE_EBT_REDIRECT $CONFIG_BRIDGE_NF_EBTABLES
++dep_tristate '    ebt: mark target support' CONFIG_BRIDGE_EBT_MARK_T $CONFIG_BRIDGE_NF_EBTABLES
+--- linux-2.4.20-pre5-old/net/bridge/netfilter/ebtable_broute.c	Wed Sep 18 21:04:46 2002
++++ linux-2.4.20-pre5-ebtables/net/bridge/netfilter/ebtable_broute.c	Wed Sep 18 21:01:01 2002
+@@ -40,11 +40,15 @@
+   RW_LOCK_UNLOCKED, check, NULL
+ };
+ 
+-static unsigned int
+-ebt_broute(unsigned int hook, struct sk_buff **pskb, const struct net_device *in,
+-   const struct net_device *out, int (*okfn)(struct sk_buff *))
++static int ebt_broute(struct sk_buff **pskb)
+ {
+-	return ebt_do_table(hook, pskb, in, out, &broute_table);
++	int ret;
++
++	ret = ebt_do_table(NF_BR_BROUTING, pskb, (*pskb)->dev, NULL,
++	   &broute_table);
++	if (ret == NF_DROP)
++		return 1; // route it
++	return 0; // bridge it
+ }
+ 
+ static int __init init(void)
+@@ -55,8 +59,8 @@
+ 	if (ret < 0)
+ 		return ret;
+ 	br_write_lock_bh(BR_NETPROTO_LOCK);
+-	// in br_input.c, br_handle_frame() wants to call broute_decision()
+-	broute_decision = ebt_broute;
++	// see br_input.c
++	br_should_route_hook = ebt_broute;
+ 	br_write_unlock_bh(BR_NETPROTO_LOCK);
+ 	return ret;
+ }
+@@ -64,7 +68,7 @@
+ static void __exit fini(void)
+ {
+ 	br_write_lock_bh(BR_NETPROTO_LOCK);
+-	broute_decision = NULL;
++	br_should_route_hook = NULL;
+ 	br_write_unlock_bh(BR_NETPROTO_LOCK);
+ 	ebt_unregister_table(&broute_table);
+ }
+--- linux-2.4.20-pre5-old/net/bridge/netfilter/ebt_vlan.c	Wed Sep 18 21:04:46 2002
++++ linux-2.4.20-pre5-ebtables/net/bridge/netfilter/ebt_vlan.c	Wed Sep 18 21:01:01 2002
+@@ -35,7 +35,7 @@
+ MODULE_LICENSE ("GPL");
+ 
+ 
+-#define DEBUG_MSG(...) if (debug) printk (KERN_DEBUG __FILE__ ":" __FUNCTION__ ": "  __VA_ARGS__)
++#define DEBUG_MSG(...) if (debug) printk (KERN_DEBUG __FILE__ ":" __VA_ARGS__)
+ #define INV_FLAG(_inv_flag_) (info->invflags & _inv_flag_) ? "!" : ""
+ #define GET_BITMASK(_BIT_MASK_) info->bitmask & _BIT_MASK_
+ #define SET_BITMASK(_BIT_MASK_) info->bitmask |= _BIT_MASK_
+--- linux-2.4.20-pre5-old/include/linux/netfilter_bridge/ebtables.h	Wed Sep 18 21:04:46 2002
++++ linux-2.4.20-pre5-ebtables/include/linux/netfilter_bridge/ebtables.h	Wed Sep 18 21:01:01 2002
+@@ -4,7 +4,7 @@
+  *	Authors:
+  *	Bart De Schuymer		<bart.de.schuymer@pandora.be>
+  *
+- *  ebtables.c,v 2.0, April, 2002
++ *  ebtables.c,v 2.0, September, 2002
+  *
+  *  This code is stongly inspired on the iptables code which is
+  *  Copyright (C) 1999 Paul `Rusty' Russell & Michael J. Neuling
+@@ -20,19 +20,6 @@
+ #define EBT_CHAIN_MAXNAMELEN EBT_TABLE_MAXNAMELEN
+ #define EBT_FUNCTION_MAXNAMELEN EBT_TABLE_MAXNAMELEN
+ 
+-// [gs]etsockopt numbers
+-#define EBT_BASE_CTL            128
+-
+-#define EBT_SO_SET_ENTRIES      (EBT_BASE_CTL)
+-#define EBT_SO_SET_COUNTERS     (EBT_SO_SET_ENTRIES+1)
+-#define EBT_SO_SET_MAX          (EBT_SO_SET_COUNTERS+1)
+-
+-#define EBT_SO_GET_INFO         (EBT_BASE_CTL)
+-#define EBT_SO_GET_ENTRIES      (EBT_SO_GET_INFO+1)
+-#define EBT_SO_GET_INIT_INFO    (EBT_SO_GET_ENTRIES+1)
+-#define EBT_SO_GET_INIT_ENTRIES (EBT_SO_GET_INIT_INFO+1)
+-#define EBT_SO_GET_MAX          (EBT_SO_GET_INIT_ENTRIES+1)
+-
+ // verdicts >0 are "branches"
+ #define EBT_ACCEPT   -1
+ #define EBT_DROP     -2
+@@ -40,10 +27,6 @@
+ #define EBT_RETURN   -4
+ #define NUM_STANDARD_TARGETS   4
+ 
+-// return values for match() functions
+-#define EBT_MATCH 0
+-#define EBT_NOMATCH 1
+-
+ struct ebt_counter
+ {
+ 	uint64_t pcnt;
+@@ -180,6 +163,23 @@
+ 
+ #ifdef __KERNEL__
+ 
++// [gs]etsockopt numbers
++#define EBT_BASE_CTL            128
++
++#define EBT_SO_SET_ENTRIES      (EBT_BASE_CTL)
++#define EBT_SO_SET_COUNTERS     (EBT_SO_SET_ENTRIES+1)
++#define EBT_SO_SET_MAX          (EBT_SO_SET_COUNTERS+1)
++
++#define EBT_SO_GET_INFO         (EBT_BASE_CTL)
++#define EBT_SO_GET_ENTRIES      (EBT_SO_GET_INFO+1)
++#define EBT_SO_GET_INIT_INFO    (EBT_SO_GET_ENTRIES+1)
++#define EBT_SO_GET_INIT_ENTRIES (EBT_SO_GET_INIT_INFO+1)
++#define EBT_SO_GET_MAX          (EBT_SO_GET_INIT_ENTRIES+1)
++
++// return values for match() functions
++#define EBT_MATCH 0
++#define EBT_NOMATCH 1
++
+ struct ebt_match
+ {
+ 	struct list_head list;
+@@ -242,7 +242,7 @@
+ 	// room to maintain the stack used for jumping from and into udc
+ 	struct ebt_chainstack **chainstack;
+ 	char *entries;
+-	struct ebt_counter counters[0] __attribute__((aligned(SMP_CACHE_BYTES)));
++	struct ebt_counter counters[0] ____cacheline_aligned;
+ };
+ 
+ struct ebt_table

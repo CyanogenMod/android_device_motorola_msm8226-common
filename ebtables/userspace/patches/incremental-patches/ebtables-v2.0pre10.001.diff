@@ -1,0 +1,802 @@
+--- ebtables-v2.0pre9/Makefile	Sun Jul  7 16:29:50 2002
++++ ebtables-v2.0pre10.001/Makefile	Wed Jul 10 22:12:36 2002
+@@ -2,7 +2,7 @@
+ 
+ KERNEL_DIR?=/usr/src/linux
+ PROGNAME:=ebtables
+-PROGVERSION:="2.0pre9 (July 2002)"
++PROGVERSION:="2.0pre10 (July 2002)"
+ 
+ MANDIR?=/usr/local/man
+ CFLAGS:=-Wall -Wunused
+@@ -51,9 +51,12 @@
+ /etc/ethertypes: ethertypes
+ 	mkdir -p $(@D)
+ 	install -m 0644 -o root -g root $< $@
++.PHONY: exec
++exec: ebtables
++	install -m 0755 -o root -g root $< /sbin/ebtables
+ 
+ install: $(MANDIR)/man8/ebtables.8 $(KERNEL_INCLUDES) \
+-	ebtables /etc/ethertypes
++	ebtables /etc/ethertypes exec
+ 
+ clean:
+ 	rm -f ebtables
+--- ebtables-v2.0pre9/ebtables.c	Sat Jun 29 11:41:57 2002
++++ ebtables-v2.0pre10.001/ebtables.c	Tue Jul 16 20:36:50 2002
+@@ -62,11 +62,17 @@
+ };
+ 
+ // default command line options
+-static struct option ebt_original_options[] = {
++// do not mess around with the already assigned numbers unless
++// you know what you are doing
++static struct option ebt_original_options[] =
++{
+ 	{ "append"        , required_argument, 0, 'A' },
+ 	{ "insert"        , required_argument, 0, 'I' },
+ 	{ "delete"        , required_argument, 0, 'D' },
+ 	{ "list"          , optional_argument, 0, 'L' },
++	{ "Lc"            , no_argument      , 0, 4   },
++	{ "Ln"            , no_argument      , 0, 5   },
++	{ "Lx"            , no_argument      , 0, 6   },
+ 	{ "zero"          , optional_argument, 0, 'Z' },
+ 	{ "flush"         , optional_argument, 0, 'F' },
+ 	{ "policy"        , required_argument, 0, 'P' },
+@@ -91,13 +97,19 @@
+ 	{ "new-chain"     , required_argument, 0, 'N' },
+ 	{ "rename-chain"  , required_argument, 0, 'E' },
+ 	{ "delete-chain"  , required_argument, 0, 'X' },
++	{ "atomic-init"   , required_argument, 0, 7   },
++	{ "atomic-commit" , required_argument, 0, 8   },
++	{ "atomic"        , required_argument, 0, 9   },
++	{ "atomic-save"   , required_argument, 0, 10  },
++	{ "init-table"    , no_argument      , 0, 11  },
+ 	{ 0 }
+ };
+ 
+ static struct option *ebt_options = ebt_original_options;
+ 
+ // yup, all the possible target names
+-char* standard_targets[NUM_STANDARD_TARGETS] = {
++char* standard_targets[NUM_STANDARD_TARGETS] =
++{
+ 	"ACCEPT",
+ 	"DROP",
+ 	"CONTINUE",
+@@ -169,7 +181,7 @@
+ // Same holds for the struct ebt_match and struct ebt_watcher pointers
+ struct ebt_u_entry *new_entry;
+ 
+-void initialize_entry(struct ebt_u_entry *e)
++static void initialize_entry(struct ebt_u_entry *e)
+ {
+ 	e->bitmask = EBT_NOPROTO;
+ 	e->invflags = 0;
+@@ -188,7 +200,7 @@
+ }
+ 
+ // this doesn't free e, becoz the calling function might need e->next
+-void free_u_entry(struct ebt_u_entry *e)
++static void free_u_entry(struct ebt_u_entry *e)
+ {
+ 	struct ebt_u_match_list *m_l, *m_l2;
+ 	struct ebt_u_watcher_list *w_l, *w_l2;
+@@ -403,7 +415,7 @@
+ 
+ 
+ // used to parse /etc/ethertypes
+-int disregard_whitespace(char *buffer, FILE *ifp)
++static int disregard_whitespace(char *buffer, FILE *ifp)
+ {
+ 	int hlp;
+ 
+@@ -416,7 +428,7 @@
+ }
+ 
+ // used to parse /etc/ethertypes
+-int disregard_tabspace(char *buffer, FILE *ifp)
++static int disregard_tabspace(char *buffer, FILE *ifp)
+ {
+ 	int hlp;
+ 
+@@ -429,7 +441,7 @@
+ }
+ 
+ // helper function: processes a line of data from the file /etc/ethertypes
+-int get_a_line(char *buffer, char *value, FILE *ifp)
++static int get_a_line(char *buffer, char *value, FILE *ifp)
+ {
+ 	int i, hlp;
+ 	char anotherhlp;
+@@ -507,6 +519,11 @@
+ 	}
+ }
+ 
++// we use replace.flags, so we can't use the following values:
++// 0x01 == OPT_COMMAND, 0x02 == OPT_TABLE, 0x100 == OPT_ZERO
++#define LIST_N 0x04
++#define LIST_C 0x08
++#define LIST_X 0x10
+ // helper function for list_rules()
+ static void list_em(struct ebt_u_entries *entries)
+ {
+@@ -520,9 +537,14 @@
+ 	char name[21];
+ 
+ 	hlp = entries->entries;
+-	printf("\nBridge chain: %s\nPolicy: %s\n", entries->name,
+-	   standard_targets[-entries->policy - 1]);
+-	printf("nr. of entries: %d \n", entries->nentries);
++	if (replace.flags & LIST_X && entries->policy != EBT_ACCEPT) {
++		printf("ebtables -t %s -P %s %s\n", replace.name,
++		   entries->name, standard_targets[-entries->policy - 1]);
++	} else if (!(replace.flags & LIST_X)) {
++		printf("\nBridge chain: %s\nPolicy: %s\n", entries->name,
++		   standard_targets[-entries->policy - 1]);
++		printf("nr. of entries: %d \n", entries->nentries);
++	}
+ 
+ 	i = entries->nentries;
+ 	while (i > 9) {
+@@ -531,16 +553,21 @@
+ 	}
+ 
+ 	for (i = 0; i < entries->nentries; i++) {
+-		digits = 0;
+-		// A little work to get nice rule numbers.
+-		j = i + 1;
+-		while (j > 9) {
+-			digits++;
+-			j /= 10;
+-		}
+-		for (j = 0; j < space - digits; j++)
+-			printf(" ");
+-		printf("%d. ", i + 1);
++		if (replace.flags & LIST_N) {
++			digits = 0;
++			// A little work to get nice rule numbers.
++			j = i + 1;
++			while (j > 9) {
++				digits++;
++				j /= 10;
++			}
++			for (j = 0; j < space - digits; j++)
++				printf(" ");
++			printf("%d. ", i + 1);
++		}
++		if (replace.flags & LIST_X)
++			printf("ebtables -t %s -A %s ",
++			   replace.name, entries->name);
+ 
+ 		// Don't print anything about the protocol if no protocol was
+ 		// specified, obviously this means any protocol will do.
+@@ -668,8 +695,9 @@
+ 		if (!t)
+ 			print_bug("Target not found");
+ 		t->print(hlp, hlp->t);
+-		printf(", count = %llu",
+-		   replace.counters[entries->counter_offset + i].pcnt);
++		if (replace.flags & LIST_C)
++			printf(", count = %llu",
++			   replace.counters[entries->counter_offset + i].pcnt);
+ 		printf("\n");
+ 		hlp = hlp->next;
+ 	}
+@@ -710,7 +738,7 @@
+ 	struct ebt_u_entries *entries;
+ };
+ 
+-void check_for_loops()
++static void check_for_loops()
+ {
+ 	int chain_nr , i, j , k, sp = 0, verdict;
+ 	struct ebt_u_entries *entries, *entries2;
+@@ -813,7 +841,7 @@
+ }
+ 
+ // yup, print out help
+-void print_help()
++static void print_help()
+ {
+ 	struct ebt_u_match_list *m_l;
+ 	struct ebt_u_watcher_list *w_l;
+@@ -833,11 +861,16 @@
+ "--list   -L [chain]           : List the rules in a chain or in all chains\n"
+ "--list   -L "DATABASEHOOKNAME"                : List the database (if present)\n"
+ "--flush  -F [chain]           : Delete all rules in chain or in all chains\n"
++"--init-table                  : Replace the kernel table with the initial table\n"
+ "--zero   -Z [chain]           : Put counters on zero in chain or in all chains\n"
+ "--policy -P chain target      : Change policy on chain to target\n"
+ "--new-chain -N chain          : Create a user defined chain\n"
+ "--rename-chain -E old new     : Rename a chain\n"
+ "--delete-chain -X chain       : Delete a user defined chain\n"
++"--atomic-commit file          : update the kernel w/ the table contained in file\n"
++"--atomic-init file            : put the initial kernel table into file\n"
++"--atomic-save file            : put the current kernel table into file\n"
++"--atomic file                 : write changes to file instead of kernel\n"
+ "Options:\n"
+ "--proto  -p [!] proto         : protocol hexadecimal, by name or LENGTH\n"
+ "--src    -s [!] address[/mask]: source mac address\n"
+@@ -846,7 +879,7 @@
+ "--out-if -o [!] name          : network output interface name\n"
+ "--logical-in  [!] name        : logical bridge input interface name\n"
+ "--logical-out [!] name        : logical bridge output interface name\n"
+-"--modprobe -M                 : try to insert modules using this command\n"
++"--modprobe -M program         : try to insert modules using this program\n"
+ "--version -V                  : print package version\n"
+ "\n" ,
+ 	prog_name,
+@@ -876,12 +909,28 @@
+ {
+ 	int i;
+ 
+-	printf("Bridge table: %s\n", table->name);
++	if (!(replace.flags & LIST_X))
++		printf("Bridge table: %s\n", table->name);
+ 	if (replace.selected_hook != -1) {
+ 		list_em(to_chain());
+ 	} else {
+ 		struct ebt_u_chain_list *cl = replace.udc;
+ 
++		// create new chains and rename standard chains when necessary
++		if (replace.flags & LIST_X) {
++			while (cl) {
++				printf("ebtables -t %s -N %s\n", replace.name,
++				   cl->udc->name);
++				cl = cl->next;
++			}
++			cl = replace.udc;
++			for (i = 0; i < NF_BR_NUMHOOKS; i++)
++				if (replace.valid_hooks & (1 << i) &&
++				   strcmp(replace.hook_entry[i]->name, hooknames[i]))
++					printf("ebtables -t %s -E %s %s\n",
++					   replace.name, hooknames[i],
++					   replace.hook_entry[i]->name);
++		}
+ 		i = 0;
+ 		while (1) {
+ 			if (i < NF_BR_NUMHOOKS) {
+@@ -1292,7 +1341,7 @@
+ }
+ 
+ // execute command Z
+-void zero_counters(int zerochain)
++static void zero_counters(int zerochain)
+ {
+ 
+ 	if (zerochain == -1) {
+@@ -1463,7 +1512,7 @@
+ }
+ 
+ // executes the final_check() function for all extensions used by the rule
+-void do_final_checks(struct ebt_u_entry *e, struct ebt_u_entries *entries)
++static void do_final_checks(struct ebt_u_entry *e, struct ebt_u_entries *entries)
+ {
+ 	struct ebt_u_match_list *m_l;
+ 	struct ebt_u_watcher_list *w_l;
+@@ -1491,7 +1540,7 @@
+ }
+ 
+ // used for the -X command
+-void check_for_references(int chain_nr)
++static void check_for_references(int chain_nr)
+ {
+ 	int i = -1, j;
+ 	struct ebt_u_entries *entries;
+@@ -1571,6 +1620,7 @@
+ 	replace.flags = 0;
+ 	replace.selected_hook = -1;
+ 	replace.command = 'h';
++	replace.filename = NULL;
+ 
+ 	new_entry = (struct ebt_u_entry *)malloc(sizeof(struct ebt_u_entry));
+ 	if (!new_entry)
+@@ -1579,7 +1629,8 @@
+ 	initialize_entry(new_entry);
+ 
+ 	// The scenario induced by this loop makes that:
+-	// '-t'  and '-M' (if specified) have to come before '-A' and the like
++	// '-t'  ,'-M' and --atomic (if specified) have to come
++	// before '-A' and the like
+ 
+ 	// getopt saves the day
+ 	while ((c = getopt_long(argc, argv,
+@@ -2013,8 +2064,90 @@
+ 			allowbc = *optarg;
+ 			break;
+ 
+-		default:
++		case 4  : // Lc
++			check_option(&replace.flags, LIST_C);
++			if (replace.selected_hook == DATABASEHOOKNR)
++				print_error("--Lc not valid for listing"
++				   " the database");
++			if (replace.command != 'L')
++				print_error("Use --Lc with -L");
++			if (replace.flags & LIST_X)
++				print_error("--Lx not compatible with --Lc");
++			replace.flags |= LIST_C;
++			break;
++		case 5  : // Ln
++			check_option(&replace.flags, LIST_N);
++			if (replace.selected_hook == DATABASEHOOKNR)
++				print_error("--Ln not valid for listing"
++				   " the database");
++			if (replace.command != 'L')
++				print_error("Use --Ln with -L");
++			if (replace.flags & LIST_X)
++				print_error("--Lx not compatible with --Ln");
++			replace.flags |= LIST_N;
++			break;
++		case 6  : // Lx
++			check_option(&replace.flags, LIST_X);
++			if (replace.selected_hook == DATABASEHOOKNR)
++				print_error("--Lx not valid for listing"
++				   " the database");
++			if (replace.command != 'L')
++				print_error("Use --Lx with -L");
++			if (replace.flags & LIST_C)
++				print_error("--Lx not compatible with --Lc");
++			if (replace.flags & LIST_N)
++				print_error("--Lx not compatible with --Ln");
++			replace.flags |= LIST_X;
++			break;
++		case 8 : // atomic-commit
++			replace.command = c;
++			if (replace.flags & OPT_COMMAND)
++				print_error("Multiple commands not allowed");
++			replace.flags |= OPT_COMMAND;
++			replace.filename = (char *)malloc(strlen(optarg) + 1);
++			strcpy(replace.filename, optarg);
++			// get the information from the file
++			get_table(&replace);
++                        if (replace.nentries) {
++                                counterchanges = (unsigned short *)
++                                   malloc(sizeof(unsigned short) * (replace.nentries + 1));
++				for (i = 0; i < replace.nentries; i++)
++                                        counterchanges[i] = CNT_NORM;
++                                counterchanges[i] = CNT_END;
++                        }
++			free(replace.filename);
++			replace.filename = NULL;
++			break;
++		case 7 : // atomic-init
++		case 10: // atomic-save
++		case 11: // init-table
++			replace.command = c;
++			if (replace.flags & OPT_COMMAND)
++				print_error("Multiple commands not allowed");
++			replace.flags |= OPT_COMMAND;
++			if ( !(table = find_table(replace.name)) )
++				print_error("Bad table name");
++			if (get_table(&replace)) {
++				ebtables_insmod("ebtables", modprobe);
++				if (get_table(&replace))
++					print_error("can't initialize ebtables "
++					"table %s", replace.name);
++			}
++			if (replace.nentries) {
++				counterchanges = (unsigned short *)
++				   malloc(sizeof(unsigned short) * (replace.nentries + 1));
++				for (i = 0; i < replace.nentries; i++)
++					counterchanges[i] = CNT_NORM;
++				counterchanges[i] = CNT_END;
++			}
++			if (c == 11)
++				break;
++		case 9 : // atomic
++			replace.filename = (char *)malloc(strlen(optarg) + 1);
++			strcpy(replace.filename, optarg);
++			break;
+ 
++		default:
+ 			// is it a target option?
+ 			t = (struct ebt_u_target *)new_entry->t;
+ 			if ((t->parse(c - t->option_offset, argv, argc,
+@@ -2142,7 +2275,8 @@
+ 		}
+ 	} else if (replace.command == 'D')
+ 		delete_rule(rule_nr);
+-	// commands -N, -E, -X fall through
++	// commands -N, -E, -X, --atomic-commit, --atomic-commit, --atomic-save,
++	// --init-table fall through
+ 
+ 	if (table->check)
+ 		table->check(&replace);
+--- ebtables-v2.0pre9/communication.c	Thu Jun 27 18:53:55 2002
++++ ebtables-v2.0pre10.001/communication.c	Mon Jul 15 22:35:14 2002
+@@ -27,7 +27,7 @@
+ 
+ int sockfd = -1;
+ 
+-void get_sockfd()
++static void get_sockfd()
+ {
+ 	if (sockfd == -1) {
+ 		sockfd = socket(AF_INET, SOCK_RAW, PF_INET);
+@@ -209,6 +209,47 @@
+ 	return new;
+ }
+ 
++static void store_table_in_file(char *filename, struct ebt_replace *repl)
++{
++	char *command, *data;
++	int size;
++	FILE *file;
++
++	// start from an empty file with right priviliges
++	command = (char *)malloc(strlen(filename) + 15);
++	if (!command)
++		print_memory();
++	strcpy(command, "cat /dev/null>");
++	strcpy(command + 14, filename);
++	if (system(command))
++		print_error("Couldn't create file %s", filename);
++	strcpy(command, "chmod 600 ");
++	strcpy(command + 10, filename);
++	if (system(command))
++		print_error("Couldn't chmod file %s", filename);
++	free(command);
++
++	size = sizeof(struct ebt_replace) + repl->entries_size +
++	   repl->nentries * sizeof(struct ebt_counter);
++	data = (char *)malloc(size);
++	if (!data)
++		print_memory();
++	memcpy(data, repl, sizeof(struct ebt_replace));
++	memcpy(data + sizeof(struct ebt_replace), repl->entries,
++	   repl->entries_size);
++	// initialize counters to zero, deliver_counters() can update them
++	memset(data + sizeof(struct ebt_replace) + repl->entries_size,
++	   0, repl->nentries * sizeof(struct ebt_counter));
++	if (!(file = fopen(filename, "wb")))
++		print_error("Couldn't open file %s", filename);
++	if (fwrite(data, sizeof(char), size, file) != size) {
++		fclose(file);
++		print_error("Couldn't write everything to file %s", filename);
++	}
++	fclose(file);
++	free(data);
++}
++
+ void deliver_table(struct ebt_u_replace *u_repl)
+ {
+ 	socklen_t optlen;
+@@ -216,15 +257,43 @@
+ 
+ 	// translate the struct ebt_u_replace to a struct ebt_replace
+ 	repl = translate_user2kernel(u_repl);
+-	get_sockfd();
+ 	// give the data to the kernel
+ 	optlen = sizeof(struct ebt_replace) + repl->entries_size;
++	if (u_repl->filename != NULL) {
++		store_table_in_file(u_repl->filename, repl);
++		return;
++	}
++	get_sockfd();
+ 	if (setsockopt(sockfd, IPPROTO_IP, EBT_SO_SET_ENTRIES, repl, optlen))
+ 		print_error("The kernel doesn't support a certain ebtables"
+ 		  " extension, consider recompiling your kernel or insmod"
+ 		  " the extension");	
+ }
+ 
++static void store_counters_in_file(char *filename, struct ebt_u_replace *repl)
++{
++	int size = repl->nentries * sizeof(struct ebt_counter);
++	int entries_size;
++	struct ebt_replace hlp;
++	FILE *file;
++
++	if (!(file = fopen(filename, "r+b")))
++		print_error("Could not open file %s", filename);
++	// find out entries_size and then set the file pointer to the counters
++	if (fseek(file, (char *)(&hlp.entries_size) - (char *)(&hlp), SEEK_SET)
++	   || fread(&entries_size, sizeof(char), sizeof(unsigned int), file) !=
++	   sizeof(unsigned int) ||
++	   fseek(file, entries_size + sizeof(struct ebt_replace), SEEK_SET)) {
++		fclose(file);
++		print_error("File %s is corrupt", filename);
++	}
++	if (fwrite(repl->counters, sizeof(char), size, file) != size) {
++		fclose(file);
++		print_error("Could not write everything to file %s", filename);
++	}
++	fclose(file);
++}
++
+ // gets executed after deliver_table
+ void
+ deliver_counters(struct ebt_u_replace *u_repl, unsigned short *counterchanges)
+@@ -273,6 +342,10 @@
+ 	free(u_repl->counters);
+ 	u_repl->counters = newcounters;
+ 	u_repl->num_counters = u_repl->nentries;
++	if (u_repl->filename != NULL) {
++		store_counters_in_file(u_repl->filename, u_repl);
++		return;
++	}
+ 	optlen = u_repl->nentries * sizeof(struct ebt_counter) +
+ 	   sizeof(struct ebt_replace);
+ 	// now put the stuff in the kernel's struct ebt_replace
+@@ -484,37 +557,119 @@
+ 	return 0;
+ }
+ 
+-// talk with kernel to receive the kernel's table
+-int get_table(struct ebt_u_replace *u_repl)
++static void retrieve_from_file(char *filename, struct ebt_replace *repl,
++   char command)
+ {
+-	int i, j, k, hook;
+-	socklen_t optlen;
+-	struct ebt_replace repl;
+-	struct ebt_u_entry **u_e;
++	FILE *file;
++	char *hlp;
++	int size;
++
++	if (!(file = fopen(filename, "r+b")))
++		print_error("Could not open file %s", filename);
++	// make sure table name is right if command isn't -L or --atomic-commit
++	if (command != 'L' && command != 8) {
++		hlp = (char *)malloc(strlen(repl->name));
++		if (!hlp)
++			print_memory();
++		strcpy(hlp, repl->name);
++	}
++	if (fread(repl, sizeof(char), sizeof(struct ebt_replace), file)
++	   != sizeof(struct ebt_replace))
++		print_error("File %s is corrupt", filename);
++	if (command != 'L' && command != 8 && strcmp(hlp, repl->name)) {
++		fclose(file);
++		print_error("File %s contains wrong table name or is corrupt",
++		   filename);
++	} else
++		if (!find_table(repl->name)) {
++			fclose(file);
++			print_error("File %s contains invalid table name",
++			   filename);
++		}
+ 
+-	get_sockfd();
++	size = sizeof(struct ebt_replace) +
++	   repl->nentries * sizeof(struct ebt_counter) + repl->entries_size;
++	fseek(file, 0, SEEK_END);
++	if (size != ftell(file)) {
++		fclose(file);
++		print_error("File %s has wrong size", filename);
++	}
++	repl->entries = (char *)malloc(repl->entries_size);
++	if (!repl->entries)
++		print_memory();
++	if (repl->nentries) {
++		repl->counters = (struct ebt_counter *)
++		   malloc(repl->nentries * sizeof(struct ebt_counter));
++		if (!repl->counters)
++			print_memory();
++	} else
++		repl->counters = NULL;
++	// copy entries and counters
++	if (fseek(file, sizeof(struct ebt_replace), SEEK_SET) ||
++	   fread(repl->entries, sizeof(char), repl->entries_size, file)
++	   != repl->entries_size ||
++	   fseek(file, sizeof(struct ebt_replace) + repl->entries_size, SEEK_SET)
++	   || fread(repl->counters, sizeof(char),
++	   repl->nentries * sizeof(struct ebt_counter), file)
++	   != repl->nentries * sizeof(struct ebt_counter)) {
++		fclose(file);
++		print_error("File %s is corrupt", filename);
++	}
++	fclose(file);
++}
++
++static int retrieve_from_kernel(struct ebt_replace *repl, char command)
++{
++	socklen_t optlen;
++	int optname;
+ 
+ 	optlen = sizeof(struct ebt_replace);
+-	strcpy(repl.name, u_repl->name);
+-	if (getsockopt(sockfd, IPPROTO_IP, EBT_SO_GET_INFO, &repl, &optlen))
++	get_sockfd();
++	// --atomic-init || --init-table
++	if (command == 7 || command == 11)
++		optname = EBT_SO_GET_INIT_INFO;
++	else
++		optname = EBT_SO_GET_INFO;
++	if (getsockopt(sockfd, IPPROTO_IP, optname, repl, &optlen))
+ 		return -1;
+ 
+-	if ( !(repl.entries = (char *) malloc(repl.entries_size)) )
++	if ( !(repl->entries = (char *) malloc(repl->entries_size)) )
+ 		print_memory();
+-	if (repl.nentries) {
+-		if (!(repl.counters = (struct ebt_counter *)
+-		   malloc(repl.nentries * sizeof(struct ebt_counter))) )
++	if (repl->nentries) {
++		if (!(repl->counters = (struct ebt_counter *)
++		   malloc(repl->nentries * sizeof(struct ebt_counter))) )
+ 			print_memory();
+ 	}
+ 	else
+-		repl.counters = NULL;
++		repl->counters = NULL;
+ 
+ 	// we want to receive the counters
+-	repl.num_counters = repl.nentries;
+-	optlen += repl.entries_size + repl.num_counters *
++	repl->num_counters = repl->nentries;
++	optlen += repl->entries_size + repl->num_counters *
+ 	   sizeof(struct ebt_counter);
+-	if (getsockopt(sockfd, IPPROTO_IP, EBT_SO_GET_ENTRIES, &repl, &optlen))
++	if (command == 7 || command == 11)
++		optname = EBT_SO_GET_INIT_ENTRIES;
++	else
++		optname = EBT_SO_GET_ENTRIES;
++	if (getsockopt(sockfd, IPPROTO_IP, optname, repl, &optlen))
+ 		print_bug("hmm, what is wrong??? bug#1");
++
++	return 0;
++}
++
++// talk with kernel to receive the kernel's table
++int get_table(struct ebt_u_replace *u_repl)
++{
++	int i, j, k, hook;
++	struct ebt_replace repl;
++	struct ebt_u_entry **u_e;
++
++	strcpy(repl.name, u_repl->name);
++	if (u_repl->filename != NULL)
++		retrieve_from_file(u_repl->filename, &repl, u_repl->command);
++	else
++		if (retrieve_from_kernel(&repl, u_repl->command) == -1)
++			return -1;
+ 
+ 	// translate the struct ebt_replace to a struct ebt_u_replace
+ 	memcpy(u_repl->name, repl.name, sizeof(u_repl->name));
+--- ebtables-v2.0pre9/ChangeLog	Thu Jun 27 18:53:55 2002
++++ ebtables-v2.0pre10.001/ChangeLog	Sun Jul 14 21:30:18 2002
+@@ -1,3 +1,8 @@
++20020714
++	* added --atomic options
++20020710
++	* some unlogged changes (due to lazyness)
++	* added --Lc, --Ln, --Lx
+ 20020625
+ 	* user defined chains support: added -N, -X, -E options.
+ 20020621
+--- ebtables-v2.0pre9/ebtables.8	Thu Jun 27 18:53:55 2002
++++ ebtables-v2.0pre10.001/ebtables.8	Mon Jul 15 21:45:55 2002
+@@ -37,6 +37,14 @@
+ .br
+ .BR "ebtables -[b] [" "y/n" "]"
+ .br
++.BR "ebtables --init-table"
++.br
++.BR "ebtables --atomic-init " file
++.br
++.BR "ebtables --atomic-save " file
++.br
++.BR "ebtables --atomic-commit " file
++.br
+ .SH DESCRIPTION
+ .B ebtables
+ is used to set up, maintain, and inspect the tables of Ethernet frame
+@@ -148,11 +156,34 @@
+ database is independent from the rest of
+ .B ebtables
+ and is in a different kernel module.
++.br
++The following three options change the output when not listing the
++database:
++.br
++.B "--Ln"
++.br
++Puts rule numbers in front of every rule.
++.br
++.B "--Lc"
++.br
++Puts the counter value at the end of every rule.
++.br
++.B "--Lx"
++.br
++The output is directly usable as executable commands in a script, to be
++run f.e. at bootup. This option is incompatible with the previous two
++options. When no chain name was specified for the
++.B "-L"
++command, all necessary commands for making the user defined chains and
++renaming the standard chains will be made.
+ .TP
+ .B "-F, --flush"
+ Flush the selected chain. If no chain is selected, every chain will be
+ flushed. This does not change the policy of the chain.
+ .TP
++.B "--init-table"
++Replace the current table data by the initial table data.
++.TP
+ .B "-Z, --zero"
+ Put the counters of the selected chain on zero. If no chain is selected, all the counters
+ are put on zero. This can be used in conjunction with the -L command (see above). 
+@@ -178,6 +209,30 @@
+ structure of the table. It is also allowed to rename a base chain, f.e.
+ if you like PREBRIDGING more than PREROUTING. Be sure to talk about the
+ standard chain names when you would ask a question on a mailing list.
++.TP
++.B "--atomic-init"
++Copy the kernel's initial data of the table to the specified
++file. This can be used as the first action, after which rules are added
++to the file.
++.TP
++.B "--atomic-save"
++Copy the kernel's current data of the table to the specified
++file. This can be used as the first action, after which rules are added
++to the file.
++.TP
++.B "--atomic-commit"
++Replace the kernel table data with the data contained in the specified
++file. This is a useful command that allows you to put all your rules of a
++certain table into the kernel at once, saving the kernel a lot of precious
++time. The file which contains the table data is constructed by using
++either the
++.B "--atomic-init"
++or the
++.B "--atomic-save"
++command to get a starting file. After that, using the
++.B "--atomic"
++option when constructing rules allows you to extend the file and build up
++the complete wanted table.
+ .SS
+ PARAMETERS
+ The following parameters make up a rule specification (as used in the add
+@@ -280,8 +335,8 @@
+ .B ebtables
+ will try to write help about those extensions. E.g. ebtables -h snat log ip arp.
+ .TP
+-.BR "-b --db " "[\fIy/n\fP]"
+-.IR "" "Enable (" y ") or disable (" n ") the database."
++.BR "-b --db [" "y/n" "]"
++Enable (y) or disable (n) the database.
+ .TP
+ .BR "-j, --jump " "\fItarget\fP"
+ The target of the rule. This is one of the following values:
+@@ -291,9 +346,15 @@
+ or a target extension, see
+ .BR "TARGET EXTENSIONS" .
+ .TP
+-.BR "-M, --modprobe " "\fIcommand\fP"
+-When talking to the kernel, use this
+-.IR command " to try to automatically load missing kernel modules."
++.BR "--atomic " file
++Let the command operate on the specified file. The data of the table to
++operate on will be extracted from the file and the result of the operation
++will be saved back into the file. If specified, this option should come
++before the command specification.
++.TP
++.BR "-M, --modprobe " "program"
++When talking to the kernel, use this program to try to automatically load
++missing kernel modules.
+ .SH MATCH EXTENSIONS
+ .B ebtables
+ extensions are precompiled into the userspace tool. So there is no need
+--- ebtables-v2.0pre9/include/ebtables_u.h	Thu Jun 27 18:53:55 2002
++++ ebtables-v2.0pre10.001/include/ebtables_u.h	Sat Jul 13 21:13:46 2002
+@@ -66,6 +66,8 @@
+ 	char command;
+ 	// here we stick the hook to do our thing on (can be -1 if unspecified)
+ 	int selected_hook;
++	// used for the atomic option
++	char *filename;
+ };
+ 
+ struct ebt_u_table
+@@ -191,6 +193,7 @@
+ struct ebt_u_target *find_target(const char *name);
+ struct ebt_u_match *find_match(const char *name);
+ struct ebt_u_watcher *find_watcher(const char *name);
++struct ebt_u_table *find_table(char *name);
+ void deliver_counters(struct ebt_u_replace *repl,
+    unsigned short * counterchanges);
+ void deliver_table(struct ebt_u_replace *repl);

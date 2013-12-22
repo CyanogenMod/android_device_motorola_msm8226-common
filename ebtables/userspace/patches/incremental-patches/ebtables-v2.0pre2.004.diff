@@ -1,0 +1,50 @@
+--- ebtables-v2.0pre2.003/Makefile	Sun Apr 14 15:01:46 2002
++++ ebtables-v2.0pre2.004/Makefile	Sun Apr 14 15:03:11 2002
+@@ -2,7 +2,7 @@
+ 
+ KERNEL_DIR?=/usr/src/linux
+ PROGNAME:=ebtables
+-PROGVERSION:="2.0pre2.003 (April 2002)"
++PROGVERSION:="2.0pre2 (April 2002)"
+ 
+ MANDIR?=/usr/local/man
+ CFLAGS:=-Wall -Wunused
+--- ebtables-v2.0pre2.003/ChangeLog	Sat Apr 13 17:39:08 2002
++++ ebtables-v2.0pre2.004/ChangeLog	Sun Apr 14 14:15:59 2002
+@@ -1,3 +1,6 @@
++20020414
++	* fixed some things in the manual.
++	* fixed -P problem.
+ 20020411
+ 	* -j standard no longer works, is this cryptic? good :)
+ 	* lots of beautification.
+--- ebtables-v2.0pre2.003/ebtables.8	Sun Apr 14 15:01:46 2002
++++ ebtables-v2.0pre2.004/ebtables.8	Sun Apr 14 14:58:15 2002
+@@ -1,4 +1,4 @@
+-.TH EBTABLES 8  "03 April 2002"
++.TH EBTABLES 8  "14 April 2002"
+ .\"
+ .\" Man page written by Bart De Schuymer <bart.de.schuymer@pandora.be>
+ .\" It is based on the iptables man page.
+@@ -21,7 +21,7 @@
+ .\"     
+ .\"
+ .SH NAME
+-ebtables(v.2) \- ethernet bridge packet table administration
++ebtables(v.2.0) \- ethernet bridge packet table administration
+ .SH SYNOPSIS
+ .BR "ebtables -[ADI] " "chain rule-specification [options]"
+ .br
+@@ -263,6 +263,12 @@
+ .BR "--arp-ptype " "[!] \fIprotocol type\fP"
+ The protocol type for which the (r)arp is used (hexadecimal or the string "IPv4").
+ This is normally IPv4 (0x0800). 
++.TP
++.BR "--arp-ip-src " "[!] \fIaddress\fP[/\fImask\fP]"
++The ARP IP source address specification.
++.TP
++.BR "--arp-ip-dst " "[!] \fIaddress\fP[/\fImask\fP]"
++The ARP IP destination address specification.
+ .SH WATCHER EXTENSION(S)
+ Watchers are things that only look at frames passing by. These watchers only see the
+ frame if the frame passes all the matches of the rule.

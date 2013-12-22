@@ -1,0 +1,1128 @@
+--- linux/net/bridge/netfilter/ebtable_filter.c	Fri Jun 28 18:00:15 2002
++++ ebt2.0pre9.001/net/bridge/netfilter/ebtable_filter.c	Thu Jun 27 19:11:50 2002
+@@ -17,17 +17,16 @@
+ 
+ static struct ebt_entries initial_chains[] =
+ {
+-  {0, EBT_ACCEPT, 0},
+-  {0, EBT_ACCEPT, 0},
+-  {0, EBT_ACCEPT, 0}
++  {0, "INPUT", 0, EBT_ACCEPT, 0},
++  {0, "FORWARD", 0, EBT_ACCEPT, 0},
++  {0, "OUTPUT", 0, EBT_ACCEPT, 0}
+ };
+ 
+-static struct ebt_replace initial_table = 
+-{ 
++static struct ebt_replace initial_table =
++{
+   "filter", FILTER_VALID_HOOKS, 0, 3 * sizeof(struct ebt_entries),
+   { [NF_BR_LOCAL_IN]&initial_chains[0], [NF_BR_FORWARD]&initial_chains[1],
+-    [NF_BR_LOCAL_OUT]&initial_chains[2] },{},
+-  0, NULL, (char *)initial_chains
++    [NF_BR_LOCAL_OUT]&initial_chains[2] }, 0, NULL, (char *)initial_chains
+ };
+ 
+ static int check(const struct ebt_table_info *info, unsigned int valid_hooks)
+--- linux/net/bridge/netfilter/ebtable_nat.c	Fri Jun 28 18:00:15 2002
++++ ebt2.0pre9.001/net/bridge/netfilter/ebtable_nat.c	Thu Jun 27 19:11:50 2002
+@@ -17,17 +17,16 @@
+ 
+ static struct ebt_entries initial_chains[] =
+ {
+-  {0, EBT_ACCEPT, 0},
+-  {0, EBT_ACCEPT, 0},
+-  {0, EBT_ACCEPT, 0}
++  {0, "PREROUTING", 0, EBT_ACCEPT, 0},
++  {0, "OUTPUT", 0, EBT_ACCEPT, 0},
++  {0, "POSTROUTING", 0, EBT_ACCEPT, 0}
+ };
+ 
+ static struct ebt_replace initial_table =
+ {
+   "nat", NAT_VALID_HOOKS, 0, 3 * sizeof(struct ebt_entries),
+   { [NF_BR_PRE_ROUTING]&initial_chains[0], [NF_BR_LOCAL_OUT]&initial_chains[1],
+-    [NF_BR_POST_ROUTING]&initial_chains[2] }, {},
+-  0, NULL, (char *)initial_chains
++    [NF_BR_POST_ROUTING]&initial_chains[2] }, 0, NULL, (char *)initial_chains
+ };
+ 
+ static int check(const struct ebt_table_info *info, unsigned int valid_hooks)
+--- linux/net/bridge/netfilter/ebtable_broute.c	Fri Jun 28 18:00:15 2002
++++ ebt2.0pre9.001/net/bridge/netfilter/ebtable_broute.c	Thu Jun 27 19:11:50 2002
+@@ -21,13 +21,12 @@
+ // EBT_ACCEPT means the frame will be bridged
+ // EBT_DROP means the frame will be routed
+ static struct ebt_entries initial_chain =
+-  {0, EBT_ACCEPT, 0};
++  {0, "BROUTE", 0, EBT_ACCEPT, 0};
+ 
+ static struct ebt_replace initial_table =
+ {
+   "broute", 1 << NF_BR_BROUTING, 0, sizeof(struct ebt_entries),
+-  { [NF_BR_BROUTING]&initial_chain}, {},
+-  0, NULL, (char *)&initial_chain
++  { [NF_BR_BROUTING]&initial_chain}, 0, NULL, (char *)&initial_chain
+ };
+ 
+ static int check(const struct ebt_table_info *info, unsigned int valid_hooks)
+--- linux/net/bridge/netfilter/ebt_redirect.c	Fri Jun 28 18:00:15 2002
++++ ebt2.0pre9.001/net/bridge/netfilter/ebt_redirect.c	Thu Jun 27 19:11:50 2002
+@@ -16,7 +16,7 @@
+ #include <net/sock.h>
+ #include "../br_private.h"
+ 
+-static __u8 ebt_target_redirect(struct sk_buff **pskb, unsigned int hooknr,
++static int ebt_target_redirect(struct sk_buff **pskb, unsigned int hooknr,
+    const struct net_device *in, const struct net_device *out,
+    const void *data, unsigned int datalen)
+ {
+@@ -28,17 +28,17 @@
+ 	return infostuff->target;
+ }
+ 
+-static int ebt_target_redirect_check(const char *tablename, unsigned int hooknr,
++static int ebt_target_redirect_check(const char *tablename, unsigned int hookmask,
+    const struct ebt_entry *e, void *data, unsigned int datalen)
+ {
+ 	struct ebt_redirect_info *infostuff = (struct ebt_redirect_info *) data;
+ 
+-	if ( (strcmp(tablename, "nat") || hooknr != NF_BR_PRE_ROUTING) &&
+-	     (strcmp(tablename, "broute") || hooknr != NF_BR_BROUTING) )
++	if ( (strcmp(tablename, "nat") || hookmask & ~(1 << NF_BR_PRE_ROUTING)) &&
++	     (strcmp(tablename, "broute") || hookmask & ~(1 << NF_BR_BROUTING)) )
+ 		return -EINVAL;
+ 	if (datalen != sizeof(struct ebt_redirect_info))
+ 		return -EINVAL;
+-	if (infostuff->target >= NUM_STANDARD_TARGETS)
++	if (infostuff->target < -NUM_STANDARD_TARGETS || infostuff->target >= 0)
+ 		return -EINVAL;
+ 	return 0;
+ }
+--- linux/net/bridge/netfilter/ebt_arp.c	Fri Jun 28 18:00:15 2002
++++ ebt2.0pre9.001/net/bridge/netfilter/ebt_arp.c	Thu Jun 27 19:11:50 2002
+@@ -68,7 +68,7 @@
+ 	return 0;
+ }
+ 
+-static int ebt_arp_check(const char *tablename, unsigned int hooknr,
++static int ebt_arp_check(const char *tablename, unsigned int hookmask,
+    const struct ebt_entry *e, void *data, unsigned int datalen)
+ {
+ 	struct ebt_arp_info *infostuff = (struct ebt_arp_info *) data;
+--- linux/net/bridge/netfilter/ebt_ip.c	Fri Jun 28 18:00:15 2002
++++ ebt2.0pre9.001/net/bridge/netfilter/ebt_ip.c	Thu Jun 27 19:11:50 2002
+@@ -39,7 +39,7 @@
+ 	return 0;
+ }
+ 
+-static int ebt_ip_check(const char *tablename, unsigned int hooknr,
++static int ebt_ip_check(const char *tablename, unsigned int hookmask,
+    const struct ebt_entry *e, void *data, unsigned int datalen)
+ {
+ 	struct ebt_ip_info *infostuff = (struct ebt_ip_info *) data;
+--- linux/net/bridge/netfilter/ebt_vlan.c	Fri Jun 28 18:00:15 2002
++++ ebt2.0pre9.001/net/bridge/netfilter/ebt_vlan.c	Thu Jun 27 19:11:50 2002
+@@ -5,7 +5,7 @@
+  *      Bart De Schuymer <bart.de.schuymer@pandora.be>
+  *      Nick Fedchik <nick@fedchik.org.ua>
+  *
+- *      May, 2002
++ *      June, 2002
+  */
+ 
+ #include <linux/netfilter_bridge/ebtables.h>
+@@ -18,6 +18,8 @@
+ MODULE_PARM (debug, "0-1b");
+ MODULE_PARM_DESC (debug, "debug=1 is turn on debug messages");
+ 
++#define MODULE_VERSION "0.2"
++
+ static int ebt_filter_vlan (const struct sk_buff *skb,
+ 			    const struct net_device *in,
+ 			    const struct net_device *out,
+@@ -30,43 +32,64 @@
+ 	    (struct vlan_ethhdr *) skb->mac.raw;
+ 	unsigned short v_id;
+ 	unsigned short v_prio;
++	unsigned short v_TCI;
+ 
+ 	/*
+-	 * Calculate 802.1Q VLAN ID and Priority 
+-	 * Reserved one bit (13) for CFI 
++	 * Calculate 802.1Q VLAN ID and user_priority from 
++	 * Tag Control Information (TCI) field.
++	 * Reserved one bit (13) for CFI (Canonical Format Indicator)
+ 	 */
+-	v_id = ntohs ((unsigned short) vlanethhdr->h_vlan_TCI) & 0xFFF;
+-	v_prio = ntohs ((unsigned short) vlanethhdr->h_vlan_TCI) >> 13;
++	v_TCI = ntohs (vlanethhdr->h_vlan_TCI);
++	v_id = v_TCI & 0xFFF;
++	v_prio = v_TCI >> 13;
+ 
+ 	/*
+ 	 * Checking VLANs 
+ 	 */
+ 	if (infostuff->bitmask & EBT_VLAN_ID) {	/* Is VLAN ID parsed? */
+ 		if (!((infostuff->id == v_id)
+-		      ^ !!(infostuff->invflags & EBT_VLAN_ID))) 
+-		return 1;
++		      ^ !!(infostuff->invflags & EBT_VLAN_ID)))
++			return 1;
+ 		if (debug)
+ 			printk (KERN_DEBUG
+ 				"ebt_vlan: matched ID=%s%d (mask=%X)\n",
+-				(infostuff->invflags & EBT_VLAN_ID) ? "!" : "",
+-				infostuff->id,
+-				(unsigned char) infostuff->bitmask);
++				(infostuff->
++				 invflags & EBT_VLAN_ID) ? "!" : "",
++				infostuff->id, infostuff->bitmask);
+ 	}
+ 	/*
+-	 * Checking Priority 
++	 * Checking User Priority 
+ 	 */
+ 	if (infostuff->bitmask & EBT_VLAN_PRIO) {	/* Is VLAN Prio parsed? */
+-		if (!( (infostuff->prio == v_prio) 
+-		     ^ !!(infostuff->invflags & EBT_VLAN_PRIO))) 
+-		return 1;	/* missed */
++		if (!((infostuff->prio == v_prio)
++		      ^ !!(infostuff->invflags & EBT_VLAN_PRIO)))
++			return 1;	/* missed */
+ 		if (debug)
+ 			printk (KERN_DEBUG
+ 				"ebt_vlan: matched Prio=%s%d (mask=%X)\n",
+-				(infostuff->invflags & EBT_VLAN_PRIO) ? "!" : "",
+-				infostuff->prio,
+-				(unsigned char) infostuff->bitmask);
++				(infostuff->
++				 invflags & EBT_VLAN_PRIO) ? "!" : "",
++				infostuff->prio, infostuff->bitmask);
+ 	}
+ 	/*
++	 * Checking for Encapsulated proto
++	 */
++	if (infostuff->bitmask & EBT_VLAN_ENCAP) {	/* Is VLAN Encap parsed? */
++		if (!
++		    ((infostuff->encap ==
++		      vlanethhdr->h_vlan_encapsulated_proto)
++		     ^ !!(infostuff->invflags & EBT_VLAN_ENCAP)))
++			return 1;	/* missed */
++		if (debug)
++			printk (KERN_DEBUG
++				"ebt_vlan: matched encap=%s%2.4X (mask=%X)\n",
++				(infostuff->
++				 invflags & EBT_VLAN_ENCAP) ? "!" : "",
++				ntohs (infostuff->encap),
++				infostuff->bitmask);
++	}
++
++	/*
+ 	 * rule matched 
+ 	 */
+ 	return 0;
+@@ -76,7 +99,7 @@
+  * ebt_vlan_check() is called when userspace delivers the table to the kernel, 
+  * * it is called to check that userspace doesn't give a bad table.
+  */
+-static int ebt_vlan_check (const char *tablename, unsigned int hooknr,
++static int ebt_vlan_check (const char *tablename, unsigned int hookmask,
+ 			   const struct ebt_entry *e, void *data,
+ 			   unsigned int datalen)
+ {
+@@ -96,7 +119,10 @@
+ }
+ 
+ static struct ebt_match filter_vlan = {
+-	{NULL, NULL}, EBT_VLAN_MATCH, ebt_filter_vlan, ebt_vlan_check,
++	{NULL, NULL},
++	EBT_VLAN_MATCH,
++	ebt_filter_vlan,
++	ebt_vlan_check,
+ 	NULL,
+ 	THIS_MODULE
+ };
+@@ -104,10 +130,11 @@
+ static int __init init (void)
+ {
+ 	printk (KERN_INFO
+-		"ebt_vlan: 802.1Q VLAN matching module for EBTables\n");
++		"ebt_vlan: 802.1Q VLAN matching module for EBTables "
++		MODULE_VERSION "\n");
+ 	if (debug)
+ 		printk (KERN_DEBUG
+-			"ebt_vlan: 802.1Q matching debug is on\n");
++			"ebt_vlan: 802.1Q rule matching debug is on\n");
+ 	return ebt_register_match (&filter_vlan);
+ }
+ 
+@@ -120,5 +147,6 @@
+ module_exit (fini);
+ EXPORT_NO_SYMBOLS;
+ MODULE_AUTHOR ("Nick Fedchik <nick@fedchik.org.ua>");
+-MODULE_DESCRIPTION ("802.1Q VLAN matching module for ebtables, v0.1");
++MODULE_DESCRIPTION ("802.1Q VLAN matching module for ebtables, v"
++		    MODULE_VERSION);
+ MODULE_LICENSE ("GPL");
+--- linux/net/bridge/netfilter/ebt_log.c	Fri Jun 28 18:00:15 2002
++++ ebt2.0pre9.001/net/bridge/netfilter/ebt_log.c	Thu Jun 27 19:11:50 2002
+@@ -17,7 +17,7 @@
+ 
+ static spinlock_t ebt_log_lock = SPIN_LOCK_UNLOCKED;
+ 
+-static int ebt_log_check(const char *tablename, unsigned int hooknr,
++static int ebt_log_check(const char *tablename, unsigned int hookmask,
+    const struct ebt_entry *e, void *data, unsigned int datalen)
+ {
+ 	struct ebt_log_info *loginfo = (struct ebt_log_info *)data;
+--- linux/net/bridge/netfilter/ebt_snat.c	Fri Jun 28 18:00:15 2002
++++ ebt2.0pre9.001/net/bridge/netfilter/ebt_snat.c	Thu Jun 27 19:11:50 2002
+@@ -15,7 +15,7 @@
+ #include <linux/module.h>
+ #include <net/sock.h>
+ 
+-static __u8 ebt_target_snat(struct sk_buff **pskb, unsigned int hooknr,
++static int ebt_target_snat(struct sk_buff **pskb, unsigned int hooknr,
+    const struct net_device *in, const struct net_device *out,
+    const void *data, unsigned int datalen)
+ {
+@@ -26,7 +26,7 @@
+ 	return infostuff->target;
+ }
+ 
+-static int ebt_target_snat_check(const char *tablename, unsigned int hooknr,
++static int ebt_target_snat_check(const char *tablename, unsigned int hookmask,
+    const struct ebt_entry *e, void *data, unsigned int datalen)
+ {
+ 	struct ebt_nat_info *infostuff = (struct ebt_nat_info *) data;
+@@ -35,9 +35,9 @@
+ 		return -EINVAL;
+ 	if (datalen != sizeof(struct ebt_nat_info))
+ 		return -EINVAL;
+-	if (hooknr != NF_BR_POST_ROUTING)
++	if (hookmask & ~(1 << NF_BR_POST_ROUTING))
+ 		return -EINVAL;
+-	if (infostuff->target >= NUM_STANDARD_TARGETS)
++	if (infostuff->target < -NUM_STANDARD_TARGETS || infostuff->target >= 0)
+ 		return -EINVAL;
+ 	return 0;
+ }
+--- linux/net/bridge/netfilter/ebt_dnat.c	Fri Jun 28 18:00:15 2002
++++ ebt2.0pre9.001/net/bridge/netfilter/ebt_dnat.c	Thu Jun 27 19:11:50 2002
+@@ -15,7 +15,7 @@
+ #include <linux/module.h>
+ #include <net/sock.h>
+ 
+-static __u8 ebt_target_dnat(struct sk_buff **pskb, unsigned int hooknr,
++static int ebt_target_dnat(struct sk_buff **pskb, unsigned int hooknr,
+    const struct net_device *in, const struct net_device *out,
+    const void *data, unsigned int datalen)
+ {
+@@ -26,18 +26,18 @@
+ 	return infostuff->target;
+ }
+ 
+-static int ebt_target_dnat_check(const char *tablename, unsigned int hooknr,
++static int ebt_target_dnat_check(const char *tablename, unsigned int hookmask,
+    const struct ebt_entry *e, void *data, unsigned int datalen)
+ {
+ 	struct ebt_nat_info *infostuff = (struct ebt_nat_info *) data;
+ 
+-	if ( (strcmp(tablename, "nat") || 
+-	   (hooknr != NF_BR_PRE_ROUTING && hooknr != NF_BR_LOCAL_OUT)) &&
+-	   (strcmp(tablename, "broute") || hooknr != NF_BR_BROUTING) )
++	if ( (strcmp(tablename, "nat") ||
++	   (hookmask & ~((1 << NF_BR_PRE_ROUTING) | (1 << NF_BR_LOCAL_OUT)))) &&
++	   (strcmp(tablename, "broute") || hookmask & ~(1 << NF_BR_BROUTING)) )
+ 		return -EINVAL;
+ 	if (datalen != sizeof(struct ebt_nat_info))
+ 		return -EINVAL;
+-	if (infostuff->target >= NUM_STANDARD_TARGETS)
++	if (infostuff->target < -NUM_STANDARD_TARGETS || infostuff->target >= 0)
+ 		return -EINVAL;
+ 	return 0;
+ }
+--- linux/net/bridge/netfilter/ebtables.c	Fri Jun 28 18:00:15 2002
++++ ebt2.0pre9.001/net/bridge/netfilter/ebtables.c	Thu Jun 27 19:11:50 2002
+@@ -90,27 +90,35 @@
+ 	if (!device)
+ 		return 1;
+ 	return strncmp(entry, device->name, IFNAMSIZ);
+-}	
++}
+ 
+ // Do some firewalling
+ unsigned int ebt_do_table (unsigned int hook, struct sk_buff **pskb,
+    const struct net_device *in, const struct net_device *out,
+    struct ebt_table *table)
+ {
+-	int i, nentries;
++	int i, j, nentries;
+ 	struct ebt_entry *point;
+ 	struct ebt_counter *counter_base;
+ 	struct ebt_entry_target *t;
+-	__u8 verdict;
++	int verdict, sp = 0;
++	struct ebt_chainstack *cs;
++	struct ebt_entries *chaininfo;
++	char *base;
+ 
+ 	read_lock_bh(&table->lock);
++	cs = table->private->chainstack;
++	chaininfo = table->private->hook_entry[hook];
+ 	nentries = table->private->hook_entry[hook]->nentries;
+ 	point = (struct ebt_entry *)(table->private->hook_entry[hook]->data);
+-	counter_base = table->private->counters +
+-	   cpu_number_map(smp_processor_id()) * table->private->nentries +
+-	   table->private->counter_entry[hook];
++	#define cb_base table->private->counters + \
++	   cpu_number_map(smp_processor_id()) * table->private->nentries
++	counter_base = cb_base + table->private->hook_entry[hook]->counter_offset;
+ 	#define FWINV(bool,invflg) ((bool) ^ !!(point->invflags & invflg))
+- 	for (i = 0; i < nentries; i++) {
++	// base for chain jumps
++	base = (char *)chaininfo;
++	i = 0;
++ 	while (i < nentries) {
+ 		if ( ( point->bitmask & EBT_NOPROTO ||
+ 		   FWINV(point->ethproto == ((**pskb).mac.ethernet)->h_proto,
+ 		      EBT_IPROTO)
+@@ -125,24 +133,23 @@
+ 		      (point->logical_out), &out->br_port->br->dev), EBT_ILOGICALOUT))
+ 
+ 		) {
+-			char hlpmac[6];
+-			int j;
+-
+ 			if (point->bitmask & EBT_SOURCEMAC) {
++				verdict = 0;
+ 				for (j = 0; j < 6; j++)
+-					hlpmac[j] = ((**pskb).mac.ethernet)->
+-					   h_source[j] & point->sourcemsk[j];
+-				if (FWINV(!!memcmp(point->sourcemac, hlpmac,
+-				   ETH_ALEN), EBT_ISOURCE) )
++					verdict |= (((**pskb).mac.ethernet)->
++					   h_source[j] ^ point->sourcemac[j]) &
++					   point->sourcemsk[j];
++				if (FWINV(!!verdict, EBT_ISOURCE) )
+ 					goto letscontinue;
+ 			}
+ 
+ 			if (point->bitmask & EBT_DESTMAC) {
++				verdict = 0;
+ 				for (j = 0; j < 6; j++)
+-					hlpmac[j] = ((**pskb).mac.ethernet)->
+-					   h_dest[j] & point->destmsk[j];
+-				if (FWINV(!!memcmp(point->destmac, hlpmac,
+-				   ETH_ALEN), EBT_IDEST) )
++					verdict |= (((**pskb).mac.ethernet)->
++					   h_dest[j] ^ point->destmac[j]) &
++					   point->destmsk[j];
++				if (FWINV(!!verdict, EBT_IDEST) )
+ 					goto letscontinue;
+ 			}
+ 
+@@ -175,20 +182,56 @@
+ 				read_unlock_bh(&table->lock);
+ 				return NF_DROP;
+ 			}
+-			if (verdict != EBT_CONTINUE) {
++			if (verdict == EBT_RETURN) {
++letsreturn:
++				if (sp == 0)
++					// act like this is EBT_CONTINUE
++					goto letscontinue;
++				sp--;
++				// put all the local variables right
++				i = cs[sp].n;
++				chaininfo = cs[sp].chaininfo;
++				nentries = chaininfo->nentries;
++				point = cs[sp].e;
++				counter_base = cb_base +
++				   chaininfo->counter_offset;
++				continue;
++			}
++			if (verdict == EBT_CONTINUE)
++				goto letscontinue;
++			if (verdict < 0) {
++				BUGPRINT("bogus standard verdict\n");
++				read_unlock_bh(&table->lock);
++				return NF_DROP;
++			}
++			// jump to a udc
++			cs[sp].n = i + 1;
++			cs[sp].chaininfo = chaininfo;
++			cs[sp].e = (struct ebt_entry *)
++			   (((char *)point) + point->next_offset);
++			i = 0;
++			chaininfo = (struct ebt_entries *) (base + verdict);
++			if (chaininfo->distinguisher) {
++				BUGPRINT("jump to non-chain\n");
+ 				read_unlock_bh(&table->lock);
+-				BUGPRINT("Illegal target while "
+-				         "firewalling!!\n");
+-				// Try not to get oopsen
+ 				return NF_DROP;
+ 			}
++			nentries = chaininfo->nentries;
++			point = (struct ebt_entry *)chaininfo->data;
++			counter_base = cb_base + chaininfo->counter_offset;
++			sp++;
++			continue;
+ 		}
+ letscontinue:
+ 		point = (struct ebt_entry *)
+ 		   (((char *)point) + point->next_offset);
++		i++;
+ 	}
+ 
+-	if ( table->private->hook_entry[hook]->policy == EBT_ACCEPT ) {
++	// I actually like this :)
++	if (chaininfo->policy == EBT_RETURN)
++		goto letsreturn;
++	if (chaininfo->policy == EBT_ACCEPT) {
+ 		read_unlock_bh(&table->lock);
+ 		return NF_ACCEPT;
+ 	}
+@@ -268,7 +311,7 @@
+ 
+ static inline int
+ ebt_check_match(struct ebt_entry_match *m, struct ebt_entry *e,
+-   const char *name, unsigned int hook, unsigned int *cnt)
++   const char *name, unsigned int hookmask, unsigned int *cnt)
+ {
+ 	struct ebt_match *match;
+ 	int ret;
+@@ -282,7 +325,7 @@
+ 		__MOD_INC_USE_COUNT(match->me);
+ 	up(&ebt_mutex);
+ 	if (match->check &&
+-	   match->check(name, hook, e, m->data, m->match_size) != 0) {
++	   match->check(name, hookmask, e, m->data, m->match_size) != 0) {
+ 		BUGPRINT("match->check failed\n");
+ 		if (match->me)
+ 			__MOD_DEC_USE_COUNT(match->me);
+@@ -294,7 +337,7 @@
+ 
+ static inline int
+ ebt_check_watcher(struct ebt_entry_watcher *w, struct ebt_entry *e,
+-   const char *name, unsigned int hook, unsigned int *cnt)
++   const char *name, unsigned int hookmask, unsigned int *cnt)
+ {
+ 	struct ebt_watcher *watcher;
+ 	int ret;
+@@ -308,7 +351,7 @@
+ 		__MOD_INC_USE_COUNT(watcher->me);
+ 	up(&ebt_mutex);
+ 	if (watcher->check &&
+-	   watcher->check(name, hook, e, w->data, w->watcher_size) != 0) {
++	   watcher->check(name, hookmask, e, w->data, w->watcher_size) != 0) {
+ 		BUGPRINT("watcher->check failed\n");
+ 		if (watcher->me)
+ 			__MOD_DEC_USE_COUNT(watcher->me);
+@@ -324,7 +367,7 @@
+ ebt_check_entry_size_and_hooks(struct ebt_entry *e,
+    struct ebt_table_info *newinfo, char *base, char *limit,
+    struct ebt_entries **hook_entries, unsigned int *n, unsigned int *cnt,
+-   unsigned int *totalcnt, unsigned int valid_hooks)
++   unsigned int *totalcnt, unsigned int *udc_cnt, unsigned int valid_hooks)
+ {
+ 	int i;
+ 
+@@ -336,7 +379,8 @@
+ 			break;
+ 	}
+ 	// beginning of a new chain
+-	if (i != NF_BR_NUMHOOKS) {
++	// if i == NF_BR_NUMHOOKS it must be a user defined chain
++	if (i != NF_BR_NUMHOOKS || !(e->bitmask & EBT_ENTRY_OR_ENTRIES)) {
+ 		if ((e->bitmask & EBT_ENTRY_OR_ENTRIES) != 0) {
+ 			// we make userspace set this right,
+ 			// so there is no misunderstanding
+@@ -359,13 +403,23 @@
+ 		}
+ 		if (((struct ebt_entries *)e)->policy != EBT_DROP &&
+ 		   ((struct ebt_entries *)e)->policy != EBT_ACCEPT) {
+-			BUGPRINT("bad policy\n");
++			// only RETURN from udc
++			if (i != NF_BR_NUMHOOKS ||
++			   ((struct ebt_entries *)e)->policy != EBT_RETURN) {
++				BUGPRINT("bad policy\n");
++				return -EINVAL;
++			}
++		}
++		if (i == NF_BR_NUMHOOKS) // it's a user defined chain
++			(*udc_cnt)++;
++		else
++			newinfo->hook_entry[i] = (struct ebt_entries *)e;
++		if (((struct ebt_entries *)e)->counter_offset != *totalcnt) {
++			BUGPRINT("counter_offset != totalcnt");
+ 			return -EINVAL;
+ 		}
+ 		*n = ((struct ebt_entries *)e)->nentries;
+ 		*cnt = 0;
+-		newinfo->hook_entry[i] = (struct ebt_entries *)e;
+-		newinfo->counter_entry[i] = *totalcnt;
+ 		return 0;
+ 	}
+ 	// a plain old entry, heh
+@@ -375,21 +429,55 @@
+ 		BUGPRINT("entry offsets not in right order\n");
+ 		return -EINVAL;
+ 	}
+-	if (((char *)e) + e->next_offset - newinfo->entries > limit - base) {
+-		BUGPRINT("entry offsets point too far\n");
++	// this is not checked anywhere else
++	if (e->next_offset - e->target_offset < sizeof(struct ebt_entry_target)) {
++		BUGPRINT("target size too small\n");
+ 		return -EINVAL;
+ 	}
+ 
+-	if ((e->bitmask & EBT_ENTRY_OR_ENTRIES) == 0) {
+-		BUGPRINT("EBT_ENTRY_OR_ENTRIES should be set in "
+-		         "bitmask for an entry\n");
+-		return -EINVAL;
+-	}
+ 	(*cnt)++;
+ 	(*totalcnt)++;
+ 	return 0;
+ }
+ 
++struct ebt_cl_stack
++{
++	struct ebt_chainstack cs;
++	int from;
++	unsigned int hookmask;
++};
++
++// we need these positions to check that the jumps to a different part of the
++// entries is a jump to the beginning of a new chain.
++static inline int
++ebt_get_udc_positions(struct ebt_entry *e, struct ebt_table_info *newinfo,
++   struct ebt_entries **hook_entries, unsigned int *n, unsigned int valid_hooks,
++   struct ebt_cl_stack *udc)
++{
++	int i;
++
++	// we're only interested in chain starts
++	if (e->bitmask & EBT_ENTRY_OR_ENTRIES)
++		return 0;
++	for (i = 0; i < NF_BR_NUMHOOKS; i++) {
++		if ((valid_hooks & (1 << i)) == 0)
++			continue;
++		if (newinfo->hook_entry[i] == (struct ebt_entries *)e)
++			break;
++	}
++	// only care about udc
++	if (i != NF_BR_NUMHOOKS)
++		return 0;
++
++	udc[*n].cs.chaininfo = (struct ebt_entries *)e;
++	// these initialisations are depended on later in check_chainloops()
++	udc[*n].cs.n = 0;
++	udc[*n].hookmask = 0;
++
++	(*n)++;
++	return 0;
++}
++
+ static inline int
+ ebt_cleanup_match(struct ebt_entry_match *m, unsigned int *i)
+ {
+@@ -418,11 +506,12 @@
+ 
+ static inline int
+ ebt_check_entry(struct ebt_entry *e, struct ebt_table_info *newinfo,
+-   const char *name, unsigned int *cnt, unsigned int valid_hooks)
++   const char *name, unsigned int *cnt, unsigned int valid_hooks,
++   struct ebt_cl_stack *cl_s, unsigned int udc_cnt)
+ {
+ 	struct ebt_entry_target *t;
+ 	struct ebt_target *target;
+-	unsigned int i, j, hook = 0;
++	unsigned int i, j, hook = 0, hookmask = 0;
+ 	int ret;
+ 
+ 	// Don't mess with the struct ebt_entries
+@@ -454,18 +543,29 @@
+ 		else
+ 			break;
+ 	}
++	if (i < NF_BR_NUMHOOKS)
++		hookmask = (1 << hook);
++	else {
++		for (i = 0; i < udc_cnt; i++)
++			if ((char *)(cl_s[i].cs.chaininfo) > (char *)e)
++				break;
++		if (i == 0)
++			hookmask = (1 << hook);
++		else
++			hookmask = cl_s[i - 1].hookmask;
++	}
+ 	i = 0;
+-	ret = EBT_MATCH_ITERATE(e, ebt_check_match, e, name, hook, &i);
++	ret = EBT_MATCH_ITERATE(e, ebt_check_match, e, name, hookmask, &i);
+ 	if (ret != 0)
+ 		goto cleanup_matches;
+ 	j = 0;
+-	ret = EBT_WATCHER_ITERATE(e, ebt_check_watcher, e, name, hook, &j);
++	ret = EBT_WATCHER_ITERATE(e, ebt_check_watcher, e, name, hookmask, &j);
+ 	if (ret != 0)
+ 		goto cleanup_watchers;
+ 	t = (struct ebt_entry_target *)(((char *)e) + e->target_offset);
+ 	t->u.name[EBT_FUNCTION_MAXNAMELEN - 1] = '\0';
+ 	target = find_target_lock(t->u.name, &ret, &ebt_mutex);
+-	if (!target) 
++	if (!target)
+ 		goto cleanup_watchers;
+ 	if (target->me)
+ 		__MOD_INC_USE_COUNT(target->me);
+@@ -479,14 +579,14 @@
+ 			ret = -EFAULT;
+ 			goto cleanup_watchers;
+ 		}
+-		if (((struct ebt_standard_target *)t)->verdict >=
+-		   NUM_STANDARD_TARGETS) {
++		if (((struct ebt_standard_target *)t)->verdict <
++		   -NUM_STANDARD_TARGETS) {
+ 			BUGPRINT("Invalid standard target\n");
+ 			ret = -EFAULT;
+ 			goto cleanup_watchers;
+ 		}
+ 	} else if (t->u.target->check &&
+-	   t->u.target->check(name, hook, e, t->data,
++	   t->u.target->check(name, hookmask, e, t->data,
+ 	   t->target_size) != 0) {
+ 		if (t->u.target->me)
+ 			__MOD_DEC_USE_COUNT(t->u.target->me);
+@@ -523,12 +623,83 @@
+ 	return 0;
+ }
+ 
++// checks for loops and sets the hook mask for udc
++// the hook mask for udc tells us from which base chains the udc can be
++// accessed. This mask is a parameter to the check() functions of the extensions
++int check_chainloops(struct ebt_entries *chain, struct ebt_cl_stack *cl_s,
++   unsigned int udc_cnt, unsigned int hooknr, char *base)
++{
++	int i, chain_nr = -1, pos = 0, nentries = chain->nentries, verdict;
++	struct ebt_entry *e = (struct ebt_entry *)chain->data;
++	struct ebt_entry_target *t;
++
++	while (pos < nentries || chain_nr != -1) {
++		// end of udc, go back one 'recursion' step
++		if (pos == nentries) {
++			// put back values of the time when this chain was called
++			e = cl_s[chain_nr].cs.e;
++			if (cl_s[chain_nr].from != -1)
++				nentries = cl_s[cl_s[chain_nr].from].cs.chaininfo->nentries;
++			else
++				nentries = chain->nentries;
++			pos = cl_s[chain_nr].cs.n;
++			// make sure we won't see a loop that isn't one
++			cl_s[chain_nr].cs.n = 0;
++			chain_nr = cl_s[chain_nr].from;
++			if (pos == nentries)
++				continue;
++		}
++		t = (struct ebt_entry_target *)
++		   (((char *)e) + e->target_offset);
++		t->u.name[EBT_FUNCTION_MAXNAMELEN - 1] = '\0';
++		if (strcmp(t->u.name, EBT_STANDARD_TARGET))
++			goto letscontinue;
++		if (e->target_offset + sizeof(struct ebt_standard_target) >
++		   e->next_offset) {
++			BUGPRINT("Standard target size too big\n");
++			return -1;
++		}
++		verdict = ((struct ebt_standard_target *)t)->verdict;
++		if (verdict >= 0) { // jump to another chain
++			struct ebt_entries *hlp2 =
++			   (struct ebt_entries *)(base + verdict);
++			for (i = 0; i < udc_cnt; i++)
++				if (hlp2 == cl_s[i].cs.chaininfo)
++					break;
++			// bad destination or loop
++			if (i == udc_cnt) {
++				BUGPRINT("bad destination\n");
++				return -1;
++			}
++			if (cl_s[i].cs.n) {
++				BUGPRINT("loop\n");
++				return -1;
++			}
++			cl_s[i].cs.n = pos + 1;
++			pos = 0;
++			cl_s[i].cs.e = ((void *)e + e->next_offset);
++			e = (struct ebt_entry *)(hlp2->data);
++			nentries = hlp2->nentries;
++			cl_s[i].from = chain_nr;
++			chain_nr = i;
++			// this udc is accessible from the base chain for hooknr
++			cl_s[i].hookmask |= (1 << hooknr);
++			continue;
++		}
++letscontinue:
++		e = (void *)e + e->next_offset;
++		pos++;
++	}
++	return 0;
++}
++
+ // do the parsing of the table/chains/entries/matches/watchers/targets, heh
+ static int translate_table(struct ebt_replace *repl,
+    struct ebt_table_info *newinfo)
+ {
+-	unsigned int i, j, k;
++	unsigned int i, j, k, udc_cnt;
+ 	int ret;
++	struct ebt_cl_stack *cl_s = NULL; // used in the checking for chain loops
+ 
+ 	i = 0;
+ 	while (i < NF_BR_NUMHOOKS && !(repl->valid_hooks & (1 << i)))
+@@ -553,10 +724,8 @@
+ 		i = j;
+ 	}
+ 
+-	for (i = 0; i < NF_BR_NUMHOOKS; i++) {
++	for (i = 0; i < NF_BR_NUMHOOKS; i++)
+ 		newinfo->hook_entry[i] = NULL;
+-		newinfo->counter_entry[i] = 0;
+-	}
+ 
+ 	newinfo->entries_size = repl->entries_size;
+ 	newinfo->nentries = repl->nentries;
+@@ -566,10 +735,11 @@
+ 	j = 0; // holds the up to now counted entries for the chain
+ 	k = 0; // holds the total nr. of entries, should equal
+ 	       // newinfo->nentries afterwards
++	udc_cnt = 0; // will hold the nr. of user defined chains (udc)
+ 	ret = EBT_ENTRY_ITERATE(newinfo->entries, newinfo->entries_size,
+ 	   ebt_check_entry_size_and_hooks, newinfo, repl->entries,
+ 	   repl->entries + repl->entries_size, repl->hook_entry, &i, &j, &k,
+-	   repl->valid_hooks);
++	   &udc_cnt, repl->valid_hooks);
+ 
+ 	if (ret != 0)
+ 		return ret;
+@@ -587,22 +757,70 @@
+ 	// check if all valid hooks have a chain
+ 	for (i = 0; i < NF_BR_NUMHOOKS; i++) {
+ 		if (newinfo->hook_entry[i] == NULL &&
+-		   (repl->valid_hooks & (1 << i))){
++		   (repl->valid_hooks & (1 << i))) {
+ 			BUGPRINT("Valid hook without chain\n");
+ 			return -EINVAL;
+ 		}
+ 	}
+ 
++	// Get the location of the udc, put them in an array
++	// While we're at it, allocate the chainstack
++	if (udc_cnt) {
++		// this will get free'd in do_replace()/ebt_register_table()
++		// if an error occurs
++		newinfo->chainstack = (struct ebt_chainstack *)
++		   vmalloc(udc_cnt * sizeof(struct ebt_chainstack));
++		if (!newinfo->chainstack)
++			return -ENOMEM;
++		cl_s = (struct ebt_cl_stack *)
++		   vmalloc(udc_cnt * sizeof(struct ebt_cl_stack));
++		if (!cl_s)
++			return -ENOMEM;
++		i = 0; // the i'th udc
++		EBT_ENTRY_ITERATE(newinfo->entries, newinfo->entries_size,
++		   ebt_get_udc_positions, newinfo, repl->hook_entry, &i,
++		   repl->valid_hooks, cl_s);
++		// sanity check
++		if (i != udc_cnt) {
++			BUGPRINT("i != udc_cnt\n");
++			vfree(cl_s);
++			return -EFAULT;
++		}
++	}
++
++	// Check for loops
++	for (i = 0; i < NF_BR_NUMHOOKS; i++)
++		if (repl->valid_hooks & (1 << i))
++			if (check_chainloops(newinfo->hook_entry[i],
++			   cl_s, udc_cnt, i, newinfo->entries)) {
++				if (cl_s)
++					vfree(cl_s);
++				return -EINVAL;
++			}
++
++	// we now know the following (along with E=mc²):
++	// - the nr of entries in each chain is right
++	// - the size of the allocated space is right
++	// - all valid hooks have a corresponding chain
++	// - there are no loops
++	// - wrong data can still be on the level of a single entry
++	// - could be there are jumps to places that are not the
++	//   beginning of a chain. This can only occur in chains that
++	//   are not accessible from any base chains, so we don't care.
++
+ 	// we just don't trust anything
+ 	repl->name[EBT_TABLE_MAXNAMELEN - 1] = '\0';
+ 	// used to know what we need to clean up if something goes wrong
+ 	i = 0;
+ 	ret = EBT_ENTRY_ITERATE(newinfo->entries, newinfo->entries_size,
+-	   ebt_check_entry, newinfo, repl->name, &i, repl->valid_hooks);
++	   ebt_check_entry, newinfo, repl->name, &i, repl->valid_hooks,
++	   cl_s, udc_cnt);
+ 	if (ret != 0) {
+ 		EBT_ENTRY_ITERATE(newinfo->entries, newinfo->entries_size,
+ 		   ebt_cleanup_entry, &i);
+ 	}
++	if (cl_s)
++		vfree(cl_s);
+ 	return ret;
+ }
+ 
+@@ -690,6 +908,8 @@
+ 	else
+ 		counterstmp = NULL;
+ 
++	// this can get initialized by translate_table()
++	newinfo->chainstack = NULL;
+ 	ret = translate_table(&tmp, newinfo);
+ 
+ 	if (ret != 0)
+@@ -739,6 +959,8 @@
+ 	vfree(table->entries);
+ 	if (table->counters)
+ 		vfree(table->counters);
++	if (table->chainstack)
++		vfree(table->chainstack);
+ 	vfree(table);
+ 
+ 	if (counterstmp)
+@@ -752,6 +974,9 @@
+ free_counterstmp:
+ 	if (counterstmp)
+ 		vfree(counterstmp);
++	// can be initialized in translate_table()
++	if (newinfo->chainstack)
++		vfree(newinfo->chainstack);
+ free_entries:
+ 	if (newinfo->entries)
+ 		vfree(newinfo->entries);
+@@ -877,6 +1102,7 @@
+ 		newinfo->counters = NULL;
+ 
+ 	// fill in newinfo and parse the entries
++	newinfo->chainstack = NULL;
+ 	ret = translate_table(table->table, newinfo);
+ 	if (ret != 0) {
+ 		BUGPRINT("Translate_table failed\n");
+@@ -909,6 +1135,8 @@
+ free_counters:
+ 	if (newinfo->counters)
+ 		vfree(newinfo->counters);
++	if (newinfo->chainstack)
++		vfree(newinfo->chainstack);
+ free_entries:
+ 	vfree(newinfo->entries);
+ free_newinfo:
+@@ -931,6 +1159,8 @@
+ 		vfree(table->private->counters);
+ 	if (table->private->entries)
+ 		vfree(table->private->entries);
++	if (table->private->chainstack)
++		vfree(table->private->chainstack);
+ 	vfree(table->private);
+ 	MOD_DEC_USE_COUNT;
+ }
+@@ -1091,8 +1321,6 @@
+ 		return -EFAULT;
+ 	}
+ 	// make userspace's life easier
+-	memcpy(tmp.counter_entry, info->counter_entry,
+-	   NF_BR_NUMHOOKS * sizeof(int));
+ 	memcpy(tmp.hook_entry, info->hook_entry,
+ 	   NF_BR_NUMHOOKS * sizeof(struct ebt_entries *));
+ 	for (i = 0; i < NF_BR_NUMHOOKS; i++)
+--- linux/include/linux/netfilter_bridge/ebtables.h	Fri Jun 28 18:00:15 2002
++++ ebt2.0pre9.001/include/linux/netfilter_bridge/ebtables.h	Thu Jun 27 20:18:07 2002
+@@ -17,6 +17,7 @@
+ #include <linux/if_ether.h> // ETH_ALEN
+ 
+ #define EBT_TABLE_MAXNAMELEN 32
++#define EBT_CHAIN_MAXNAMELEN EBT_TABLE_MAXNAMELEN
+ #define EBT_FUNCTION_MAXNAMELEN EBT_TABLE_MAXNAMELEN
+ 
+ // [gs]etsockopt numbers
+@@ -30,18 +31,29 @@
+ #define EBT_SO_GET_ENTRIES      (EBT_SO_GET_INFO+1)
+ #define EBT_SO_GET_MAX          (EBT_SO_GET_ENTRIES+1)
+ 
+-#define EBT_ACCEPT   0
+-#define EBT_DROP     1
+-#define EBT_CONTINUE 2
+-#define NUM_STANDARD_TARGETS   3
++// verdicts >0 are "branches"
++#define EBT_ACCEPT   -1
++#define EBT_DROP     -2
++#define EBT_CONTINUE -3
++#define EBT_RETURN   -4
++#define NUM_STANDARD_TARGETS   4
++
++struct ebt_counter
++{
++	__u64 pcnt;
++};
+ 
+ struct ebt_entries {
+ 	// this field is always set to zero (including userspace).
+ 	// See EBT_ENTRY_OR_ENTRIES.
+ 	// Must be same size as ebt_entry.bitmask
+ 	__u32 distinguisher;
+-	// one standard (accept or drop) per hook
+-	__u8 policy;
++	// the chain name
++	char name[EBT_CHAIN_MAXNAMELEN];
++	// counter offset for this chain
++	unsigned int counter_offset;
++	// one standard (accept, drop, return) per hook
++	int policy;
+ 	// nr. of entries
+ 	__u32 nentries;
+ 	// entry list
+@@ -76,11 +88,6 @@
+ #define EBT_INV_MASK (EBT_IPROTO | EBT_IIN | EBT_IOUT | EBT_ILOGICALIN \
+    | EBT_ILOGICALOUT | EBT_ISOURCE | EBT_IDEST)
+ 
+-struct ebt_counter
+-{
+-	__u64 pcnt;
+-};
+-
+ struct ebt_entry_match
+ {
+ 	union {
+@@ -118,7 +125,7 @@
+ struct ebt_standard_target
+ {
+ 	struct ebt_entry_target target;
+-	__u8 verdict;
++	int verdict;
+ };
+ 
+ // one entry
+@@ -158,8 +165,6 @@
+ 	unsigned int entries_size;
+ 	// start of the chains
+ 	struct ebt_entries *hook_entry[NF_BR_NUMHOOKS];
+-	// how many counters in front of it?
+-	unsigned int counter_entry[NF_BR_NUMHOOKS];
+ 	// nr of counters userspace expects back
+ 	unsigned int num_counters;
+ 	// where the kernel will put the old counters
+@@ -178,7 +183,7 @@
+ 	   const struct net_device *out, const void *matchdata,
+ 	   unsigned int datalen, const struct ebt_counter *c);
+ 	// 0 == let it in
+-	int (*check)(const char *tablename, unsigned int hooknr,
++	int (*check)(const char *tablename, unsigned int hookmask,
+ 	   const struct ebt_entry *e, void *matchdata, unsigned int datalen);
+ 	void (*destroy)(void *matchdata, unsigned int datalen);
+ 	struct module *me;
+@@ -192,7 +197,7 @@
+ 	   const struct net_device *out, const void *watcherdata,
+ 	   unsigned int datalen, const struct ebt_counter *c);
+ 	// 0 == let it in
+-	int (*check)(const char *tablename, unsigned int hooknr,
++	int (*check)(const char *tablename, unsigned int hookmask,
+ 	   const struct ebt_entry *e, void *watcherdata, unsigned int datalen);
+ 	void (*destroy)(void *watcherdata, unsigned int datalen);
+ 	struct module *me;
+@@ -203,19 +208,27 @@
+ 	struct list_head list;
+ 	const char name[EBT_FUNCTION_MAXNAMELEN];
+ 	// returns one of the standard verdicts
+-	__u8 (*target)(struct sk_buff **pskb,
++	int (*target)(struct sk_buff **pskb,
+ 	       unsigned int hooknr,
+ 	       const struct net_device *in,
+ 	       const struct net_device *out,
+ 	       const void *targetdata,
+ 	       unsigned int datalen);
+ 	// 0 == let it in
+-	int (*check)(const char *tablename, unsigned int hooknr,
++	int (*check)(const char *tablename, unsigned int hookmask,
+ 	   const struct ebt_entry *e, void *targetdata, unsigned int datalen);
+ 	void (*destroy)(void *targetdata, unsigned int datalen);
+ 	struct module *me;
+ };
+ 
++// used for jumping from and into user defined chains (udc)
++struct ebt_chainstack
++{
++	struct ebt_entries *chaininfo; // pointer to chain data
++	struct ebt_entry *e; // pointer to entry data
++	unsigned int n; // n'th entry
++};
++
+ struct ebt_table_info
+ {
+ 	// total size of the entries
+@@ -223,9 +236,9 @@
+ 	unsigned int nentries;
+ 	// pointers to the start of the chains
+ 	struct ebt_entries *hook_entry[NF_BR_NUMHOOKS];
+-	// how many counters in front of the counters bolonging to a chain
+-	unsigned int counter_entry[NF_BR_NUMHOOKS];
+ 	struct ebt_counter *counters;
++	// room to maintain the stack used for jumping from and into udc
++	struct ebt_chainstack *chainstack;
+ 	char *entries;
+ };
+ 
+--- linux/include/linux/netfilter_bridge/ebt_vlan.h	Fri Jun 28 18:00:15 2002
++++ ebt2.0pre9.001/include/linux/netfilter_bridge/ebt_vlan.h	Thu Jun 27 19:11:50 2002
+@@ -3,14 +3,16 @@
+ 
+ #define EBT_VLAN_ID	0x01
+ #define EBT_VLAN_PRIO	0x02
+-#define EBT_VLAN_MASK (EBT_VLAN_ID | EBT_VLAN_PRIO)
++#define EBT_VLAN_ENCAP	0x04
++#define EBT_VLAN_MASK (EBT_VLAN_ID | EBT_VLAN_PRIO | EBT_VLAN_ENCAP)
+ #define EBT_VLAN_MATCH "vlan"
+ 
+ struct ebt_vlan_info {
+ 	__u16 id;		/* VLAN ID {1-4095} */
+-	__u16 prio;		/* VLAN Priority {0-7} */
++	__u8 prio;		/* VLAN User Priority {0-7} */
++	__u16 encap;		/* VLAN Encapsulated frame code {0-65535} */
+ 	__u8 bitmask;		/* Args bitmask bit 1=1 - ID arg, 
+-				   bit 2=1 - Pirority arg */
++				   bit 2=1 User-Priority arg, bit 3=1 encap*/
+ 	__u8 invflags;		/* Inverse bitmask  bit 1=1 - inversed ID arg, 
+ 				   bit 2=1 - inversed Pirority arg */
+ };
+--- linux/include/linux/netfilter_bridge/ebt_nat.h	Fri Jun 28 18:00:15 2002
++++ ebt2.0pre9.001/include/linux/netfilter_bridge/ebt_nat.h	Thu Jun 27 19:11:50 2002
+@@ -4,8 +4,8 @@
+ struct ebt_nat_info
+ {
+ 	unsigned char mac[ETH_ALEN];
+-	// EBT_ACCEPT, EBT_DROP or EBT_CONTINUE
+-	__u8 target;
++	// EBT_ACCEPT, EBT_DROP or EBT_CONTINUE or EBT_RETURN
++	int target;
+ };
+ #define EBT_SNAT_TARGET "snat"
+ #define EBT_DNAT_TARGET "dnat"
+--- linux/include/linux/netfilter_bridge/ebt_redirect.h	Fri Jun 28 18:00:15 2002
++++ ebt2.0pre9.001/include/linux/netfilter_bridge/ebt_redirect.h	Thu Jun 27 19:11:50 2002
+@@ -3,8 +3,8 @@
+ 
+ struct ebt_redirect_info
+ {
+-	// EBT_ACCEPT, EBT_DROP or EBT_CONTINUE
+-	__u8 target;
++	// EBT_ACCEPT, EBT_DROP or EBT_CONTINUE or EBT_RETURN
++	int target;
+ };
+ #define EBT_REDIRECT_TARGET "redirect"
+ 

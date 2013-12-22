@@ -1,0 +1,13 @@
+---
+Tag naming for the userspace code:
+All files in ebtables2 are tagged like this example:
+ebtables-2-0-pre6
+June 1, 2002
+---
+Release candidats are tagged like this:
+ebtables-2-0-rc1
+July 31, 2002
+---
+Stable versions are tagged like this:
+ebtables-2-0
+September 19, 2002

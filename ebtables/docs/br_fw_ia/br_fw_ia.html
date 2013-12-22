@@ -1,0 +1,638 @@
+<!DOCTYPE html PUBLIC '-//W3C//DTD HTML 4.01//EN'
+'http://www.w3.org/TR/html4/strict.dtd'>
+<HTML>
+  <HEAD>
+    <TITLE>
+      ebtables/iptables interaction on a Linux-based bridge
+    </TITLE>
+    <META HTTP-EQUIV="Content-Type" CONTENT=
+    "text/html; charset=iso-8859-1">
+    <LINK REL="STYLESHEET" TYPE="text/css" HREF="br_fw_ia.css">
+  </HEAD>
+  <BODY>
+    <DIV CLASS="bar">
+      <DIV CLASS="shadow">
+        <H1 ALIGN="center">
+          ebtables/iptables interaction on a Linux-based bridge
+        </H1>
+      </DIV>
+    </DIV>
+    <H3>
+      <A NAME="top">Table of Contents</A>
+    </H3>
+    <OL>
+      <LI>
+        <A HREF="#section1">Introduction</A>
+      </LI>
+      <LI>
+        <A HREF="#section2">How frames traverse the
+        <EM>ebtables</EM> chains</A>
+      </LI>
+      <LI>
+        <A HREF="#section3">A machine used as a bridge and a
+        router (not a brouter)</A>
+      </LI>
+      <LI>
+        <A HREF="#section4">DNAT'ing bridged packets</A>
+      </LI>
+      <LI>
+        <A HREF="#section5">Chain traversal for bridged IP packets</A>
+      </LI>
+      <LI>
+        <A HREF="#section6">Using a bridge port in <EM>iptables</EM> rules</A>
+      </LI>
+      <LI>
+        <A HREF="#section7">Two possible ways for frames/packets
+        to pass through the <EM>iptables</EM> PREROUTING, FORWARD and
+        POSTROUTING chains</A>
+      </LI>
+      <LI>
+        <A HREF="#section8">IP DNAT in the <EM>iptables</EM> PREROUTING
+        chain on frames/packets entering on a bridge port</A>
+      </LI>
+      <LI>
+        <A HREF="#section9">Using the MAC module extension for
+        <EM>iptables</EM></A>
+      </LI>
+      <LI>
+        <A HREF="#section10">Using the <EM>iptables</EM> physdev match module for kernel 2.6</A>
+      </LI>
+      <LI>
+        <A HREF="#section11">Detailed IP packet flow</A>
+      </LI>
+    </OL>
+    <A NAME="section1"></A>
+    <P CLASS="section">
+      1. Introduction
+    </P>
+    <P>
+      This document describes how <EM>iptables</EM> and
+      <EM>ebtables</EM> filtering tables interact on a Linux-based bridge.<BR>
+      Getting a bridging firewall on a 2.4.x kernel consists of patching the kernel source
+      code. The 2.6 kernel contains the <EM>ebtables</EM> and <EM>br-nf</EM> code, so it doesn't have to be patched.
+      Because the demand was high, patches for the 2.4 kernel are still available at the <EM>ebtables</EM> homepage.
+      The <EM>br-nf</EM> code makes bridged IP frames/packets go through the <EM>iptables</EM> chains.
+      <EM>Ebtables</EM> filters on the Ethernet layer, while <EM>iptables</EM>
+      only filters IP packets.<BR>
+      The explanations below will use the TCP/IP Network Model.
+      It should be noted that the <EM>br-nf</EM> code sometimes violates the
+      TCP/IP Network
+      Model. As will be seen later, it is possible, f.e., to do IP DNAT inside the Link Layer.<BR>
+      We want to note that we are perfectly well aware that the word frame is used for the Link Layer,
+      while the word packet is used for the Network Layer. However, when we are talking about IP packets
+      inside the Link Layer, we will refer to these as frames/packets or packets/frames.
+    </P>
+    <A NAME="section2"></A>
+    <P CLASS="section">
+      2. How frames traverse the <EM>ebtables</EM> chains
+    </P>
+    <DIV CLASS="note">
+      This section only considers <EM>ebtables</EM>, not
+      <EM>iptables</EM>.
+    </DIV>
+    <P>
+      First thing to keep in mind is that we are talking about
+      the Ethernet layer here, so the OSI layer 2 (Data link
+      layer), or layer 1 (Link layer, Network Access layer) by the TCP/IP Network
+      Model.
+    </P>
+    <P>
+      A packet destined for the local computer according to the
+      bridge (which works on the Ethernet layer) isn't
+      necessarily destined for the local computer according to
+      the IP layer. That's how routing works (MAC destination is
+      the router, IP destination is the actual box you want to
+      communicate with).
+    </P>
+    <P>
+      <IMG SRC="bridge2a.png">
+    </P>
+    <P>
+      <I><B>Figure 2a.</B> General frame traversal scheme</I><BR>
+    </P>
+    <P>
+    </P>
+    <P>
+      There are six hooks defined in the Linux bridging code, of which the
+      BROUTING hook was added for <EM>ebtables</EM>.
+    </P>
+    <BR>
+     <BR>
+     <IMG SRC="bridge2b.png">
+    <P>
+      <I><B>Figure 2b.</B> Ethernet bridging hooks</I><BR>
+    </P>
+    </P>
+    <P>
+    <P>
+      The hooks are specific places in the network
+      code on which software can attach itself to process the
+      packets/frames passing that place. For example, the kernel module responsible for the <EM>ebtables</EM> FORWARD chain is attached onto the bridge FORWARD hook.
+      This is done when the module is loaded into the kernel or at bootup.
+    </P>
+    <P>
+     Note that the <EM>ebtables</EM> BROUTING and PREROUTING chains are traversed before the bridging decision, therefore these chains will even see frames that will be
+     ignored by the bridge. You should take that into account when using this chain. Also note that the chains won't see frames entering on a non-forwarding bridge port.<br>
+     The bridge's decision for a frame (as seen on Figure 2b) can be one of these:
+      <ul>
+      <li>bridge it, if the destination MAC address is on
+      another side of the bridge;</li>
+      <li>flood it over all the forwarding bridge ports, if the
+      position of the box with the destination MAC is unknown
+      to the bridge;</li>
+      <li>pass it to the higher protocol code (the IP code),
+      if the destination MAC address is that of the bridge or of
+      one of its ports;</li>
+      <li>ignore it, if the destination MAC address is located
+      on the same side of the bridge.</li>
+      </ul>
+    </P>
+     <IMG SRC="bridge2c.png">
+    <P>
+      <I><B>Figure 2c.</B> Bridging tables (ebtables) traversal
+      process</I><BR>
+    </P>
+    <P>
+      <EM>Ebtables</EM> has three tables:
+      <B>filter</B>, <B>nat</B> and <B>broute</B>, as shown in Figure 2c.
+    </P>
+    <UL>
+      <LI>
+        The <FONT COLOR="#00ffff"><B>broute</B></FONT> table has
+        the BROUTING chain.
+      </LI>
+      <LI>
+        The <FONT COLOR="#00ffff"><B>filter</B></FONT> table has
+        the FORWARD, INPUT and OUTPUT chains.
+      </LI>
+      <LI>
+        The <FONT COLOR="#00ffff"><B>nat</B></FONT> table has the
+        PREROUTING, OUTPUT and POSTROUTING chains.
+      </LI>
+    </UL>
+    <BR>
+    <DIV CLASS="note">
+      The filter OUTPUT and nat OUTPUT chains are separated and have
+      a different usage.
+    </DIV>
+    <P>
+      Figures 2b and 2c give a clear view where the
+      <EM>ebtables</EM> chains are attached onto the bridge hooks.
+    </P>
+    <P>
+      When an NIC enslaved to a bridge receives a frame, the frame
+      will first go through the BROUTING chain. In this special
+      chain you can choose whether to route or bridge frames,
+      enabling you to make a brouter. The definitions found on
+      the Internet for what a brouter actually is differ a bit.
+      The next definition describes the brouting ability using the
+      BROUTING chain quite well:
+    </P>
+    <DIV CLASS="note">
+      A brouter is a device that
+      bridges some frames/packets (i.e. forwards based on Link layer
+      information) and routes other frames/packets (i.e. forwards based
+      on Network layer information). The bridge/route decision is
+      based on configuration information.
+    </DIV>
+    <P>
+      A brouter can be used, for example,
+      to act as a normal router for IP traffic between 2
+      networks, while bridging specific traffic (NetBEUI, ARP,
+      whatever) between those networks. The IP routing
+      table does not use the bridge logical device, instead the box has
+      IP addresses assigned to the physical network devices that
+      also happen to be bridge ports (bridge enslaved NICs).<BR>
+      The default decision in the BROUTING chain is bridging.
+    </P>
+    <P>
+      Next the frame passes through the PREROUTING chain.
+      In this chain you can alter the destination MAC address
+      of frames (DNAT).
+      If the frame passes this chain, the bridging code will decide where the
+      frame should be sent. The bridge does this by looking at
+      the destination MAC address, it doesn't care about the
+      Network Layer addresses (e.g. IP address).
+    </P>
+    <P>
+      If the bridge decides the frame is destined for the local
+      computer, the frame will go through the INPUT chain.
+      In this chain you can filter frames destined for the bridge box.
+      After traversal of the INPUT chain, the frame will be passed up
+      to the Network Layer code (e.g. to the IP code).
+      So, a routed IP packet will go through
+      the <EM>ebtables</EM> INPUT chain, not through the
+      <EM>ebtables</EM> FORWARD chain. This is logical.
+    </P>
+     <BR>
+     <BR>
+     <IMG SRC="bridge2d.png">
+    <P>
+      <I><B>Figure 2d.</B> Incoming frame's chain traversal</I><BR>
+    </P>
+    <P>
+      Otherwise the frame should possibly be sent onto another side
+      of the bridge. If it should, the frame will go through the
+      FORWARD chain and the POSTROUTING chain. The bridged frames can be
+      filtered in the FORWARD chain. In the POSTROUTING chain you can alter the MAC
+      source address (SNAT).
+    </P>
+     <BR>
+     <BR>
+     <IMG SRC="bridge2e.png">
+    <P>
+      <I><B>Figure 2e.</B> Forwarded frame's chain traversal</I><BR>
+    </P>
+    <P>
+      Locally originated frames will, after the bridging decision, traverse
+      the nat OUTPUT, the filter OUTPUT and the nat POSTROUTING chains.
+      The nat OUTPUT chain allows to alter the destination
+      MAC address and the filter OUTPUT chain allows to
+      filter frames originating from the bridge box. Note that
+      the nat OUTPUT chain is traversed after the bridging
+      decision, so this is actually too late. We should change this. The nat
+      POSTROUTING chain is the same one as described above.
+    </P>
+     <BR>
+     <BR>
+     <IMG SRC="bridge2f.png">
+    <P>
+      <I><B>Figure 2f.</B> Outgoing frames' chain traversal</I><BR>
+    </P>
+    <DIV CLASS="note">
+      It's also possible for routed frames to go
+      through these three chains when the destination
+      device is a logical bridge device.
+    </DIV>
+    <BR>
+     <BR>
+     <A NAME="section3"></A>
+    <P CLASS="section">
+      3. A machine used as a bridge and a router (not a brouter)
+    </P>
+    <P>
+      Here is the IP code hooks scheme:
+    </P>
+    <IMG SRC="bridge3a.png"> 
+    <P>
+      <I><B>Figure 3a.</B> IP code hooks</I><BR>
+    </P>
+    <P>
+      Here is the iptables packet traversal scheme.
+    </P>
+    <BR>
+     <BR>
+     <IMG SRC="bridge3b.png">
+    <P>
+      <I><B>Figure 3b.</B> Routing tables (iptables) traversal
+      process</I><BR>
+    </P>
+    <P>
+      Note that the iptables nat OUTPUT chain is situated after the
+      routing decision. As commented in the previous section (when discussing ebtables nat),
+      this is too late for DNAT. This is solved by rerouting the
+      IP packet if it has been DNAT'ed, before continuing. For clarity:
+      this is standard behaviour of the Linux kernel, not something
+      caused by our code. 
+    </P>
+    <P>
+      Figures 3a and 3b give a clear view where the
+      <EM>iptables</EM> chains are attached onto the IP hooks. When the
+      bridge code and netfilter is enabled in the kernel, the iptables chains are
+      also attached onto the hooks of the bridging code. However,
+      this does not mean that they are no longer attached onto their
+      standard IP code hooks. For IP packets that get into
+      contact with the bridging code, the <EM>br-nf</EM> code will
+      decide in which place in the network code the <EM>iptables</EM>
+      chains will be traversed. Obviously, it is guaranteed that no chain is
+      traversed twice by the same packet. All packets that do not come into
+      contact with the bridge code traverse the <EM>iptables</EM> chains
+      in the standard way as seen in Figure 3b.<BR>
+      The following sections try, among other things,
+      to explain what the <EM>br-nf</EM> code does and why it does it.
+    </P>
+    <P>
+      It's possible to see a single IP packet/frame traverse the
+      nat PREROUTING, filter INPUT, nat OUTPUT, filter OUTPUT and
+      nat POSTROUTING <EM>ebtables</EM> chains.<BR>
+      This can happen when the bridge is also used as a router.
+      The Ethernet frame(s) containing that IP packet will have
+      the bridge's destination MAC address, while the destination
+      IP address is not of the bridge. Including the
+      <EM>iptables</EM> chains, this is how the IP packet runs
+      through the bridge/router (actually there is more going on,
+      see <A HREF="#section6">section 6</A>):
+    </P>
+    <P>
+      <IMG SRC="bridge3c.png">
+    </P>
+    <P>
+      <I><B>Figure 3c.</B> Bridge/router routes packet to a
+      bridge interface (simplistic view)</I><BR>
+    </P>
+    <P>
+      This assumes that the routing decision sends the packet to
+      a bridge interface. If the routing decision sends the
+      packet to non-bridge interface, this is what happens:
+    </P>
+    <P>
+      <IMG SRC="bridge3d.png">
+    </P>
+    <P>
+      <I><B>Figure 3d.</B> Bridge/router routes packet to a
+      non-bridge interface (simplistic view)</I><BR>
+    </P>
+    <P>
+      Figures 3c and 3d assume the IP packet arrived on a bridge port.
+      What is obviously "asymmetric" here is that the
+      <EM>iptables</EM> PREROUTING chain is traversed before the
+      <EM>ebtables</EM> INPUT chain, however this cannot be
+      helped without sacrificing functionality. See the
+      next section.
+    </P>
+    <A NAME="section4"></A>
+    <P CLASS="section">
+      4. DNAT'ing bridged packets
+    </P>
+    <P>
+      Take an IP packet received by the bridge. Let's assume we
+      want to do some IP DNAT on it.
+      Changing the destination address of the packet (IP address
+      and MAC address) has to happen before the bridge code
+      decides what to do with the frame/packet.
+    </P>
+    <P>
+      So, this IP DNAT has to happen very early in the bridge
+      code. Namely before the bridge code actually does anything.
+      This is at the same place as where the <EM>ebtables</EM> nat
+      PREROUTING chain will be traversed (for the same reason).
+      This should explain the asymmetry encountered in Figures 3c
+      and 3d.<BR>
+      One should also be aware of the fact that frames for which the
+      bridging decision would be the fourth from the above list (i.e.
+      ignore the frame) will be seen in the PREROUTING chains of
+      <EM>ebtables</EM> and <EM>iptables</EM>.
+    </P>
+    <A NAME="section5"></A>
+    <P CLASS="section">
+      5. Chain traversal for bridged IP packets
+    </P>
+    <P>
+      A bridged packet never enters any network code above layer
+      1 (Link Layer). So, a bridged IP packet/frame will never enter the
+      IP code.
+      Therefore all <EM>iptables</EM> chains will be traversed
+      while the IP packet is in the bridge code. The chain
+      traversal will look like this:
+    </P>
+    <P>
+      <IMG SRC="bridge5.png">
+    </P>
+    <P>
+      <I><B>Figure 5.</B> Chain traversal for bridged IP
+      packets</I><BR>
+    </P>
+    <A NAME="section6"></A>
+    <P CLASS="section">
+      6. Using a bridge port in <EM>iptables</EM> rules
+    </P>
+    <P>
+      The wish to be able to use physical devices belonging to a
+      bridge (bridge ports) in <EM>iptables</EM> rules is valid.
+      Knowing the input bridge ports is necessary to prevent
+      spoofing attacks. Say br0 has ports eth0 and eth1. If
+      <EM>iptables</EM> rules can only use br0 there's no way of
+      knowing when a box on the eth0 side changes its source IP
+      address to that of a box on the eth1 side, except by
+      looking at the MAC source address (and then still...). With
+      the iptables <EM>physdev</EM> module you can use eth0 and eth1 in your
+      <EM>iptables</EM> rules and therefore catch these attempts.
+    </P>
+    <P CLASS="case">
+      6.1. <EM>iptables</EM> wants to use the bridge destination
+      ports:
+    </P>
+    <P>
+      To make this possible the <EM>iptables</EM> chains have to
+      be traversed after the bridge code decided where the frame
+      needs to be sent (eth0, eth1 or both). This has some
+      impact on the scheme presented in <A HREF=
+      "#section3">section 3</A> (so, we are looking at routed
+      traffic here, entering the box on a bridge port). It actually
+      looks like this (in the case of Figure 3c):
+    </P>
+    <P>
+      <IMG SRC="bridge6a.png">
+    </P>
+    <P>
+      <I><B>Figure 6a.</B> Chain traversal for routing, when the bridge
+      and netfilter code are compiled in the kernel.</I><BR>
+    </P>
+    <DIV CLASS="note">
+      All chains are now traversed while in the bridge code.<BR>
+      This is the work of the <EM>br-nf</EM> code. Obviously this does not
+      mean that the routed IP packets never enter the IP code. They
+      just don't pass any <EM>iptables</EM> chains while in the IP code.
+    </DIV>
+    <P CLASS="case">
+      6.2. IP DNAT for locally generated packets (so in the
+      <EM>iptables</EM> nat OUTPUT chain):
+    </P>
+    <P>
+      The normal way locally generated packets would go through
+      the chains looks like this:
+    </P>
+    <P>
+      <IMG SRC="bridge6c.png">
+    </P>
+    <P>
+      <I><B>Figure 6c.</B> The normal way for locally generated
+      packets</I><BR>
+    </P>
+    <P>
+      From <A HREF="#section6">section 6.1</A> we know that this
+      actually looks like this (due to the <EM>br-nf</EM> code):
+    </P>
+    <P>
+      <IMG SRC="bridge6d.png">
+    </P>
+    <P>
+      <I><B>Figure 6d.</B> The actual way for locally generated
+      packets</I><BR>
+    </P>
+    <P>
+      Note that the <EM>iptables</EM> nat OUTPUT chain is traversed while the
+      packet is in the IP code and the <EM>iptables</EM> filter OUTPUT chain
+      is traversed when the packet has passed the bridging decision.
+      This makes it possible to do DNAT to another device in the
+      nat OUTPUT chain and lets us use the bridge ports in the
+      filter OUTPUT chain.
+    </P>
+    <A NAME="section7"></A>
+    <P CLASS="section">
+      7. Two possible ways for frames/packets to pass through the
+      <EM>iptables</EM> PREROUTING, FORWARD and POSTROUTING
+      chains
+    </P>
+    <P>
+      Because of the <EM>br-nf</EM> code, there are 2 ways a frame/packet can
+      pass through the 3 given <EM>iptables</EM> chains. The
+      first way is when the frame is bridged, so the
+      <EM>iptables</EM> chains are called by the bridge code. The
+      second way is when the packet is routed. So special care
+      has to be taken to distinguish between those two,
+      especially in the <EM>iptables</EM> FORWARD chain. Here's
+      an example of strange things to look out for:
+    </P>
+    <P>
+      Consider the following situation
+    </P>
+    <P>
+      <IMG SRC="bridge7a.png">
+    </P>
+    <P>
+      <I><B>Figure 7a.</B> Very basic setup.</I><BR>
+    </P>
+    <P>
+      The default gateway for 172.16.1.2 and
+      172.16.1.4 is 172.16.1.1. 172.16.1.1 is the bridge
+      interface br0 with ports eth1 and eth2.
+    </P>
+    <P CLASS="case">
+      More details:
+    </P>
+    <P>
+      The idea is that traffic between 172.16.1.4 and 172.16.1.2 is
+      bridged, while the rest is routed, using masquerading.
+    </P>
+    <P>
+      <IMG SRC="bridge7b.png">
+    </P>
+    <P>
+      <I><B>Figure 7b.</B> Traffic flow for the example setup.</I><BR>
+    </P>
+    <P>
+      Here's a possible scheme to use at bootup for the bridge/router:
+    </P>
+<PRE>
+iptables -t nat -A POSTROUTING -s 172.16.1.0/24 -d 172.16.1.0/24 -j ACCEPT
+iptables -t nat -A POSTROUTING -s 172.16.1.0/24 -j MASQUERADE
+
+brctl addbr br0
+brctl stp br0 off
+brctl addif br0 eth1
+brctl addif br0 eth2
+
+ifconfig eth1 0 0.0.0.0
+ifconfig eth2 0 0.0.0.0
+ifconfig br0 172.16.1.1 netmask 255.255.255.0 up
+
+echo '1' &gt; /proc/sys/net/ipv4/ip_forward
+</PRE>
+    <P>
+      The catch is in the first line. Because the
+      <EM>iptables</EM> code gets executed for both bridged
+      packets and routed packets, we need to make a distinction
+      between the two. We don't really want the bridged frames/packets
+      to be masqueraded. If we omit the first line then
+      everything will work too, but things will happen
+      differently. Let's say 172.16.1.2 pings 172.16.1.4. The
+      bridge receives the ping request and will transmit it
+      through its eth1 port after first masquerading the IP
+      address. So the packet's source IP address will now be
+      172.16.1.1 and 172.16.1.4 will respond to the bridge.
+      Masquerading will change the IP destination of this
+      response from 172.16.1.1 to 172.16.1.4. Everything works
+      fine. But it's better not to have this behaviour. Thus, we
+      use the first line to avoid this. Note that
+      if we would want to filter the connections to and from the
+      Internet, we would certainly need the first line so we don't
+      filter the local connections as well.
+    </P>
+    <A NAME="section8"></A>
+    <P CLASS="section">
+      8. IP DNAT in the <EM>iptables</EM> PREROUTING chain on
+      frames/packets entering on a bridge port
+    </P>
+    <P>
+      Through some groovy play it is assured that (see
+      /net/bridge/br_netfilter.c) DNAT'ed packets that after
+      DNAT'ing have the same output device as the input device
+      they came on (the logical bridge device which we like to
+      call br0) will go through the <EM>ebtables</EM> FORWARD
+      chain, not through the <EM>ebtables</EM> INPUT/OUTPUT chains. All
+      other DNAT'ed packets will be purely routed, so won't go
+      through the <EM>ebtables</EM> FORWARD chain, will go through
+      the <EM>ebtables</EM> INPUT chain and might go through the
+      <EM>ebtables</EM> OUTPUT chain.<BR>
+    </P>
+    <A NAME="section9"></A>
+    <P CLASS="section">
+      9. Using the MAC module extension for <EM>iptables</EM>
+    </P>
+    <P>
+      The side effect explained here occurs when the netfilter code
+      is enabled in the kernel, the IP packet is routed and the
+      out device for that packet is a logical bridge device. The
+      side effect is encountered when filtering on the MAC source
+      in the <EM>iptables</EM> FORWARD chains. As should be clear
+      from earlier sections, the traversal of the
+      <EM>iptables</EM> FORWARD chains is postponed until the
+      packet is in the bridge code. This is done so we can
+      filter on the bridge port out device. This has a side
+      effect on the MAC source address, because the IP code will
+      have changed the MAC source address to the MAC address of
+      the bridge device. It is therefore impossible, in the
+      <EM>iptables</EM> FORWARD chains, to filter on the MAC
+      source address of the computer sending the packet in
+      question to the bridge/router. If you really need to filter
+      on this MAC source address, you should do it in the nat
+      PREROUTING chain. Agreed, very ugly, but making it possible
+      to filter on the real MAC source address in the FORWARD
+      chains would involve a very dirty hack and is probably not
+      worth it. This of course makes the anti-spoofing remark of
+      <A HREF="#section6">section 6</A> funny.
+    </P>
+    <A NAME="section10"></A>
+    <P CLASS="section">
+      10. Using the <EM>iptables</EM> physdev match module for kernel 2.6
+    </P>
+    <P>
+      The 2.6 standard kernel contains an <EM>iptables</EM> match module
+      called <EM>physdev</EM> which has to be used to match the bridge's
+      physical in and out ports. Its basic usage is simple (see the iptables
+      man page for more details):</P>
+      <PRE>iptables -m physdev --physdev-in &lt;bridge-port&gt;</PRE><P>
+      and</P>
+      <PRE>iptables -m physdev --physdev-out &lt;bridge-port&gt;</PRE>
+    </P>
+    <A NAME="section11"></A>
+    <P CLASS="section">
+      11. Detailed IP packet flow
+    </P>
+    <P>
+      Joshua Snyder (&lt;josh_at_imagestream.com&gt;) made a <A HREF="PacketFlow.png" TARGET="_blank">detailed picture</A> about
+      the IP packet flow on a Linux bridging firewall.
+    </P>
+    <HR>
+<PRE>
+Released under the GNU Free Documentation License.
+Copyright (c) 2002-2003 Bart De Schuymer &lt;bdschuym@pandora.be&gt;,
+                        Nick Fedchik &lt;nick@fedchik.org.ua&gt;.
+</PRE>
+    <BR>
+     <BR>
+     <BR>
+     <SMALL>Permission is granted to copy, distribute and/or
+    modify this document under the terms of the GNU Free
+    Documentation License, Version 1.1 or any later version
+    published by the Free Software Foundation, with no Invariant Sections,
+    with no Front-Cover Texts, and with no Back-Cover Texts. For a copy of the
+    license, see <A HREF= "http://www.gnu.org/licenses/fdl.txt">"GNU Free Documentation License"</A>.</SMALL> <BR>
+     <BR>
+    <P>
+      Last updated November 9, 2003.
+    </P>
+  </BODY>
+</HTML>
+

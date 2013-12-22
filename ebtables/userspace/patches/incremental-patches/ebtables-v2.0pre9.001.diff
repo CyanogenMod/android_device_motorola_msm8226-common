@@ -1,0 +1,38 @@
+--- ebtables-v2.0pre8/Makefile	Thu Jun 27 18:53:55 2002
++++ ebtables-v2.0pre9.001/Makefile	Sun Jul  7 16:29:50 2002
+@@ -2,7 +2,7 @@
+ 
+ KERNEL_DIR?=/usr/src/linux
+ PROGNAME:=ebtables
+-PROGVERSION:="2.0pre8 (June 2002)"
++PROGVERSION:="2.0pre9 (July 2002)"
+ 
+ MANDIR?=/usr/local/man
+ CFLAGS:=-Wall -Wunused
+@@ -26,6 +26,8 @@
+ 		/usr/include/linux/br_db.h
+ 	cp -f $(KERNEL_DIR)/include/linux/netfilter_bridge.h \
+ 		/usr/include/linux/netfilter_bridge.h
++	cp -f $(KERNEL_DIR)/include/linux/if_ether.h \
++		/usr/include/linux/if_ether.h
+ 
+ .PHONY: symlink
+ symlink:
+--- ebtables-v2.0pre8/ebtables.c	Thu Jun 27 18:53:55 2002
++++ ebtables-v2.0pre9.001/ebtables.c	Sat Jun 29 11:41:57 2002
+@@ -635,13 +635,13 @@
+ 			printf("--logical-out ");
+ 			if (hlp->invflags & EBT_ILOGICALOUT)
+ 				printf("! ");
+-			printf("%s, ", hlp->logical_out);
++			printf("%s ", hlp->logical_out);
+ 		}
+ 		if (hlp->out[0] != '\0') {
+ 			printf("-o ");
+ 			if (hlp->invflags & EBT_IOUT)
+ 				printf("! ");
+-			printf("%s, ", hlp->out);
++			printf("%s ", hlp->out);
+ 		}
+ 
+ 		m_l = hlp->m_list;

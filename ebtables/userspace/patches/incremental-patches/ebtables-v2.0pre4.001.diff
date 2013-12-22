@@ -1,0 +1,522 @@
+--- ebtables-v2.0pre3/Makefile	Sat Apr 27 22:31:19 2002
++++ ebtables-v2.0pre4.001/Makefile	Thu May  2 19:02:44 2002
+@@ -2,7 +2,7 @@
+ 
+ KERNEL_DIR?=/usr/src/linux
+ PROGNAME:=ebtables
+-PROGVERSION:="2.0pre3 (April 2002)"
++PROGVERSION:="2.0pre4 (April 2002)"
+ 
+ MANDIR?=/usr/local/man
+ CFLAGS:=-Wall -Wunused
+@@ -32,12 +32,12 @@
+ 	mkdir -p $(@D)
+ 	install -m 0644 -o root -g root $< $@
+ 
+-/etc/etherproto: etherproto
++/etc/ethertypes: ethertypes
+ 	mkdir -p $(@D)
+ 	install -m 0644 -o root -g root $< $@
+ 
+ install: $(MANDIR)/man8/ebtables.8 headers \
+-	ebtables /etc/etherproto
++	ebtables /etc/ethertypes
+ 
+ clean:
+ 	-rm -f ebtables
+--- ebtables-v2.0pre3/ebtables.c	Sat Apr 27 22:31:21 2002
++++ ebtables-v2.0pre4.001/ebtables.c	Fri May  3 20:56:14 2002
+@@ -36,7 +36,7 @@
+ 
+ // here are the number-name correspondences kept for the ethernet
+ // frame type field
+-#define PROTOCOLFILE "/etc/etherproto"
++#define PROTOCOLFILE "/etc/ethertypes"
+ 
+ #define DATABASEHOOKNR NF_BR_NUMHOOKS
+ #define DATABASEHOOKNAME "DB"
+@@ -90,6 +90,13 @@
+ 	"CONTINUE",
+ };
+ 
++unsigned char mac_type_unicast[ETH_ALEN] = {0,0,0,0,0,0};
++unsigned char msk_type_unicast[ETH_ALEN] = {1,0,0,0,0,0};
++unsigned char mac_type_multicast[ETH_ALEN] = {1,0,0,0,0,0};
++unsigned char msk_type_multicast[ETH_ALEN] = {1,0,0,0,0,0};
++unsigned char mac_type_broadcast[ETH_ALEN] = {255,255,255,255,255,255};
++unsigned char msk_type_broadcast[ETH_ALEN] = {255,255,255,255,255,255};
++
+ // tells what happened to the old rules
+ static unsigned short *counterchanges;
+ // holds all the data
+@@ -466,20 +473,70 @@
+ 			}
+ 		}
+ 		if (hlp->bitmask & EBT_SOURCEMAC) {
++			char hlpmsk[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
++
+ 			printf("source mac: ");
+ 			if (hlp->invflags & EBT_ISOURCE)
+ 				printf("! ");
++			if (!memcmp(hlp->sourcemac, mac_type_unicast, 6) &&
++			    !memcmp(hlp->sourcemsk, msk_type_unicast, 6)) {
++				printf("Unicast");
++				goto endsrc;
++			}
++			if (!memcmp(hlp->sourcemac, mac_type_multicast, 6) &&
++			    !memcmp(hlp->sourcemsk, msk_type_multicast, 6)) {
++				printf("Multicast");
++				goto endsrc;
++			}
++			if (!memcmp(hlp->sourcemac, mac_type_broadcast, 6) &&
++			    !memcmp(hlp->sourcemsk, msk_type_broadcast, 6)) {
++				printf("Broadcast");
++				goto endsrc;
++			}
+ 			for (j = 0; j < ETH_ALEN; j++)
+ 				printf("%02x%s", hlp->sourcemac[j],
+-				   (j == ETH_ALEN - 1) ? ", " : ":");
++				   (j == ETH_ALEN - 1) ? "" : ":");
++			if (memcmp(hlp->sourcemsk, hlpmsk, 6)) {
++				printf("/");
++				for (j = 0; j < ETH_ALEN; j++)
++					printf("%02x%s", hlp->sourcemsk[j],
++					   (j == ETH_ALEN - 1) ? "" : ":");
++			}
++endsrc:
++			printf(", ");
+ 		}
+ 		if (hlp->bitmask & EBT_DESTMAC) {
++			char hlpmsk[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
++
+ 			printf("dest mac: ");
+ 			if (hlp->invflags & EBT_IDEST)
+ 				printf("! ");
++			if (!memcmp(hlp->destmac, mac_type_unicast, 6) &&
++			    !memcmp(hlp->destmsk, msk_type_unicast, 6)) {
++				printf("Unicast");
++				goto enddst;
++			}
++			if (!memcmp(hlp->destmac, mac_type_multicast, 6) &&
++			    !memcmp(hlp->destmsk, msk_type_multicast, 6)) {
++				printf("Multicast");
++				goto enddst;
++			}
++			if (!memcmp(hlp->destmac, mac_type_broadcast, 6) &&
++			    !memcmp(hlp->destmsk, msk_type_broadcast, 6)) {
++				printf("Broadcast");
++				goto enddst;
++			}
+ 			for (j = 0; j < ETH_ALEN; j++)
+ 				printf("%02x%s", hlp->destmac[j],
+-				   (j == ETH_ALEN - 1) ? ", " : ":");
++				   (j == ETH_ALEN - 1) ? "" : ":");
++			if (memcmp(hlp->destmsk, hlpmsk, 6)) {
++				printf("/");
++				for (j = 0; j < ETH_ALEN; j++)
++					printf("%02x%s", hlp->destmsk[j],
++					   (j == ETH_ALEN - 1) ? "" : ":");
++			}
++enddst:
++			printf(", ");
+ 		}
+ 		if (hlp->in[0] != '\0') {
+ 			if (hlp->invflags & EBT_IIN)
+@@ -1096,6 +1153,39 @@
+ 	return 0;
+ }
+ 
++int getmac_and_mask(char *from, char *to, char *mask)
++{
++	char *p;
++	int i;
++
++	if (strcasecmp(from, "Unicast") == 0) {
++		memcpy(to, mac_type_unicast, ETH_ALEN);
++		memcpy(mask, msk_type_unicast, ETH_ALEN);
++		return 0;
++	}
++	if (strcasecmp(from, "Multicast") == 0) {
++		memcpy(to, mac_type_multicast, ETH_ALEN);
++		memcpy(mask, msk_type_multicast, ETH_ALEN);
++		return 0;
++	}
++	if (strcasecmp(from, "Broadcast") == 0) {
++		memcpy(to, mac_type_broadcast, ETH_ALEN);
++		memcpy(mask, msk_type_broadcast, ETH_ALEN);
++		return 0;
++	}
++	if ( (p = strrchr(from, '/')) != NULL) {
++		*p = '\0';
++		if (getmac(p + 1, mask))
++			return -1;
++	} else
++		memset(mask, 0xff, ETH_ALEN);
++	if (getmac(from, to))
++		return -1;
++	for (i = 0; i < ETH_ALEN; i++)
++		to[i] &= mask[i];
++	return 0;
++}
++
+ int check_inverse(const char option[])
+ {
+ 	if (strcmp(option, "!") == 0) {
+@@ -1294,9 +1384,11 @@
+ 				print_error("Command and option do not match");
+ 			if (c == 'i') {
+ 				check_option(&replace.flags, OPT_IN);
+-				if (replace.selected_hook > 2)
++				if (replace.selected_hook > 2 &&
++				   replace.selected_hook < NF_BR_BROUTING)
+ 					print_error("Use in-interface only in "
+-					"INPUT, FORWARD and PREROUTING chains");
++					   "INPUT, FORWARD, PREROUTING and"
++					   "BROUTING chains");
+ 				if (check_inverse(optarg))
+ 					new_entry->invflags |= EBT_IIN;
+ 
+@@ -1310,10 +1402,11 @@
+ 			}
+ 			if (c == 2) {
+ 				check_option(&replace.flags, OPT_LOGICALIN);
+-				if (replace.selected_hook > 2)
++				if (replace.selected_hook > 2 &&
++				   replace.selected_hook < NF_BR_BROUTING)
+ 					print_error("Use logical in-interface "
+-					   "only in INPUT, FORWARD and "
+-					   "PREROUTING chains");
++					   "only in INPUT, FORWARD, "
++					   "PREROUTING and BROUTING chains");
+ 				if (check_inverse(optarg))
+ 					new_entry->invflags |= EBT_ILOGICALIN;
+ 
+@@ -1398,8 +1491,8 @@
+ 				if (optind > argc)
+ 					print_error("No source mac "
+ 					            "specified");
+-				if (getmac(argv[optind - 1],
+-				   new_entry->sourcemac))
++				if (getmac_and_mask(argv[optind - 1],
++				   new_entry->sourcemac, new_entry->sourcemsk))
+ 					print_error("Problem with specified "
+ 					            "source mac");
+ 				new_entry->bitmask |= EBT_SOURCEMAC;
+@@ -1413,8 +1506,8 @@
+ 				if (optind > argc)
+ 					print_error("No destination mac "
+ 					            "specified");
+-				if (getmac(argv[optind - 1],
+-				   new_entry->destmac))
++				if (getmac_and_mask(argv[optind - 1],
++				   new_entry->destmac, new_entry->destmsk))
+ 					print_error("Problem with specified "
+ 					            "destination mac");
+ 				new_entry->bitmask |= EBT_DESTMAC;
+--- ebtables-v2.0pre3/communication.c	Sat Apr 27 22:31:19 2002
++++ ebtables-v2.0pre4.001/communication.c	Thu May  2 19:02:44 2002
+@@ -121,7 +121,10 @@
+ 			   sizeof(tmp->logical_out));
+ 			memcpy(tmp->sourcemac, e->sourcemac,
+ 			   sizeof(tmp->sourcemac));
++			memcpy(tmp->sourcemsk, e->sourcemsk,
++			   sizeof(tmp->sourcemsk));
+ 			memcpy(tmp->destmac, e->destmac, sizeof(tmp->destmac));
++			memcpy(tmp->destmsk, e->destmsk, sizeof(tmp->destmsk));
+ 
+ 			base = p;
+ 			p += sizeof(struct ebt_entry);
+@@ -307,7 +310,9 @@
+ 		memcpy(new->logical_out, e->logical_out,
+ 		   sizeof(new->logical_out));
+ 		memcpy(new->sourcemac, e->sourcemac, sizeof(new->sourcemac));
++		memcpy(new->sourcemsk, e->sourcemsk, sizeof(new->sourcemsk));
+ 		memcpy(new->destmac, e->destmac, sizeof(new->destmac));
++		memcpy(new->destmsk, e->destmsk, sizeof(new->destmsk));
+ 		new->m_list = NULL;
+ 		new->w_list = NULL;
+ 		new->next = NULL;
+--- ebtables-v2.0pre3/ChangeLog	Sat Apr 27 22:31:21 2002
++++ ebtables-v2.0pre4.001/ChangeLog	Thu May  2 19:02:44 2002
+@@ -1,3 +1,11 @@
++20020501
++	* allow -i and --logical-in in BROUTING
++	* update the manual page
++	* rename /etc/etherproto into /etc/ethertypes (seems to be a more
++	  standard name)
++	* add MAC mask for -s and -d, also added Unicast, Multicast and
++	  Broadcast specification for specifying a (family of) MAC
++	  addresses.
+ 20020427
+ 	* added broute table.
+ 	* added redirect target.
+--- ebtables-v2.0pre3/ebtables.8	Sat Apr 27 22:31:21 2002
++++ ebtables-v2.0pre4.001/ebtables.8	Thu May  2 19:02:44 2002
+@@ -1,4 +1,4 @@
+-.TH EBTABLES 8  "27 April 2002"
++.TH EBTABLES 8  "01 May 2002"
+ .\"
+ .\" Man page written by Bart De Schuymer <bart.de.schuymer@pandora.be>
+ .\" It is based on the iptables man page.
+@@ -31,7 +31,7 @@
+ .br
+ .B "ebtables -L DB"
+ .br
+-.BR "ebtables -[cb] [" "y/n" "]"
++.BR "ebtables -[b] [" "y/n" "]"
+ .br
+ .SH DESCRIPTION
+ .B ebtables
+@@ -88,13 +88,14 @@
+ .B POSTROUTING
+ (for altering frames as they are about to go out). A small note on the naming
+ of chains POSTROUTING and PREROUTING: it would be more accurate to call them
+-PREFORWARDING and POSTFORWARDING, but for all those who come from the iptables
+-world to ebtables it is easier to have the same names.
++PREFORWARDING and POSTFORWARDING, but for all those who come from the
++.BR iptables " world to " ebtables
++it is easier to have the same names.
+ .BR broute ,
+ this table is used to make a brouter, it has one chain:
+ .BR BROUTING .
+ The targets
+-.BR DROP and ACCEPT
++.BR DROP " and " ACCEPT
+ have special meaning in this table.
+ .B DROP
+ actually means the frame has to be routed, while
+@@ -178,8 +179,9 @@
+ .B ebtables
+ for these frames is
+ .BR LENGTH .
++.br
+ The file
+-.B /etc/etherproto
++.B /etc/ethertypes
+ can be used to show readable
+ characters instead of hexadecimal numbers for the protocols. For example,
+ .I 0x0800
+@@ -193,9 +195,8 @@
+ .BR "-i, --in-interface " "[!] \fIname\fP"
+ The interface via which a frame is received (for the
+ .BR INPUT ,
+-.B FORWARD
+-and
+-.B PREROUTING
++.BR FORWARD ,
++.BR PREROUTING " and " BROUTING
+ chains). The flag
+ .B --in-if
+ is an alias for this option.
+@@ -203,9 +204,8 @@
+ .BR "--logical-in " "[!] \fIname\fP"
+ The (logical) bridge interface via which a frame is received (for the
+ .BR INPUT ,
+-.B FORWARD
+-and
+-.B PREROUTING
++.BR FORWARD ,
++.BR PREROUTING " and " BROUTING
+ chains).
+ .TP
+ .BR "-o, --out-interface " "[!] \fIname\fP"
+@@ -227,23 +227,31 @@
+ .B POSTROUTING
+ chains).
+ .TP
+-.BR "-s, --source " "[!] \fIaddress\fP"
+-The source mac address. The flag
++.BR "-s, --source " "[!] \fIaddress\fP[/\fImask\fP]"
++The source mac address. Both mask and address are written as 6 hexadecimal
++numbers seperated by colons. Alternatively one can specify Unicast,
++Multicast or Broadcast.
++.br
++Unicast=00:00:00:00:00:00/01:00:00:00:00:00,
++Multicast=01:00:00:00:00:00/01:00:00:00:00:00 and
++Broadcast=ff:ff:ff:ff:ff:ff/ff:ff:ff:ff:ff:ff. Note that a broadcast
++address will also match the multicast specification. The flag
+ .B --src
+ is an alias for this option.
+ .TP
+-.BR "-d, --destination " "[!] \fIaddress\fP"
+-The destination mac address. The flag
++.BR "-d, --destination " "[!] \fIaddress\fP[/\fImask\fP]"
++The destination mac address. See -s (above) for more details. The flag
+ .B --dst
+ is an alias for this option.
+ 
+ .SS OTHER OPTIONS
++.TP
+ .B "-V, --version"
+ Show the version of the userprogram.
+ .TP
+ .B "-h, --help"
+-Give a brief description of the command syntax. Here you can specify names of
+-extensions and
++Give a brief description of the command syntax. Here you can also specify
++names of extensions and
+ .B ebtables
+ will try to write help about those extensions. E.g. ebtables -h snat log ip arp.
+ .TP
+@@ -258,7 +266,8 @@
+ or a target extension, see
+ .BR "TARGET EXTENSIONS" .
+ .SH MATCH EXTENSIONS
+-ebtables extensions are precompiled into the userspace tool. So there is no need
++.B ebtables
++extensions are precompiled into the userspace tool. So there is no need
+ to explicitly load them with a -m option like in iptables. However, these
+ extensions deal with functionality supported by supplemental kernel modules.
+ .SS ip
+@@ -291,10 +300,11 @@
+ .BR ARP " or " RARP .
+ .TP
+ .BR "--arp-opcode " "[!] \fIopcode\fP"
+-The (r)arp opcode (decimal or a string, see ebtables help).
++The (r)arp opcode (decimal or a string, for more details see ebtables -h arp).
+ .TP
+ .BR "--arp-htype " "[!] \fIhardware type\fP"
+-The hardware type (decimal or the string "Ethernet"). This is normally Ethernet (value 1).
++The hardware type, this can be a decimal or the string "Ethernet". This
++is normally Ethernet (value 1).
+ .TP
+ .BR "--arp-ptype " "[!] \fIprotocol type\fP"
+ The protocol type for which the (r)arp is used (hexadecimal or the string "IPv4").
+@@ -354,7 +364,9 @@
+ .BR "--snat-target " "\fItarget\fP"
+ .br
+ Specifies the standard target. After doing the snat, the rule still has 
+-to give a standard target so ebtables knows what to do.
++to give a standard target so
++.B ebtables
++knows what to do.
+ The default target is ACCEPT. Making it CONTINUE could let you use
+ multiple target extensions on the same frame. Making it DROP doesn't
+ make sense, but you could do that too.
+@@ -376,7 +388,9 @@
+ .BR "--dnat-target " "\fItarget\fP"
+ .br
+ Specifies the standard target. After doing the dnat, the rule still has to
+-give a standard target so ebtables knows what to do.
++give a standard target so
++.B ebtables
++knows what to do.
+ The default target is ACCEPT. Making it CONTINUE could let you use 
+ multiple target extensions on the same frame. Making it DROP only makes
+ sense in the BROUTING chain but using the redirect target is more logical
+@@ -385,7 +399,7 @@
+ .B redirect
+ The
+ .B redirect
+-target will change the MAC target address to that of the physical nic the
++target will change the MAC target address to that of the bridge device the
+ frame arrived on. This target can only be used in the
+ .BR BROUTING " chain of the " broute " table and the "
+ .BR PREROUTING " chain of the " nat " table."
+@@ -393,12 +407,14 @@
+ .BR "--redirect-target " "\fItarget\fP"
+ .br
+ Specifies the standard target. After doing the MAC redirect, the rule
+-still has to give a standard target so ebtables knows what to do.
++still has to give a standard target so
++.B ebtables
++knows what to do.
+ The default target is ACCEPT. Making it CONTINUE could let you use 
+ multiple target extensions on the same frame. Making it DROP in the
+ BROUTING chain will let the frames be routed.
+ .SH FILES
+-.I /etc/etherproto
++.I /etc/ethertypes
+ .SH BUGS
+ This won't work on an architecture with a user32/kernel64 situation like the Sparc64.
+ .SH AUTHOR
+--- ebtables-v2.0pre3/etherproto	Wed Apr  3 13:16:59 2002
++++ /dev/null	Thu Aug 24 11:00:32 2000
+@@ -1,36 +0,0 @@
+-  # all whitespace is ignored
+-  # comment lines must have a '#' as the first character
+-  # all protocol numbers are in hexadecimal form
+-	# maximum namesize = 20 characters
+-	# always put tabs or spaces between the name and the protocol number
+-# don't use more than 4 digits for the protocol number
+-# programs using this file should not be case sensitive
+-# that's all :-))
+-IPV4 	0800	put your comments behind, on the same line, after a tab
+-X25	0800    or whitespace
+-ARP	0806
+-IPX	8137
+-IPV6	86DD
+-NetBEUI	8191
+-
+-# some definitions from the kernel (/include/linux/if_ether.h)
+-
+-BPQ	08FF	G8BPQ AX.25 Ethernet Packet
+-DEC	6000	DEC Assigned proto
+-DNA_DL	6001	DEC DNA Dump/Load
+-DNA_RC	6002	DEC DNA Remote Console
+-DNA_RT	6003	DEC DNA Routing
+-LAT	6004	DEC LAT
+-DIAG	6005	DEC Diagnostics
+-CUST	6006	DEC Customer use
+-SCA	6007	DEC Systems Comms Arch
+-RARP	8035	Reverse Addr Res packet
+-ATALK	809B	Appletalk DDP
+-AARP	80F3	Appletalk AARP
+-IPX	8137	IPX over DIX
+-PPP_DISC	8863	PPPoE discovery messages
+-PPP_SES	8864	PPPoE session messages
+-ATMMPOA	884C	MultiProtocol over ATM
+-ATMFATE	8884	Frame-based ATM Transport over Ethernet
+-
+-
+--- /dev/null	Thu Aug 24 11:00:32 2000
++++ ebtables-v2.0pre4.001/ethertypes	Thu May  2 19:02:44 2002
+@@ -0,0 +1,36 @@
++  # all whitespace is ignored
++  # comment lines must have a '#' as the first character
++  # all protocol numbers are in hexadecimal form
++	# maximum namesize = 20 characters
++	# always put tabs or spaces between the name and the protocol number
++# don't use more than 4 digits for the protocol number
++# programs using this file should not be case sensitive
++# that's all :-))
++IPV4 	0800	put your comments behind, on the same line, after a tab
++X25	0800    or whitespace
++ARP	0806
++IPX	8137
++IPV6	86DD
++NetBEUI	8191
++
++# some definitions from the kernel (/include/linux/if_ether.h)
++
++BPQ	08FF	G8BPQ AX.25 Ethernet Packet
++DEC	6000	DEC Assigned proto
++DNA_DL	6001	DEC DNA Dump/Load
++DNA_RC	6002	DEC DNA Remote Console
++DNA_RT	6003	DEC DNA Routing
++LAT	6004	DEC LAT
++DIAG	6005	DEC Diagnostics
++CUST	6006	DEC Customer use
++SCA	6007	DEC Systems Comms Arch
++RARP	8035	Reverse Addr Res packet
++ATALK	809B	Appletalk DDP
++AARP	80F3	Appletalk AARP
++IPX	8137	IPX over DIX
++PPP_DISC	8863	PPPoE discovery messages
++PPP_SES	8864	PPPoE session messages
++ATMMPOA	884C	MultiProtocol over ATM
++ATMFATE	8884	Frame-based ATM Transport over Ethernet
++
++
+--- ebtables-v2.0pre3/include/ebtables_u.h	Sat Apr 27 22:31:16 2002
++++ ebtables-v2.0pre4.001/include/ebtables_u.h	Thu May  2 19:02:44 2002
+@@ -86,7 +86,9 @@
+ 	__u8 out[IFNAMSIZ];
+ 	__u8 logical_out[IFNAMSIZ];
+ 	__u8 sourcemac[ETH_ALEN];
++	__u8 sourcemsk[ETH_ALEN];
+ 	__u8 destmac[ETH_ALEN];
++	__u8 destmsk[ETH_ALEN];
+ 	struct ebt_u_match_list *m_list;
+ 	struct ebt_u_watcher_list *w_list;
+ 	struct ebt_entry_target *t;
