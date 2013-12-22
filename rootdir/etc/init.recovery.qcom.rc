@@ -1,3 +1,0 @@
-on init
-    # Brightness
-    write /sys/class/backlight/lcd-backlight/brightness 126

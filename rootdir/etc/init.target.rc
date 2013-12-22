@@ -91,10 +91,21 @@ service thermal-engine /system/bin/thermal-engine -c /etc/thermal-engine-8226.co
    user root
    group root
 
+service qrngd /system/bin/qrngd -f
+    class main
+    user root
+    group root
+
+
 service qseecomd /system/bin/qseecomd
     class late_start
-    user system
-    group system
+    user root
+    group root
+
+service audiod /system/bin/audiod
+   class late_start
+   user system
+   group system
 
 service adsprpcd /system/bin/adsprpcd
    class main
@@ -103,11 +114,15 @@ service adsprpcd /system/bin/adsprpcd
 
 service wcnss-service /system/bin/wcnss_service
    class late_start
-   user system
+   user root
    group system wifi
-   disabled
    oneshot
 
-on property:wlan.driver.ath=0
-    start wcnss-service
+service ppd /system/bin/mm-pp-daemon
+    class late_start
+    user system
+    socket pps stream 0660 system system graphics
+    group system graphics
 
+on property:init.svc.surfaceflinger=stopped
+    stop ppd

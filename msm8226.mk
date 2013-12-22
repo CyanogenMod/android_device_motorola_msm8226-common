@@ -70,17 +70,18 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     fstab.qcom \
     init.qcom.rc \
-    init.recovery.qcom.rc \
     init.target.rc \
     ueventd.qcom.rc
 
 # Init scripts
 PRODUCT_PACKAGES += \
     init.mmi.boot.sh \
+    init.mmi.radio.sh \
     init.mmi.rc \
     init.mmi.touch.sh \
     init.qcom.post_boot.sh \
     init.qcom.sh \
+    init.qcom.ssr.sh \
     init.qcom.wifi.sh
 
 # TWRP
