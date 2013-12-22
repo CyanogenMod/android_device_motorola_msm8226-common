@@ -26,7 +26,11 @@ DEVICE_PACKAGE_OVERLAYS += $(LOCAL_PATH)/overlay
 # Audio
 PRODUCT_PACKAGES += \
     audio_policy.msm8226 \
-    audio.primary.msm8226
+    audio.primary.msm8226 \
+    libaudioparameter \
+    libqcomvisualizer \
+    libqcomvoiceprocessing \
+    libqcompostprocbundle
 
 # FM radio
 PRODUCT_PACKAGES += \
@@ -80,6 +84,7 @@ PRODUCT_COPY_FILES += \
 # Audio configuration
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/config/audio_policy.conf:system/etc/audio_policy.conf \
+    $(LOCAL_PATH)/config/mixer_paths.xml:system/etc/mixer_paths.xml \
     $(LOCAL_PATH)/config/snd_soc_msm_Tapan:system/etc/snd_soc_msm/snd_soc_msm_Tapan \
     $(LOCAL_PATH)/config/snd_soc_msm_Tapan9302:system/etc/snd_soc_msm/snd_soc_msm_Tapan9302 \
     $(LOCAL_PATH)/config/snd_soc_msm_Tapan_SKUF:system/etc/snd_soc_msm/snd_soc_msm_Tapan_SKUF
@@ -113,7 +118,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
     media.stagefright.enable-scan=true \
     mmp.enable.3g2=true \
     ro.audio.fm_max_volume=5793 \
-    ro.qualcomm.cabl=0
+    ro.qualcomm.cabl=0 \
+    use.voice.path.for.pcm.voip=true
 
 # Misc
 PRODUCT_PROPERTY_OVERRIDES += \
