@@ -66,6 +66,7 @@ lib/hw/sensors.msm8226.so
 lib/rfsa/adsp/libadsp_denoise_skel.so
 lib/libadropbox.so
 lib/libbabysit.so
+lib/libdrmdecrypt.so
 lib/libfrsdk.so
 lib/libgps.utils.so
 lib/libloc_api_v02.so
