@@ -26,7 +26,6 @@
 #
 
 import init.qcom.usb.rc
-import init.ril.rc
 # import init.target.rc
 
 on init
@@ -171,6 +170,10 @@ on post-fs-data
     mkdir /data/misc/wifi/wpa_supplicant 0770 wifi wifi
     mkdir /data/misc/dhcp 0770 dhcp dhcp
     chown dhcp dhcp /data/misc/dhcp
+
+    # Kickstart the Wireless subsystem
+    write /dev/wcnss_wlan 1
+    write /sys/module/wcnss_ssr_8960/parameters/enable_riva_ssr 1
 
     # Create directory used by audio subsystem
     mkdir /data/misc/audio 0770 audio audio

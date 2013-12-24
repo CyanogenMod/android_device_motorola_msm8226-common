@@ -129,7 +129,7 @@
 /dev/msm_vidc_enc         0660   system     audio
 /dev/msm_rotator          0664   system     system
 /dev/hw_random            0660   system     system
-/dev/adsprpc-smd          0664   system     system
+/dev/adsprpc-smd          0664   media      camera
 
 /dev/rtc0                 0660   system     system
 #permissions for audio
@@ -237,6 +237,11 @@
 
 # kernel logs
 /dev/log/kernel           0600   root       log
+
+# Moto Sensors
+/dev/stm401               0660  system     compass
+/dev/stm401_as            0660  compass    compass
+/dev/stm401_ms            0660  compass    compass
 
 # From moto ueventd.rc
 /dev/assd                 0660   smartcard  smartcard

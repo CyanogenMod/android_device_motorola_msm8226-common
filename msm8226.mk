@@ -29,8 +29,7 @@ PRODUCT_PACKAGES += \
     audio.primary.msm8226 \
     libaudioparameter \
     libqcomvisualizer \
-    libqcomvoiceprocessing \
-    libqcompostprocbundle
+    libqcomvoiceprocessing
 
 # Ebtables
 PRODUCT_PACKAGES += \
@@ -50,6 +49,7 @@ PRODUCT_PACKAGES += \
     copybit.msm8226\
     gralloc.msm8226 \
     hwcomposer.msm8226 \
+    keystore.msm8226 \
     lights.MSM8226 \
     memtrack.msm8226 \
     power.msm8226
@@ -92,9 +92,8 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/config/audio_policy.conf:system/etc/audio_policy.conf \
     $(LOCAL_PATH)/config/mixer_paths.xml:system/etc/mixer_paths.xml \
-    $(LOCAL_PATH)/config/snd_soc_msm_Tapan:system/etc/snd_soc_msm/snd_soc_msm_Tapan \
-    $(LOCAL_PATH)/config/snd_soc_msm_Tapan9302:system/etc/snd_soc_msm/snd_soc_msm_Tapan9302 \
-    $(LOCAL_PATH)/config/snd_soc_msm_Tapan_SKUF:system/etc/snd_soc_msm/snd_soc_msm_Tapan_SKUF
+    $(LOCAL_PATH)/config/mixer_paths_boost.xml:system/etc/mixer_paths_boost.xml \
+    $(LOCAL_PATH)/config/mixer_paths_p1.xml:system/etc/mixer_paths_p1.xml
 
 # EGL config
 PRODUCT_COPY_FILES += \
@@ -124,9 +123,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
     media.stagefright.enable-fma2dp=true \
     media.stagefright.enable-scan=true \
     mmp.enable.3g2=true \
-    ro.audio.fm_max_volume=5793 \
+    ro.audio.fm_max_volume=4096 \
     ro.qualcomm.cabl=0 \
-    use.voice.path.for.pcm.voip=true
+    use.voice.path.for.pcm.voip=true \
+    qcom.bt.le_dev_pwr_class=1
 
 # Misc
 PRODUCT_PROPERTY_OVERRIDES += \

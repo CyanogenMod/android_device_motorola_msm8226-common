@@ -9,6 +9,7 @@ do
 		d)  dbg_on=1;;
 	esac
 done
+shift $(($OPTIND-1))
 
 debug()
 {
@@ -18,26 +19,52 @@ debug()
 error_and_leave()
 {
 	err_code=$1
-	shift $(($OPTIND-1))
 	case $err_code in
 		1)  echo "Error: No response from touch IC";;
 		2)  echo "Error: Cannot read property $1";;
 		3)  echo "Error: No matching firmware file found";;
 		4)  echo "Error: Touch IC is in bootloader mode";;
 		5)  echo "Error: Touch provides no reflash interface";;
+		6)  echo "Error: Touch driver is not running";;
 	esac
 	exit $err_code
 }
 
-device_property=ro.hw.device
-hwrev_property=ro.hw.revision
-firmware_path=/system/etc/firmware
+for touch_vendor in $*; do
+	debug "searching driver for vendor [$touch_vendor]"
+	touch_driver_link=$(ls -l /sys/bus/i2c/drivers/$touch_vendor*/*-*)
+	if [ -z "$touch_driver_link" ]; then
+		debug "no driver for vendor [$touch_vendor] is running"
+		shift 1
+	else
+		debug "driver for vendor [$touch_vendor] found!!!"
+		break
+	fi
+done
 
-synaptics_link=$(ls -l /sys/bus/i2c/drivers/synaptics_dsx_i2c/*-*)
-touch_path=/sys/devices/${synaptics_link#*devices/}
+[ -z "$touch_driver_link" ] && error_and_leave 6
+
+touch_path=/sys/devices/${touch_driver_link#*devices/}
 debug "sysfs touch path: $touch_path"
 
 [ -f $touch_path/doreflash ] || error_and_leave 5
+[ -f $touch_path/poweron ] || error_and_leave 5
+
+debug "wait until driver reports <ready to flash>..."
+while true; do
+	readiness=$(cat $touch_path/poweron)
+	if [ "$readiness" == "1" ]; then
+		debug "ready to flash!!!"
+		break;
+	fi
+	sleep 1
+	debug "not ready; keep waiting..."
+done
+unset readiness
+
+device_property=ro.hw.device
+hwrev_property=ro.hw.revision
+firmware_path=/system/etc/firmware
 
 let dec_cfg_id_boot=0; dec_cfg_id_latest=0;
 
@@ -106,7 +133,7 @@ while [ ! -z "$hw_mask" ]; do
 	if [ "$hw_mask" == "-" ]; then
 		hw_mask=""
 	fi
-	find_latest_config_id "synaptics-$touch_product_id-*-$product_id$hw_mask.*"
+	find_latest_config_id "$touch_vendor-$touch_product_id-*-$product_id$hw_mask.*"
 	if [ $? -eq 0 ]; then
 		break;
 	fi
@@ -115,7 +142,7 @@ done
 
 [ -z "$str_cfg_id_latest" ] && error_and_leave 3
 
-firmware_file=$(ls synaptics-*$str_cfg_id_latest*-$product_id$hw_mask.*)
+firmware_file=$(ls $touch_vendor-$touch_product_id-$str_cfg_id_latest-*-$product_id$hw_mask.*)
 debug "firmware file for upgrade $firmware_file"
 
 if [ $dec_cfg_id_boot -ne $dec_cfg_id_latest ] || [ "$bl_mode" == "1" ];

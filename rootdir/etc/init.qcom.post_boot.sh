@@ -314,8 +314,11 @@ case "$target" in
         echo 2 > /sys/module/lpm_resources/enable_low_power/l2
         echo 1 > /sys/module/lpm_resources/enable_low_power/pxo
 	soc_revision=`cat /sys/devices/soc0/revision`
-	if [ "$soc_revision" == "1.0" ]; then
-		echo 1 > /sys/kernel/debug/clk/cxo_lpm_clk/enable
+	product=`getprop ro.boot.device`
+	if [ "$product" == "falcon" ]; then
+		if [ "$soc_revision" == "1.0" ]; then
+			echo 1 > /sys/kernel/debug/clk/cxo_lpm_clk/enable
+		fi
 	fi
         echo 1 > /sys/module/pm_8x60/modes/cpu0/power_collapse/suspend_enabled
         echo 1 > /sys/module/pm_8x60/modes/cpu1/power_collapse/suspend_enabled

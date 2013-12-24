@@ -1,8 +1,6 @@
 import init.mmi.usb.rc
 
 on early-init
-    # Change default logcat output format
-    export ANDROID_PRINTF_LOG threadtime
     # Create PDS mount point
     mkdir /pds 0755 root root
 
@@ -89,6 +87,10 @@ on post-fs-data
     mkdir /data/local/dbvc 0750 mot_tcmd shell
     mkdir /data/local/atvc 0775 mot_tcmd shell
 
+    # Wifi
+    restorecon /data/hostapd
+    restorecon /data/misc/wifi/hostapd/wlan0
+
    # Create moodle directory that MOODLE APP can write to
     mkdir /data/local/moodle 0770 graphics mot_tcmd
 
@@ -165,6 +167,7 @@ on boot
     chown system system /sys/class/leds/blue/brightness
     chown system system /sys/class/leds/white/brightness
     chown system system /sys/class/leds/white/blink
+    chown system system /sys/class/leds/rgb/control
     chown system system /sys/class/leds/led:flash_0/brightness
     chown system system /sys/class/leds/charging/brightness
     chmod 0664 /sys/class/leds/red/brightness
@@ -173,6 +176,7 @@ on boot
     chmod 0664 /sys/class/leds/blue/brightness
     chmod 0664 /sys/class/leds/white/brightness
     chmod 0664 /sys/class/leds/white/blink
+    chmod 0664 /sys/class/leds/rgb/control
     chmod 0664 /sys/class/leds/led:flash_0/brightness
     chmod 0664 /sys/class/leds/charging/brightness
     chmod 0664 /sys/class/leds/lcd-backlight/brightness
@@ -183,13 +187,13 @@ on boot
     # ReadMin, ReadInitial, ReadMax, WriteMin, WriteInitial, WriteMax,
     setprop net.tcp.buffersize.default 131072,262144,1048576,4096,16384,262144
     setprop net.tcp.buffersize.wifi 131072,262144,3145728,4096,221184,3145728
-    setprop net.tcp.buffersize.umts 131072,262144,1452032,4096,16384,399360
+    setprop net.tcp.buffersize.umts 131072,262144,1452023,4096,16384,399360
     setprop net.tcp.buffersize.edge 16384,32768,131070,4096,16384,65536
     setprop net.tcp.buffersize.gprs 4096,8192,24576,4096,8192,24576
-    setprop net.tcp.buffersize.hspa 131072,262144,1452032,4096,16384,399360
-    setprop net.tcp.buffersize.hsdpa 131072,262144,1452032,4096,16384,399360
-    setprop net.tcp.buffersize.hsupa 131072,262144,1452032,4096,16384,399360
-    setprop net.tcp.buffersize.hspap 131072,262144,1452032,4096,16384,399360
+    setprop net.tcp.buffersize.hspa 131072,262144,1452023,4096,16384,399360
+    setprop net.tcp.buffersize.hsdpa 131072,262144,1452023,4096,16384,399360
+    setprop net.tcp.buffersize.hsupa 131072,262144,1452023,4096,16384,399360
+    setprop net.tcp.buffersize.hspap 131072,262144,1452023,4096,16384,399360
     setprop net.tcp.buffersize.cdma  4096,12288,49152,4096,12288,49152
     setprop net.tcp.buffersize.1xrtt 16384,32768,131070,4096,16384,102400
     setprop net.tcp.buffersize.evdo  16384,32768,131070,4096,16384,102400
@@ -199,6 +203,7 @@ on boot
     setprop net.tcp.buffersize.2ghotspot2 4096,16384,102400,16384,32768,131070
     setprop net.tcp.buffersize.3ghotspot 4096,16384,399360,131072,262144,1452032
     setprop net.tcp.buffersize.3ghotspot2 4096,16384,524288,131072,262144,1048576
+
     # Assign TCP buffer thresholds to be ceiling value of technology maximums
     # Increased technology maximums should be reflected here.
     write /proc/sys/net/core/rmem_max  3145728
@@ -245,7 +250,8 @@ service aplogd /system/bin/aplogd
 
 service mmi-radio-sh /system/bin/logwrapper /system/bin/sh /init.mmi.radio.sh
     class core
-    user root
+    user radio
+    group radio
     oneshot
 
 on property:persist.sys.diag_mdlog.on=1
@@ -266,18 +272,19 @@ service dropboxd /system/bin/dropboxd
     user diag
     group diag
 
-on property:sys.boot_completed=1
-    start mmi-touch-sh
+
+on property:installd.post_fs_data_ready=1
+    exec /system/bin/refuse
 
 service mmi-boot-sh /system/bin/logwrapper /system/bin/sh /init.mmi.boot.sh
     class core
     user root
     oneshot
 
-service mmi-touch-sh /system/bin/logwrapper /system/bin/sh /init.mmi.touch.sh
+service mmi-touch-sh /system/bin/logwrapper /system/bin/sh /init.mmi.touch.sh synaptics melfas
+    class late_start
     user root
     oneshot
-    disabled
 
 # Magnetometer
 service akmd8963 /system/bin/akmd8963
@@ -296,11 +303,6 @@ service hw_revs /system/bin/logwrapper /system/bin/hardware_revisions.sh
     user system
     group system
     oneshot
-
-service dhcp_monitor /system/bin/logwrapper /system/xbin/tcpdump -v -i any port 67
-   class late_start
-   disabled
-   oneshot
 
 # DHCP service for Ethernet
 service dhcpcd_eth0 /system/bin/dhcpcd -G

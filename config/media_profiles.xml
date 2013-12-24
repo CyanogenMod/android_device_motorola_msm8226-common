@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2012-2013, The Linux Foundation. All rights reserved
-     Not a contribution.
-
-     Copyright (C) 2010 The Android Open Source Project
+<!-- Copyright (C) 2010 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -15,6 +12,11 @@
      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
      See the License for the specific language governing permissions and
      limitations under the License.
+-->
+<!--
+     Copyright (c) 2012-2013, The Linux Foundation. All rights reserved.
+     Not a Contribution, Apache license notifications and license are retained
+     for attribution purposes only.
 -->
 <!DOCTYPE MediaSettings [
 <!ELEMENT MediaSettings (CamcorderProfiles,
@@ -59,7 +61,7 @@
 <!ATTLIST VideoEncoderCap minFrameRate CDATA #REQUIRED>
 <!ATTLIST VideoEncoderCap maxFrameRate CDATA #REQUIRED>
 <!ELEMENT AudioEncoderCap EMPTY>
-<!ATTLIST AudioEncoderCap name (amrnb|amrwb|aac|wma|lpcm) #REQUIRED>
+<!ATTLIST AudioEncoderCap name (amrnb|amrwb|aac|heaac|aaceld|wma|lpcm) #REQUIRED>
 <!ATTLIST AudioEncoderCap enabled (true|false) #REQUIRED>
 <!ATTLIST AudioEncoderCap minBitRate CDATA #REQUIRED>
 <!ATTLIST AudioEncoderCap maxBitRate CDATA #REQUIRED>
@@ -410,6 +412,16 @@
     <AudioEncoderCap name="aac" enabled="true"
         minBitRate="8000" maxBitRate="156000"
         minSampleRate="8000" maxSampleRate="48000"
+        minChannels="1" maxChannels="2" />
+
+    <AudioEncoderCap name="heaac" enabled="true"
+        minBitRate="8000" maxBitRate="128000"
+        minSampleRate="16000" maxSampleRate="48000"
+        minChannels="1" maxChannels="2" />
+
+    <AudioEncoderCap name="aaceld" enabled="true"
+        minBitRate="16000" maxBitRate="384000"
+        minSampleRate="16000" maxSampleRate="48000"
         minChannels="1" maxChannels="2" />
 
     <AudioEncoderCap name="amrwb" enabled="true"

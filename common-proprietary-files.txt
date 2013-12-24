@@ -31,9 +31,11 @@ bin/qmiproxy
 bin/qmuxd
 bin/qseecomd
 bin/radish
+bin/refuse
 bin/rfs_access
 bin/rild
 bin/rmt_storage
+bin/subsystem_ramdump
 bin/thermal-engine
 bin/time_daemon
 
@@ -85,11 +87,9 @@ vendor/lib/libacdbloader.so
 vendor/lib/libacdbmapper.so
 vendor/lib/libacdbrtac.so
 vendor/lib/libadsprpc.so
-vendor/lib/libalsautils.so
 vendor/lib/libaudcal.so
 vendor/lib/libaudioalsa.so
 vendor/lib/libconfigdb.so
-vendor/lib/libcsd-client.so
 vendor/lib/libdiag.so
 vendor/lib/libDivxDrm.so
 vendor/lib/lib-dplmedia.so
@@ -307,6 +307,14 @@ vendor/lib/libC2D2.so
 vendor/lib/libCB.so
 vendor/lib/libgsl.so
 vendor/lib/libllvm-a3xx.so
+vendor/lib/libllvm-qcom.so
 vendor/lib/libOpenCL.so
 vendor/lib/libOpenVG.so
 vendor/lib/libsc-a3xx.so
+
+# Keystore
+vendor/firmware/keymaster/keymaster.b00
+vendor/firmware/keymaster/keymaster.b01
+vendor/firmware/keymaster/keymaster.b02
+vendor/firmware/keymaster/keymaster.b03
+vendor/firmware/keymaster/keymaster.mdt
