@@ -80,7 +80,9 @@ lib/libmdmcutback.so
 lib/libmmjpeg_interface.so
 lib/libmotext_inf.so
 lib/libmot_sensorlistener.so
+vendor/lib/libril-qc-qmi-1.so:lib/libril-qc-qmi-1.so
 lib/libqomx_core.so
+vendor/lib/libQSEEComAPI.so:lib/libQSEEComAPI.so
 lib/libreference-ril.so
 lib/libril.so
 vendor/lib/libacdbloader.so
@@ -97,6 +99,7 @@ vendor/lib/libdrmdiag.so
 vendor/lib/libdrmfs.so
 vendor/lib/libdrmtime.so
 vendor/lib/libdsi_netctrl.so
+vendor/lib/libdsnetutils.so
 vendor/lib/libdsucsd.so
 vendor/lib/libdsutils.so
 vendor/lib/libExtendedExtractor.so
@@ -143,8 +146,6 @@ vendor/lib/libqmi_csvt_srvc.so
 vendor/lib/libqmi_encdec.so
 vendor/lib/libqmiservices.so
 vendor/lib/libqomx_jpegenc.so
-vendor/lib/libQSEEComAPI.so
-vendor/lib/libril-qc-qmi-1.so
 vendor/lib/libril-qcril-hook-oem.so
 vendor/lib/lib-rtpcommon.so
 vendor/lib/lib-rtpcore.so
