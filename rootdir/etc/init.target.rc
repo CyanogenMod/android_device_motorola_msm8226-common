@@ -60,7 +60,6 @@ on post-fs
 
 
 on boot
-    insmod /system/lib/modules/adsprpc.ko
     # Enable writing to led blink node from userspace
     chown system system /sys/class/leds/red/blink
     chown system system /sys/class/leds/green/blink
