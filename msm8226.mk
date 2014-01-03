@@ -28,6 +28,7 @@ PRODUCT_PACKAGES += \
     audio_policy.msm8226 \
     audio.primary.msm8226 \
     libaudioparameter \
+    libqcompostprocbundle \
     libqcomvisualizer \
     libqcomvoiceprocessing
 
@@ -95,9 +96,8 @@ PRODUCT_COPY_FILES += \
 # Audio configuration
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/config/audio_policy.conf:system/etc/audio_policy.conf \
-    $(LOCAL_PATH)/config/mixer_paths.xml:system/etc/mixer_paths.xml \
-    $(LOCAL_PATH)/config/mixer_paths_boost.xml:system/etc/mixer_paths_boost.xml \
-    $(LOCAL_PATH)/config/mixer_paths_p1.xml:system/etc/mixer_paths_p1.xml
+    $(LOCAL_PATH)/config/audio_effects.conf:system/vendor/etc/audio_effects.conf \
+    $(LOCAL_PATH)/config/mixer_paths.xml:system/etc/mixer_paths.xml
 
 # EGL config
 PRODUCT_COPY_FILES += \
