@@ -147,10 +147,13 @@ vendor/lib/libqmi_encdec.so
 vendor/lib/libqmiservices.so
 vendor/lib/libqomx_jpegenc.so
 vendor/lib/libril-qcril-hook-oem.so
+vendor/lib/librpmb.so
 vendor/lib/lib-rtpcommon.so
 vendor/lib/lib-rtpcore.so
 vendor/lib/lib-rtpdaemoninterface.so
 vendor/lib/lib-rtpsl.so
+vendor/lib/libsensor1.so
+vendor/lib/libssd.so
 vendor/lib/libtime_genoff.so
 vendor/lib/libthermalclient.so
 vendor/lib/libxml.so
@@ -285,7 +288,6 @@ vendor/lib/libmmcamera_truly_cm7700_eeprom.so
 vendor/lib/libmmcamera_tuning.so
 vendor/lib/libmmcamera_wavelet_lib.so
 vendor/lib/liboemcamera.so
-vendor/lib/libsensor1.so
 
 ## Adreno GPU
 etc/firmware/a300_pfp.fw
