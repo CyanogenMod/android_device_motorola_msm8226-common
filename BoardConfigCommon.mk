@@ -61,6 +61,7 @@ TARGET_ENABLE_QC_AV_ENHANCEMENTS :=
 # Graphics
 TARGET_DISPLAY_USE_RETIRE_FENCE :=
 BOARD_EGL_CFG := $(LOCAL_PATH)/config/egl.cfg
+TARGET_QCOM_DISPLAY_VARIANT := caf
 
 # Assert
 TARGET_OTA_ASSERT_DEVICE := xt1031,xt1032,xt1033,xt1034,falcon_umts,falcon_umtsds,falcon_cdma,falcon_retuaws
