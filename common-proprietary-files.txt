@@ -67,6 +67,7 @@ lib/hw/sensors.msm8226.so
 
 # Libs
 lib/rfsa/adsp/libadsp_denoise_skel.so
+vendor/lib/libacdbloader.so:lib/libacdbloader.so
 lib/libadropbox.so
 lib/libbabysit.so
 lib/libdrmdecrypt.so
