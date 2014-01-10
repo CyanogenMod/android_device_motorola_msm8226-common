@@ -33,7 +33,6 @@ bin/qseecomd
 bin/radish
 bin/refuse
 bin/rfs_access
-bin/rild
 bin/rmt_storage
 bin/subsystem_ramdump
 bin/thermal-engine
@@ -83,8 +82,6 @@ lib/libmotext_inf.so
 lib/libmot_sensorlistener.so
 lib/libqomx_core.so
 vendor/lib/libQSEEComAPI.so:lib/libQSEEComAPI.so
-lib/libreference-ril.so
-lib/libril.so
 vendor/lib/libacdbloader.so
 vendor/lib/libacdbmapper.so
 vendor/lib/libacdbrtac.so
