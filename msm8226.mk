@@ -150,6 +150,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # Radio
 PRODUCT_PROPERTY_OVERRIDES += \
+    rild.libpath=/system/vendor/lib/libril-qc-qmi-1.so
     persist.radio.msgtunnel.start=false \
     persist.sys.ssr.restart_level=3 \
     persist.sys.qc.sub.rdump.on=1
