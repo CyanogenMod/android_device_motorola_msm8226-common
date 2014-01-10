@@ -85,6 +85,7 @@ vendor/lib/libQSEEComAPI.so:lib/libQSEEComAPI.so
 vendor/lib/libacdbloader.so
 vendor/lib/libacdbmapper.so
 vendor/lib/libacdbrtac.so
+vendor/lib/libadiertac.so
 vendor/lib/libadsprpc.so
 vendor/lib/libaudcal.so
 vendor/lib/libaudioalsa.so
