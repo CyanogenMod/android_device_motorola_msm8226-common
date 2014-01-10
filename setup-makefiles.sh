@@ -47,6 +47,7 @@ for FILE in `egrep -v '(^#|^$)' ../$DEVICE/device-proprietary-files.txt`; do
   fi
 done
 
+if [ -f ../msm8226-common/proprietary-files.txt ]; then
 LINEEND=" \\"
 COUNT=`wc -l ../msm8226-common/proprietary-files.txt | awk {'print $1'}`
 DISM=`egrep -c '(^#|^$)' ../msm8226-common/proprietary-files.txt`
@@ -66,6 +67,7 @@ for FILE in `egrep -v '(^#|^$)' ../msm8226-common/proprietary-files.txt`; do
     echo "    $OUTDIR/proprietary/$DEST:system/$DEST$LINEEND" >> $MAKEFILE
   fi
 done
+fi
 
 (cat << EOF) > ../../../$OUTDIR/$DEVICE-vendor.mk
 # Copyright (C) 2013 The CyanogenMod Project

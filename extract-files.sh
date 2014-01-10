@@ -43,6 +43,7 @@ for FILE in `egrep -v '(^#|^$)' ../$DEVICE/device-proprietary-files.txt`; do
     fi
 done
 
+if [ -f ../msm8226-common/proprietary-files.txt ]; then
 for FILE in `egrep -v '(^#|^$)' ../msm8226-common/proprietary-files.txt`; do
     echo "Extracting /system/$FILE ..."
     OLDIFS=$IFS IFS=":" PARSING_ARRAY=($FILE) IFS=$OLDIFS
@@ -72,6 +73,7 @@ for FILE in `egrep -v '(^#|^$)' ../msm8226-common/proprietary-files.txt`; do
         fi
     fi
 done
+fi
 
 BASE=../../../vendor/$VENDOR/msm8226-common/proprietary
 rm -rf $BASE/*
