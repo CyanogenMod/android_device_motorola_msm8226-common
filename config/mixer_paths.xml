@@ -101,6 +101,7 @@
     <ctl name="AIF1_CAP Mixer SLIM TX1" value="0"/>
     <ctl name="AIF1_CAP Mixer SLIM TX2" value="0" />
     <ctl name="CLASS_H_DSM MUX" value="ZERO" />
+    <ctl name="EAR PA Gain" value="POS_0_DB" />
     <ctl name="SLIMBUS_0_RX Audio Mixer MultiMedia4" value="0" />
     <ctl name="AFE_PCM_RX Audio Mixer MultiMedia4" value="0" />
     <ctl name="INTERNAL_FM_RX Audio Mixer MultiMedia4" value="0" />
@@ -550,19 +551,24 @@
 
     <!-- These are actual sound device specific mixer settings -->
     <path name="adc1">
-        <ctl name="AIF1_CAP Mixer SLIM TX1" value="1"/>
+        <ctl name="AIF1_CAP Mixer SLIM TX1" value="1" />
         <ctl name="SLIM_0_TX Channels" value="One" />
         <ctl name="SLIM TX1 MUX" value="DEC1" />
         <ctl name="DEC1 MUX" value="ADC1" />
-        <ctl name="IIR1 INP1 MUX" value="DEC1" />
     </path>
 
     <path name="adc2">
-        <ctl name="AIF1_CAP Mixer SLIM TX1" value="1"/>
+        <ctl name="AIF1_CAP Mixer SLIM TX1" value="1" />
         <ctl name="SLIM_0_TX Channels" value="One" />
         <ctl name="SLIM TX1 MUX" value="DEC1" />
         <ctl name="DEC1 MUX" value="ADC2" />
-        <ctl name="IIR1 INP1 MUX" value="DEC1" />
+    </path>
+
+    <path name="adc3">
+        <ctl name="AIF1_CAP Mixer SLIM TX1" value="1" />
+        <ctl name="SLIM_0_TX Channels" value="One" />
+        <ctl name="SLIM TX1 MUX" value="DEC1" />
+        <ctl name="DEC1 MUX" value="ADC3" />
     </path>
 
     <path name="dmic1">
@@ -570,7 +576,6 @@
         <ctl name="SLIM_0_TX Channels" value="One" />
         <ctl name="SLIM TX1 MUX" value="DEC1" />
         <ctl name="DEC1 MUX" value="DMIC1" />
-        <ctl name="IIR1 INP1 MUX" value="DEC1" />
     </path>
 
     <path name="speaker">
@@ -635,6 +640,9 @@
 
     <path name="speaker-mic">
         <path name="adc1" />
+        <ctl name="ADC1 Volume" value="17" />
+        <ctl name="ADC2 Volume" value="0" />
+        <ctl name="ADC3 Volume" value="0" />
     </path>
 
     <path name="handset">
@@ -643,11 +651,15 @@
         <ctl name="RX1 MIX1 INP1" value="RX1" />
         <ctl name="CLASS_H_DSM MUX" value="RX_HPHL" />
         <ctl name="RDAC3 MUX" value="DEM2" />
+        <ctl name="EAR PA Gain" value="POS_0_DB" />
         <ctl name="DAC1 Switch" value="1" />
     </path>
 
     <path name="handset-mic">
         <path name="adc1" />
+        <ctl name="ADC1 Volume" value="17" />
+        <ctl name="ADC2 Volume" value="0" />
+        <ctl name="ADC3 Volume" value="0" />
     </path>
     <path name="headphones-lite">
         <ctl name="SLIM RX1 MUX" value="AIF1_PB" />
@@ -658,6 +670,8 @@
         <ctl name="CLASS_H_DSM MUX" value="RX_HPHL" />
         <ctl name="RDAC3 MUX" value="DEM2" />
         <ctl name="HPHL DAC Switch" value="1" />
+        <ctl name="HPHL Volume" value="11" />
+        <ctl name="HPHR Volume" value="11" />
     </path>
 
     <path name="headphones">
@@ -670,10 +684,16 @@
 
     <path name="headset-mic">
         <path name="adc2" />
+        <ctl name="ADC1 Volume" value="0" />
+        <ctl name="ADC2 Volume" value="10" />
+        <ctl name="ADC3 Volume" value="0" />
     </path>
 
     <path name="voice-handset">
-        <path name="sidetone-handset" />
+        <path name="handset" />
+    </path>
+
+    <path name="hac-handset">
         <path name="handset" />
     </path>
 
@@ -690,7 +710,7 @@
     </path>
 
     <path name="voice-headphones">
-        <path name="sidetone-headphones" />
+        <!-- we don't use sidetone for headset <path name="sidetone-headphones" /> -->
         <path name="headphones" />
     </path>
 
@@ -803,7 +823,6 @@
         <ctl name="ADC3 Volume" value="11" />
         <ctl name="SLIM TX3 MUX" value="DEC3" />
         <ctl name="ADC4 Volume" value="11" />
-        <ctl name="IIR1 INP1 MUX" value="DEC1" />
     </path>
 
     <!-- Dual MIC devices -->
@@ -815,7 +834,9 @@
         <ctl name="SLIM TX2 MUX" value="DEC2" />
         <ctl name="DEC2 MUX" value="ADC3" />
         <ctl name="SLIM_0_TX Channels" value="Two" />
-        <ctl name="IIR1 INP1 MUX" value="DEC1" />
+        <ctl name="ADC1 Volume" value="17" />
+        <ctl name="ADC2 Volume" value="0" />
+        <ctl name="ADC3 Volume" value="17" />
     </path>
 
     <path name="dmic-endfire">
