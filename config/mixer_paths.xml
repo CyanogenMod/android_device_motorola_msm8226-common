@@ -33,10 +33,6 @@
     <ctl name="ADC4 Volume" value="12" />
     <ctl name="DEC1 Volume" value="84" />
     <ctl name="DEC2 Volume" value="84" />
-    <ctl name="IIR1 INP1 Volume" value="84" />
-    <ctl name="IIR1 INP2 Volume" value="84" />
-    <ctl name="IIR1 INP3 Volume" value="84" />
-    <ctl name="IIR1 INP4 Volume" value="84" />
     <ctl name="SLIMBUS_0_RX Port Mixer SLIM_0_TX" value="0" />
     <ctl name="AUX_PCM_RX Audio Mixer MultiMedia5" value="0" />
     <ctl name="AUX_PCM_RX_Voice Mixer CSVoice" value="0" />
@@ -152,41 +148,6 @@
     <ctl name="INTERNAL_BT_SCO_RX_Voice Mixer QCHAT" value="0" />
     <ctl name="QCHAT_Tx Mixer INTERNAL_BT_SCO_TX_QCHAT" value="0" />
     <!-- QCHAT End -->
-
-    <!-- anc headset -->
-    <!-- IIR/voice anc -->
-    <ctl name="IIR1 Band1" id ="0" value="268435456" />
-    <ctl name="IIR1 Band1" id ="1" value="0" />
-    <ctl name="IIR1 Band1" id ="2" value="0" />
-    <ctl name="IIR1 Band1" id ="3" value="0" />
-    <ctl name="IIR1 Band1" id ="4" value="0" />
-    <ctl name="IIR1 Band2" id ="0" value="268435456" />
-    <ctl name="IIR1 Band2" id ="1" value="0" />
-    <ctl name="IIR1 Band2" id ="2" value="0" />
-    <ctl name="IIR1 Band2" id ="3" value="0" />
-    <ctl name="IIR1 Band2" id ="4" value="0" />
-    <ctl name="IIR1 Band3" id ="0" value="268435456" />
-    <ctl name="IIR1 Band3" id ="1" value="0" />
-    <ctl name="IIR1 Band3" id ="2" value="0" />
-    <ctl name="IIR1 Band3" id ="3" value="0" />
-    <ctl name="IIR1 Band3" id ="4" value="0" />
-    <ctl name="IIR1 Band4" id ="0" value="268435456" />
-    <ctl name="IIR1 Band4" id ="1" value="0" />
-    <ctl name="IIR1 Band4" id ="2" value="0" />
-    <ctl name="IIR1 Band4" id ="3" value="0" />
-    <ctl name="IIR1 Band4" id ="4" value="0" />
-    <ctl name="IIR1 Band5" id ="0" value="268435456" />
-    <ctl name="IIR1 Band5" id ="1" value="0" />
-    <ctl name="IIR1 Band5" id ="2" value="0" />
-    <ctl name="IIR1 Band5" id ="3" value="0" />
-    <ctl name="IIR1 Band5" id ="4" value="0" />
-    <ctl name="IIR1 Enable Band1" value="0" />
-    <ctl name="IIR1 Enable Band2" value="0" />
-    <ctl name="IIR1 Enable Band3" value="0" />
-    <ctl name="IIR1 Enable Band4" value="0" />
-    <ctl name="IIR1 Enable Band5" value="0" />
-    <ctl name="IIR1 INP1 Volume" value="62" />
-    <!-- IIR/voice anc end -->
     <!-- aanc handset mic -->
     <ctl name="SLIM_0_RX AANC MUX" value="ZERO" />
     <ctl name="AIF1_CAP Mixer SLIM TX3" value="0" />
@@ -617,27 +578,6 @@
         <ctl name="LINEOUT2 Volume" value="20" />
     </path>
 
-    <path name="sidetone-iir">
-        <ctl name="IIR1 Enable Band1" value="1" />
-        <ctl name="IIR1 Enable Band2" value="1" />
-        <ctl name="IIR1 Enable Band3" value="1" />
-        <ctl name="IIR1 Enable Band4" value="1" />
-        <ctl name="IIR1 Enable Band5" value="1" />
-    </path>
-
-    <path name="sidetone-headphones">
-        <path name="sidetone-iir" />
-        <ctl name="IIR1 INP1 Volume" value="68" />
-        <ctl name="RX1 MIX2 INP1" value="IIR1" />
-        <ctl name="RX2 MIX2 INP1" value="IIR1" />
-    </path>
-
-    <path name="sidetone-handset">
-        <path name="sidetone-iir" />
-        <ctl name="IIR1 INP1 Volume" value="53" />
-        <ctl name="RX1 MIX2 INP1" value="IIR1" />
-    </path>
-
     <path name="speaker-mic">
         <path name="adc1" />
         <ctl name="ADC1 Volume" value="17" />
@@ -715,7 +655,6 @@
     </path>
 
     <path name="voice-headphones-lite">
-        <path name="sidetone-headphones" />
         <path name="headphones-lite" />
     </path>
 
