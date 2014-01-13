@@ -60,6 +60,10 @@ BOARD_HAVE_QCOM_FM := true
 # Graphics
 BOARD_EGL_CFG := $(LOCAL_PATH)/config/egl.cfg
 
+# Power
+TARGET_USES_CM_POWERHAL :=
+TARGET_USES_INTERACTION_BOOST := true
+
 # Assert
 TARGET_OTA_ASSERT_DEVICE := xt1031,xt1032,xt1033,xt1034,falcon_umts,falcon_umtsds,falcon_cdma,falcon_retuaws
 

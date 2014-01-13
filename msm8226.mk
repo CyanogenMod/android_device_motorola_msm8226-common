@@ -53,7 +53,7 @@ PRODUCT_PACKAGES += \
     keystore.msm8226 \
     lights.msm8226 \
     memtrack.msm8226 \
-    power.msm8226
+    power.qcom
 
 # Utilities
 PRODUCT_PACKAGES += \
@@ -147,6 +147,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.fuse_sdcard=true \
     ro.crypto.fuse_sdcard=true \
     ro.nfc.port=I2C
+
+# QC Perf
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.vendor.extension_library=/system/vendor/lib/libqc-opt.so
 
 # Radio
 PRODUCT_PROPERTY_OVERRIDES += \
