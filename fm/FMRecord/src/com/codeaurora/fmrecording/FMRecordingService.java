@@ -92,6 +92,8 @@ public class FMRecordingService extends Service {
     private Thread mStatusCheckThread = null;
     private int clientPid = -1;
     private String clientProcessName = "";
+    private String mAudioType = "audio/*";
+    private BroadcastReceiver mSdcardUnmountReceiver = null;
 
     public void onCreate() {
 
@@ -99,6 +101,7 @@ public class FMRecordingService extends Service {
         Log.d(TAG, "FMRecording Service onCreate");
         registerRecordingListner();
         registerShutdownListner();
+        registerStorageMediaListener();
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -115,6 +118,7 @@ public class FMRecordingService extends Service {
         }
         unregisterBroadCastReceiver(mFmRecordingReceiver);
         unregisterBroadCastReceiver(mFmShutdownReceiver);
+        unregisterBroadCastReceiver(mSdcardUnmountReceiver);
         super.onDestroy();
     }
 
@@ -196,6 +200,33 @@ public class FMRecordingService extends Service {
         return true;
     }
 
+    private void registerStorageMediaListener() {
+        if (mSdcardUnmountReceiver == null) {
+            mSdcardUnmountReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                     String action = intent.getAction();
+                    if ((action.equals(Intent.ACTION_MEDIA_UNMOUNTED))
+                          || action.equals(Intent.ACTION_MEDIA_EJECT)) {
+                         Log.d(TAG, "ACTION_MEDIA_UNMOUNTED Intent received");
+                        if (mFmRecordingOn == true) {
+                             try {
+                                  stopRecord();
+                             } catch (Exception e) {
+                                  e.printStackTrace();
+                             }
+                         }
+                     }
+                 }
+             };
+             IntentFilter iFilter = new IntentFilter();
+             iFilter.addAction(Intent.ACTION_MEDIA_UNMOUNTED);
+             iFilter.addAction(Intent.ACTION_MEDIA_EJECT);
+             iFilter.addDataScheme("file");
+             registerReceiver(mSdcardUnmountReceiver, iFilter);
+         }
+     }
+
     private void sendRecordingStatusIntent(int status) {
         Intent intent = new Intent(ACTION_FM_RECORDING_STATUS);
         intent.putExtra("state", status);
@@ -241,6 +272,7 @@ public class FMRecordingService extends Service {
              mRecorder.setAudioSource(MediaRecorder.AudioSource.FM_RX);
              mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
              mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+             mAudioType = "audio/3gpp";
         } catch (RuntimeException exception) {
              Log.d(TAG, "RuntimeException while settings");
              mRecorder.reset();
@@ -374,7 +406,7 @@ public class FMRecordingService extends Service {
         cv.put(MediaStore.Audio.Media.DATA, file.getAbsolutePath());
         cv.put(MediaStore.Audio.Media.DATE_ADDED, (int) (current / 1000));
         cv.put(MediaStore.Audio.Media.DATE_MODIFIED, (int) (modDate / 1000));
-        cv.put(MediaStore.Audio.Media.MIME_TYPE, "AUDIO_AAC_MP4");
+        cv.put(MediaStore.Audio.Media.MIME_TYPE, mAudioType);
         cv.put(MediaStore.Audio.Media.ARTIST,
                 res.getString(R.string.audio_db_artist_name));
         cv.put(MediaStore.Audio.Media.ALBUM,
