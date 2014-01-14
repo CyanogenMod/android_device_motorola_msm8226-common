@@ -60,7 +60,6 @@ etc/sap.conf
 etc/Speaker_cal.acdb
 
 # HAL
-lib/hw/audio.primary.msm8226.so
 lib/hw/camera.msm8226.so
 lib/hw/gps.default.so
 lib/hw/sensors.msm8226.so
