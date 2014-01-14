@@ -131,7 +131,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.qualcomm.cabl=0 \
     use.voice.path.for.pcm.voip=true \
     qcom.bt.le_dev_pwr_class=1 \
-    ro.qc.sdk.audio.ssr=false
+    ro.qc.sdk.audio.ssr=false \
+    persist.audio.fluence.voicecall=true
 
 # Misc
 PRODUCT_PROPERTY_OVERRIDES += \
