@@ -95,10 +95,10 @@ service mpdecision /system/bin/mpdecision --no_sleep --avg_comp
    user root
    disabled
 
-#service thermal-engine /system/bin/thermal-engine -c /etc/thermal-engine-8226.conf
-#   class main
-#   user root
-#   group root
+service thermal-engine /system/bin/thermal-engine -c /etc/thermal-engine-8226.conf
+   class main
+   user root
+   group root
 
 service qrngd /system/bin/qrngd -f
     class main
