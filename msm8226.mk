@@ -132,7 +132,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
     use.voice.path.for.pcm.voip=true \
     qcom.bt.le_dev_pwr_class=1 \
     ro.qc.sdk.audio.ssr=false \
-    persist.audio.fluence.voicecall=true
+    persist.audio.fluence.voicecall=true \
+    ro.qc.sdk.audio.fluencetype=fluence \
 
 # Misc
 PRODUCT_PROPERTY_OVERRIDES += \
