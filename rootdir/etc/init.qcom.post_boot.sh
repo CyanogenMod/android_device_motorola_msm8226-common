@@ -382,14 +382,15 @@ case "$target" in
         echo "interactive" > /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor
         echo "interactive" > /sys/devices/system/cpu/cpu2/cpufreq/scaling_governor
         echo "interactive" > /sys/devices/system/cpu/cpu3/cpufreq/scaling_governor
-        echo 90 > /sys/devices/system/cpu/cpufreq/interactive/go_hispeed_load
-        echo 90000 > /sys/devices/system/cpu/cpufreq/interactive/min_sample_time
-        echo 1190000 > /sys/devices/system/cpu/cpufreq/interactive/hispeed_freq
         echo 20000 > /sys/devices/system/cpu/cpufreq/interactive/above_hispeed_delay
-        echo 30000 > /sys/devices/system/cpu/cpufreq/interactive/timer_rate
-        echo 960000 > /sys/devices/system/cpu/cpufreq/interactive/sync_freq
-        echo 80 > /sys/devices/system/cpu/cpufreq/interactive/sync_freq_load_threshold
-        echo 1 > /sys/devices/system/cpu/cpufreq/interactive/io_is_busy
+        echo 90 > /sys/devices/system/cpu/cpufreq/interactive/go_hispeed_load
+        echo 1190000 > /sys/devices/system/cpu/cpufreq/interactive/hispeed_freq
+        echo 40000 > /sys/devices/system/cpu/cpufreq/interactive/min_sample_time
+        echo 20 > /sys/module/cpu_boost/parameters/boost_ms
+        echo 998000 > /sys/module/cpu_boost/parameters/sync_threshold
+        echo 100000 > /sys/devices/system/cpu/cpufreq/interactive/sampling_down_factor
+        echo 1094000 > /sys/module/cpu_boost/parameters/input_boost_freq
+        echo 40 > /sys/module/cpu_boost/parameters/input_boost_ms
         chown -h system /sys/devices/system/cpu/cpufreq/interactive/above_hispeed_delay
         chown -h system /sys/devices/system/cpu/cpufreq/interactive/boost
         chown -h system /sys/devices/system/cpu/cpufreq/interactive/boostpulse
@@ -401,12 +402,6 @@ case "$target" in
         chown -h system /sys/devices/system/cpu/cpufreq/interactive/target_loads
         chown -h system /sys/devices/system/cpu/cpufreq/interactive/timer_rate
         chown -h system /sys/devices/system/cpu/cpufreq/interactive/timer_slack
-        echo 20 > /sys/module/cpu_boost/parameters/boost_ms
-        echo 998000 > /sys/module/cpu_boost/parameters/sync_threshold
-        echo 100000 > /sys/devices/system/cpu/cpufreq/interactive/sampling_down_factor
-        echo 1094000 > /sys/module/cpu_boost/parameters/input_boost_freq
-        echo 40 > /sys/module/cpu_boost/parameters/input_boost_ms
-        echo 300000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
         chown -h system /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
         # add read permission to max cpu frequency interface
         case "$debuggable" in
@@ -415,6 +410,7 @@ case "$target" in
             ;;
         esac
         chown -h system /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+        echo 300000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
         chown -h root.system /sys/devices/system/cpu/cpu1/online
         chown -h root.system /sys/devices/system/cpu/cpu2/online
         chown -h root.system /sys/devices/system/cpu/cpu3/online
