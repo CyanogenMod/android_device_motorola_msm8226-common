@@ -96,8 +96,9 @@
     <ctl name="SPK DRV Volume" value="7" />
     <ctl name="AIF1_CAP Mixer SLIM TX1" value="0"/>
     <ctl name="AIF1_CAP Mixer SLIM TX2" value="0" />
+    <ctl name="TX1 HPF cut off" value="MIN_3DB_75Hz" />
+    <ctl name="TX2 HPF cut off" value="MIN_3DB_75Hz" />
     <ctl name="CLASS_H_DSM MUX" value="ZERO" />
-    <ctl name="EAR PA Gain" value="POS_0_DB" />
     <ctl name="SLIMBUS_0_RX Audio Mixer MultiMedia4" value="0" />
     <ctl name="AFE_PCM_RX Audio Mixer MultiMedia4" value="0" />
     <ctl name="INTERNAL_FM_RX Audio Mixer MultiMedia4" value="0" />
@@ -591,7 +592,6 @@
         <ctl name="RX1 MIX1 INP1" value="RX1" />
         <ctl name="CLASS_H_DSM MUX" value="RX_HPHL" />
         <ctl name="RDAC3 MUX" value="DEM2" />
-        <ctl name="EAR PA Gain" value="POS_0_DB" />
         <ctl name="DAC1 Switch" value="1" />
     </path>
 
