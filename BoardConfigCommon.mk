@@ -62,6 +62,9 @@ AUDIO_FEATURE_DISABLED_MULTI_VOICE_SESSIONS := true
 # Graphics
 BOARD_EGL_CFG := $(LOCAL_PATH)/config/egl.cfg
 
+# Kernel handles input boosting
+TARGET_POWERHAL_NO_TOUCH_BOOST := true
+
 # Assert
 TARGET_OTA_ASSERT_DEVICE := xt1031,xt1032,xt1033,xt1034,falcon_umts,falcon_umtsds,falcon_cdma,falcon_retuaws
 
