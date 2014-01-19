@@ -134,6 +134,9 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.qc.sdk.audio.ssr=false \
     persist.audio.fluence.voicecall=true \
     ro.qc.sdk.audio.fluencetype=fluence \
+    audio.offload.buffer.size.kb=32 \
+    audio.offload.gapless.enabled=true \
+    av.offload.enable=true
 
 # Misc
 PRODUCT_PROPERTY_OVERRIDES += \
