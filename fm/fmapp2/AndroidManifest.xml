@@ -86,7 +86,7 @@
 
         </activity>
 
-        <activity android:icon="@drawable/ic_launcher_fm_tx"
+        <!-- <activity android:icon="@drawable/ic_launcher_fm_tx"
             android:name=".FMTransmitterActivity"
             android:label="@string/tx_app_name"
             android:clearTaskOnLaunch="true"
@@ -123,7 +123,7 @@
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
 
-        </activity>
+        </activity> -->
 
         <activity android:name=".FmTags"
             android:label="@string/rt_plus_tags">

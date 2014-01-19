@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="app_name">FM Radio New</string>
-    <string name="tx_app_name">FM Tx New</string>
+    <string name="app_name">FM Radio</string>
+    <string name="tx_app_name">FM Tx</string>
 
     <string name="default_sleep"></string>
     <string name="menu_add_to_preset">Add to Presets</string>
