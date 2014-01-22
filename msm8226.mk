@@ -168,4 +168,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.sf.lcd_density=320
 
+# QC Perf
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.vendor.extension_library=/system/vendor/lib/libqc-opt.so
+
 $(call inherit-product, device/motorola/qcom-common/qcom-common.mk)
