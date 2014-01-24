@@ -156,6 +156,10 @@ on boot
     # overhead in the kernel. Turn it off.
     write /sys/block/mmcblk0/queue/add_random 0
 
+    setprop ro.hw.device ${ro.boot.device}
+    setprop ro.hw.hwrev ${ro.boot.hwrev}
+    setprop ro.hw.radio ${ro.boot.radio}
+
 # msm specific files that need to be created on /data
 on post-fs-data
     # we will remap this as /mnt/sdcard with the sdcard fuse tool
