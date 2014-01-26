@@ -72,6 +72,9 @@ on boot
     chown system system /sys/class/leds/torch-light/brightness
     chmod 0666 /sys/class/leds/torch-light/brightness
 
+    # vibrator intensity
+    chown system system /sys/devices/virtual/timed_output/vibrator/vtg_level
+
     # setup trace dir
     mkdir /cache/trace 0777 root shell
     chown root shell /cache/trace
