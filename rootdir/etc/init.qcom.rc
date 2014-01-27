@@ -206,6 +206,7 @@ on post-fs-data
     #Create directories for Location services
     mkdir /data/misc/location 0770 gps gps
     mkdir /data/misc/location/mq 0770 gps gps
+    mkdir /data/misc/location/xtwifi 0770 gps gps
 
     #Create directory from IMS services
     mkdir /data/shared 0755
@@ -240,6 +241,12 @@ on property:init.svc.wpa_supplicant=stopped
 on property:bluetooth.isEnabled=true
     start btwlancoex
     write /sys/class/bluetooth/hci0/idle_timeout 7000
+
+on property:bluetooth.sap.status=running
+    start bt-sap
+
+on property:bluetooth.sap.status=stopped
+    stop bt-sap
 
 service qcom-c_core-sh /system/bin/sh /init.qcom.class_core.sh
     class core
@@ -288,6 +295,13 @@ on property:ro.boot.emmc=true
 service config_bluetooth /system/bin/sh /system/etc/init.qcom.bt.sh
     class core
     user root
+    oneshot
+
+service bt-sap /system/bin/sapd 15
+    user bluetooth
+    group bluetooth net_bt_admin
+    class late_start
+    disabled
     oneshot
 
 service bridgemgrd /system/bin/bridgemgrd
@@ -420,6 +434,30 @@ service dhcpcd_bnep3 /system/bin/dhcpcd -BKLG
 service dhcpcd_bnep4 /system/bin/dhcpcd -BKLG
     disabled
     oneshot
+
+service gpsone_daemon /system/bin/gpsone_daemon
+    class late_start
+    user gps
+    group gps qcom_oncrpc inet net_raw
+    disabled
+
+service location_mq /system/bin/location-mq
+    class late_start
+    user gps
+    group gps
+    disabled
+
+service xtwifi_inet /system/bin/xtwifi-inet-agent
+    class late_start
+    user gps
+    group inet gps
+    disabled
+
+service xtwifi_client /system/bin/xtwifi-client
+    class late_start
+    user gps
+    group net_admin wifi inet gps
+    disabled
 
 service fm_dl /system/bin/sh /system/etc/init.qcom.fm.sh
     class late_start

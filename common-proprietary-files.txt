@@ -1,3 +1,6 @@
+# Apps
+app/com.qualcomm.services.location.apk
+
 # Bins
 bin/adsprpcd
 bin/akmd8963
@@ -13,12 +16,14 @@ bin/ds_fmc_appd
 bin/fmconfig
 bin/fm_qsoc_patches
 bin/ftmipcd
+bin/gpsone_daemon
 bin/hardware_revisions.sh
 bin/hci_qcomm_init
 bin/imsdatadaemon
 bin/imsqmidaemon
 bin/ims_rtp_daemon
 bin/irsc_util
+bin/location-mq
 bin/moto_com.sh
 bin/mount_ext4.sh
 bin/mpdecision
@@ -34,9 +39,12 @@ bin/radish
 bin/refuse
 bin/rfs_access
 bin/rmt_storage
+bin/sapd
 bin/subsystem_ramdump
 bin/thermal-engine
 bin/time_daemon
+bin/xtwifi-client
+bin/xtwifi-inet-agent
 
 # Etc
 etc/firmware/cpp_firmware_v1_1_1.fw
@@ -50,6 +58,7 @@ etc/firmware/venus.b03
 etc/firmware/venus.b04
 etc/firmware/venus.mbn
 etc/firmware/venus.mdt
+etc/permissions/com.qualcomm.location.xml
 etc/permissions/qcnvitems.xml
 etc/permissions/qcrilhook.xml
 etc/Bluetooth_cal.acdb
@@ -88,6 +97,7 @@ lib/libmotext_inf.so
 lib/libmot_sensorlistener.so
 lib/libqomx_core.so
 vendor/lib/libQSEEComAPI.so:lib/libQSEEComAPI.so
+vendor/lib/libalarmservice_jni.so
 vendor/lib/libacdbloader.so
 vendor/lib/libacdbmapper.so
 vendor/lib/libacdbrtac.so
@@ -119,6 +129,8 @@ vendor/lib/lib-imsSDP.so
 vendor/lib/lib-imsvt.so
 vendor/lib/lib-imsxml.so
 vendor/lib/libizat_core.so
+vendor/lib/liblocationservice.so
+vendor/lib/libloc_ext.so
 vendor/lib/libjpegdhw.so
 vendor/lib/libjpegehw.so
 vendor/lib/libmm-abl.so
@@ -150,6 +162,8 @@ vendor/lib/libqmi_csvt_srvc.so
 vendor/lib/libqmi_encdec.so
 vendor/lib/libqmiservices.so
 vendor/lib/libqomx_jpegenc.so
+vendor/lib/libquipc_os_api.so
+vendor/lib/libquipc_ulp_adapter.so
 vendor/lib/libril-qc-qmi-1.so
 vendor/lib/libril-qcril-hook-oem.so
 vendor/lib/librpmb.so
@@ -161,7 +175,10 @@ vendor/lib/libsensor1.so
 vendor/lib/libssd.so
 vendor/lib/libtime_genoff.so
 vendor/lib/libthermalclient.so
+vendor/lib/libulp2.so
 vendor/lib/libxml.so
+vendor/lib/libxtwifi_ulp_adaptor.so
+vendor/lib/libxtwifi_zpp_adaptor.so
 
 # DRM
 lib/libWVphoneAPI.so
