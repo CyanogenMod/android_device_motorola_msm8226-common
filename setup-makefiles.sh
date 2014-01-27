@@ -43,8 +43,8 @@ for FILE in `egrep -v '(^#|^$)' ../$DEVICE/device-proprietary-files.txt`; do
       fi
     fi
   else
-    if [[ $FILE != app/* ]]; then
-      if [[$FILE != framework/* ]]; then
+    if [[ $DEST != app/* ]]; then
+      if [[$DEST != framework/* ]]; then
         echo "    $OUTDIR/proprietary/$DEST:system/$DEST$LINEEND" >> $MAKEFILE
       fi
     fi
@@ -72,8 +72,8 @@ for FILE in `egrep -v '(^#|^$)' ../msm8226-common/proprietary-files.txt`; do
       fi
     fi
   else
-    if [[ $FILE != app/* ]]; then
-      if [[ $FILE != framework/* ]]; then
+    if [[ $DEST != app/* ]]; then
+      if [[ $DEST != framework/* ]]; then
         echo "    $OUTDIR/proprietary/$DEST:system/$DEST$LINEEND" >> $MAKEFILE
       fi
     fi
@@ -147,6 +147,7 @@ LOCAL_PATH := \$(call my-dir)
 EOF
 
 echo "ifeq (\$(TARGET_DEVICE),$DEVICE)" >> ../../../${OUTDIR}/proprietary/app/Android.mk
+echo ""  >> ../../../${OUTDIR}/proprietary/app/Android.mk
 
 for APK in `ls ../../../${OUTDIR}/proprietary/app/*apk`; do
     apkname=`basename $APK`
@@ -191,6 +192,7 @@ LOCAL_PATH := \$(call my-dir)
 EOF
 
 echo "ifeq (\$(TARGET_DEVICE),$DEVICE)" >> ../../../${OUTDIR}/proprietary/framework/Android.mk
+echo ""  >> ../../../${OUTDIR}/proprietary/framework/Android.mk
 
 for JAR in `ls ../../../${OUTDIR}/proprietary/framework/*jar`; do
     jarname=`basename $JAR`
@@ -259,8 +261,8 @@ for FILE in `egrep -v '(^#|^$)' ../msm8226-common/common-proprietary-files.txt`;
     fi
   else
     if [ $DEST != vendor/lib/libtime_genoff.so ]; then
-      if [[ $FILE != app/* ]]; then
-        if [[ $FILE != framework/* ]]; then
+      if [[ $DEST != app/* ]]; then
+        if [[ $DEST != framework/* ]]; then
           echo "    $OUTDIR/proprietary/$DEST:system/$DEST$LINEEND" >> $MAKEFILE
         fi
       fi
@@ -314,6 +316,7 @@ LOCAL_PATH := \$(call my-dir)
 
 ifeq (\$(BOARD_VENDOR),motorola-qcom)
 ifeq (\$(TARGET_BOARD_PLATFORM),msm8226)
+
 include \$(CLEAR_VARS)
 LOCAL_MODULE := libtime_genoff
 LOCAL_SRC_FILES := libtime_genoff.so
@@ -369,7 +372,7 @@ EOF
 
 echo "ifeq (\$(BOARD_VENDOR),motorola-qcom)" >> ../../../${OUTDIR}/proprietary/app/Android.mk
 echo "ifeq (\$(TARGET_BOARD_PLATFORM),msm8226)" >> ../../../${OUTDIR}/proprietary/app/Android.mk
-echo""  >> ../../../${OUTDIR}/proprietary/app/Android.mk
+echo ""  >> ../../../${OUTDIR}/proprietary/app/Android.mk
 
 for APK in `ls ../../../${OUTDIR}/proprietary/app/*apk`; do
     apkname=`basename $APK`
@@ -416,7 +419,7 @@ EOF
 
 echo "ifeq (\$(BOARD_VENDOR),motorola-qcom)" >> ../../../${OUTDIR}/proprietary/framework/Android.mk
 echo "ifeq (\$(TARGET_BOARD_PLATFORM),msm8226)" >> ../../../${OUTDIR}/proprietary/framework/Android.mk
-echo""  >> ../../../${OUTDIR}/proprietary/framework/Android.mk
+echo ""  >> ../../../${OUTDIR}/proprietary/framework/Android.mk
 
 for JAR in `ls ../../../${OUTDIR}/proprietary/framework/*jar`; do
     jarname=`basename $JAR`
