@@ -396,7 +396,7 @@ case "$target" in
         echo 20 > /sys/module/cpu_boost/parameters/boost_ms
         echo 998000 > /sys/module/cpu_boost/parameters/sync_threshold
         echo 100000 > /sys/devices/system/cpu/cpufreq/interactive/sampling_down_factor
-        echo 1094000 > /sys/module/cpu_boost/parameters/input_boost_freq
+        #echo 1094000 > /sys/module/cpu_boost/parameters/input_boost_freq
         echo 40 > /sys/module/cpu_boost/parameters/input_boost_ms
         chown -h system /sys/devices/system/cpu/cpufreq/interactive/above_hispeed_delay
         chown -h system /sys/devices/system/cpu/cpufreq/interactive/boost
