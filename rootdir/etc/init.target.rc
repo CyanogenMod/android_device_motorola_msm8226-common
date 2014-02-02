@@ -76,6 +76,9 @@ on boot
     # vibrator intensity
     chown system system /sys/devices/virtual/timed_output/vibrator/vtg_level
 
+    # usb charging
+    chown system system /sys/class/power_supply/battery/charging_enabled
+
     # setup trace dir
     mkdir /cache/trace 0777 root shell
     chown root shell /cache/trace
@@ -86,13 +89,6 @@ service qcamerasvr /system/bin/mm-qcamera-daemon
     class late_start
     user camera
     group camera system inet input graphics
-
-# Allow usb charging to be disabled persistently
-on property:persist.usb.chgdisabled=1
-   write /sys/class/power_supply/battery/charging_enabled 0
-
-on property:persist.usb.chgdisabled=0
-   write /sys/class/power_supply/battery/charging_enabled 1
 
 service time_daemon /system/bin/time_daemon
    class late_start
