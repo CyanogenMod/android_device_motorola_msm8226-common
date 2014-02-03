@@ -82,15 +82,15 @@
     <!-- Vibrator pattern to be used as for notifications while alerts
          are disabled (e.g. during phone calls) if enabled by the user.
      -->
-    <integer-array name="config_notificationNoAlertsVibePattern">
+    <!-- <integer-array name="config_notificationNoAlertsVibePattern">
         <item>0</item>
         <item>30</item>
         <item>75</item>
         <item>30</item>
-    </integer-array>
+    </integer-array> -->
 
     <!-- Component name of the service providing geofence API support. -->
-    <string name="config_geofenceProvider" translatable="false">com.qualcomm.services.location</string>
+    <!-- <string name="config_geofenceProvider" translatable="false">com.qualcomm.services.location</string> -->
 
     <!-- Enable overlay for all location components. -->
     <bool name="config_enableNetworkLocationOverlay" translatable="false">false</bool>
