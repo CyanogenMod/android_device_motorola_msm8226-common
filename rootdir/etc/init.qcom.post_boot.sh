@@ -291,7 +291,8 @@ case "$target" in
                 echo "interactive" > /sys/devices/system/cpu/cpu3/cpufreq/scaling_governor
                 echo "20000 1400000:40000 1700000:20000" > /sys/devices/system/cpu/cpufreq/interactive/above_hispeed_delay
                 echo 90 > /sys/devices/system/cpu/cpufreq/interactive/go_hispeed_load
-                echo 1497600 > /sys/devices/system/cpu/cpufreq/interactive/hispeed_freq
+                echo 1190400 > /sys/devices/system/cpu/cpufreq/interactive/hispeed_freq
+                echo 1 > /sys/devices/system/cpu/cpufreq/interactive/io_is_busy
                 echo "85 1500000:90 1800000:70" > /sys/devices/system/cpu/cpufreq/interactive/target_loads
                 echo 40000 > /sys/devices/system/cpu/cpufreq/interactive/min_sample_time
                 echo 20 > /sys/module/cpu_boost/parameters/boost_ms
@@ -354,10 +355,6 @@ case "$target" in
         echo 1 > /sys/module/msm_pm/modes/cpu1/power_collapse/suspend_enabled
         echo 1 > /sys/module/msm_pm/modes/cpu2/power_collapse/suspend_enabled
         echo 1 > /sys/module/msm_pm/modes/cpu3/power_collapse/suspend_enabled
-        echo 1 > /sys/module/msm_pm/modes/cpu0/power_collapse/idle_enabled
-        echo 1 > /sys/module/msm_pm/modes/cpu1/power_collapse/idle_enabled
-        echo 1 > /sys/module/msm_pm/modes/cpu2/power_collapse/idle_enabled
-        echo 1 > /sys/module/msm_pm/modes/cpu3/power_collapse/idle_enabled
         echo 1 > /sys/module/msm_pm/modes/cpu0/standalone_power_collapse/suspend_enabled
         echo 1 > /sys/module/msm_pm/modes/cpu1/standalone_power_collapse/suspend_enabled
         echo 1 > /sys/module/msm_pm/modes/cpu2/standalone_power_collapse/suspend_enabled
@@ -366,49 +363,22 @@ case "$target" in
         echo 1 > /sys/module/msm_pm/modes/cpu1/standalone_power_collapse/idle_enabled
         echo 1 > /sys/module/msm_pm/modes/cpu2/standalone_power_collapse/idle_enabled
         echo 1 > /sys/module/msm_pm/modes/cpu3/standalone_power_collapse/idle_enabled
-        echo 1 > /sys/module/msm_pm/modes/cpu0/retention/idle_enabled
-        echo 1 > /sys/module/msm_pm/modes/cpu1/retention/idle_enabled
-        echo 1 > /sys/module/msm_pm/modes/cpu2/retention/idle_enabled
-        echo 1 > /sys/module/msm_pm/modes/cpu3/retention/idle_enabled
-        echo 1 > /sys/module/msm_show_resume_irq/parameters/debug_mask
+        echo 1 > /sys/module/msm_pm/modes/cpu0/power_collapse/idle_enabled
         echo 1 > /sys/devices/system/cpu/cpu1/online
         echo 1 > /sys/devices/system/cpu/cpu2/online
         echo 1 > /sys/devices/system/cpu/cpu3/online
-        #echo "ondemand" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-        #echo 50000 > /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
-        #echo 90 > /sys/devices/system/cpu/cpufreq/ondemand/up_threshold
-        #echo 1 > /sys/devices/system/cpu/cpufreq/ondemand/io_is_busy
-        #echo 2 > /sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor
-        #echo 10 > /sys/devices/system/cpu/cpufreq/ondemand/down_differential
-        #echo 70 > /sys/devices/system/cpu/cpufreq/ondemand/up_threshold_multi_core
-        #echo 10 > /sys/devices/system/cpu/cpufreq/ondemand/down_differential_multi_core
-        #echo 787200 > /sys/devices/system/cpu/cpufreq/ondemand/optimal_freq
-        #echo 300000 > /sys/devices/system/cpu/cpufreq/ondemand/sync_freq
-        #echo 80 > /sys/devices/system/cpu/cpufreq/ondemand/up_threshold_any_cpu_load
-        echo "interactive" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-        echo "interactive" > /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor
-        echo "interactive" > /sys/devices/system/cpu/cpu2/cpufreq/scaling_governor
-        echo "interactive" > /sys/devices/system/cpu/cpu3/cpufreq/scaling_governor
-        echo 20000 > /sys/devices/system/cpu/cpufreq/interactive/above_hispeed_delay
-        echo 90 > /sys/devices/system/cpu/cpufreq/interactive/go_hispeed_load
-        echo 1190000 > /sys/devices/system/cpu/cpufreq/interactive/hispeed_freq
-        echo 40000 > /sys/devices/system/cpu/cpufreq/interactive/min_sample_time
-        echo 20 > /sys/module/cpu_boost/parameters/boost_ms
-        echo 998000 > /sys/module/cpu_boost/parameters/sync_threshold
-        echo 100000 > /sys/devices/system/cpu/cpufreq/interactive/sampling_down_factor
-        #echo 1094000 > /sys/module/cpu_boost/parameters/input_boost_freq
-        echo 40 > /sys/module/cpu_boost/parameters/input_boost_ms
-        chown -h system /sys/devices/system/cpu/cpufreq/interactive/above_hispeed_delay
-        chown -h system /sys/devices/system/cpu/cpufreq/interactive/boost
-        chown -h system /sys/devices/system/cpu/cpufreq/interactive/boostpulse
-        chown -h system /sys/devices/system/cpu/cpufreq/interactive/boostpulse_duration
-        chown -h system /sys/devices/system/cpu/cpufreq/interactive/go_hispeed_load
-        chown -h system /sys/devices/system/cpu/cpufreq/interactive/hispeed_freq
-        chown -h system /sys/devices/system/cpu/cpufreq/interactive/io_is_busy
-        chown -h system /sys/devices/system/cpu/cpufreq/interactive/min_sample_time
-        chown -h system /sys/devices/system/cpu/cpufreq/interactive/target_loads
-        chown -h system /sys/devices/system/cpu/cpufreq/interactive/timer_rate
-        chown -h system /sys/devices/system/cpu/cpufreq/interactive/timer_slack
+        echo "ondemand" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+        echo 50000 > /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
+        echo 90 > /sys/devices/system/cpu/cpufreq/ondemand/up_threshold
+        echo 1 > /sys/devices/system/cpu/cpufreq/ondemand/io_is_busy
+        echo 2 > /sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor
+        echo 10 > /sys/devices/system/cpu/cpufreq/ondemand/down_differential
+        echo 70 > /sys/devices/system/cpu/cpufreq/ondemand/up_threshold_multi_core
+        echo 10 > /sys/devices/system/cpu/cpufreq/ondemand/down_differential_multi_core
+        echo 787200 > /sys/devices/system/cpu/cpufreq/ondemand/optimal_freq
+        echo 300000 > /sys/devices/system/cpu/cpufreq/ondemand/sync_freq
+        echo 80 > /sys/devices/system/cpu/cpufreq/ondemand/up_threshold_any_cpu_load
+        echo 300000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
         chown -h system /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
         # add read permission to max cpu frequency interface
         case "$debuggable" in
