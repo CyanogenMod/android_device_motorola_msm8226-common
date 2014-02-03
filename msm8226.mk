@@ -36,13 +36,6 @@ PRODUCT_PACKAGES += \
     ethertypes \
     libebtc
 
-# FM radio
-PRODUCT_PACKAGES += \
-    qcom.fmradio \
-    libqcomfm_jni \
-    FM2 \
-    FMRecord
-
 # HAL
 PRODUCT_PACKAGES += \
     copybit.msm8226\
