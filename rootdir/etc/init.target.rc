@@ -67,8 +67,7 @@ on boot
     # Enable writing to led blink node from userspace
     chown system system /sys/class/leds/red/blink
     chown system system /sys/class/leds/green/blink
-
-    # Torch
+    # Enable writing to brightness node under torch-light from userspace
     chown system system /sys/class/leds/torch-light/brightness
     chmod 0666 /sys/class/leds/torch-light/brightness
 
@@ -113,6 +112,16 @@ service qrngd /system/bin/qrngd -f
     group root
 
 
+service qrngp /system/bin/qrngp
+    class main
+    user root
+    group root
+    oneshot
+    disabled
+
+on property:sys.boot_completed=1
+    start qrngp
+
 service qseecomd /system/bin/qseecomd
     class late_start
     user root
@@ -137,7 +146,7 @@ service wcnss-service /system/bin/wcnss_service
 service ppd /system/bin/mm-pp-daemon
     class late_start
     user system
-    socket pps stream 0660 system system graphics
+    socket pps stream 0660 system system
     group system graphics
 
 on property:init.svc.surfaceflinger=stopped
