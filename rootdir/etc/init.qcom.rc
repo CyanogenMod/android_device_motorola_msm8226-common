@@ -569,3 +569,26 @@ service ssr_diag /system/bin/ssr_diag
 on property:persist.sys.ssr.restart_level=*
     exec /system/bin/sh /init.qcom.ssr.sh ${persist.sys.ssr.restart_level}
 
+# CM Performance Profiles
+
+# Powersave
+on property:sys.perf.profile=0
+    start mpdecision
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor powersave
+    write /sys/class/devfreq/qcom,cpubw.55 powersave
+
+# Balanced
+on property:sys.perf.profile=1
+    start mpdecision
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor ondemand
+    write /sys/class/devfreq/qcom,cpubw.55 msm_cpufreq
+
+# High performance
+on property:sys.perf.profile=2
+    stop mpdecision
+    write /sys/devices/system/cpu/cpu0/online 1
+    write /sys/devices/system/cpu/cpu1/online 1
+    write /sys/devices/system/cpu/cpu2/online 1
+    write /sys/devices/system/cpu/cpu3/online 1
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor performance
+    write /sys/class/devfreq/qcom,cpubw.55 performance
