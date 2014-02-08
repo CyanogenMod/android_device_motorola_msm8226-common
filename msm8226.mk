@@ -157,7 +157,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.gps.qc_nlp_in_use=0 \
     persist.fuse_sdcard=true \
     ro.crypto.fuse_sdcard=true \
-    ro.nfc.port=I2C
+    ro.nfc.port=I2C \
+    ro.cwm.forbid_format="/fsg,/firmware,/persist,/modem,/boot"
 
 # Radio
 PRODUCT_PROPERTY_OVERRIDES += \
