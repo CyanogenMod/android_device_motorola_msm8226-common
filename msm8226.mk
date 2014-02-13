@@ -139,7 +139,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.qc.sdk.audio.fluencetype=fluence \
     audio.offload.buffer.size.kb=32 \
     audio.offload.gapless.enabled=true \
-    av.offload.enable=true
+    av.offload.enable=true \
+    mm.enable.smoothstreaming=true
 
 # Misc
 PRODUCT_PROPERTY_OVERRIDES += \
