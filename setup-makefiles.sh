@@ -38,13 +38,13 @@ for FILE in `egrep -v '(^#|^$)' ../$DEVICE/device-proprietary-files.txt`; do
   DEST=${PARSING_ARRAY[1]}
   if [ -z "$DEST" ]; then
     if [[ $FILE != app/* ]]; then
-      if [[$FILE != framework/* ]]; then
+      if [[ $FILE != framework/* ]]; then
         echo "    $OUTDIR/proprietary/$FILE:system/$FILE$LINEEND" >> $MAKEFILE
       fi
     fi
   else
     if [[ $DEST != app/* ]]; then
-      if [[$DEST != framework/* ]]; then
+      if [[ $DEST != framework/* ]]; then
         echo "    $OUTDIR/proprietary/$DEST:system/$DEST$LINEEND" >> $MAKEFILE
       fi
     fi
