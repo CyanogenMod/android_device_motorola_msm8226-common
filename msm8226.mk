@@ -75,7 +75,10 @@ PRODUCT_PACKAGES += WCNSS_qcom_wlan_factory_nv.bin
 
 # Ramdisk
 PRODUCT_PACKAGES += \
+    bbx \
     fstab.qcom \
+    gpecheck.sh \
+    gpe-fstab.qcom \
     init.qcom.rc \
     init.recovery.qcom.rc \
     init.target.rc \

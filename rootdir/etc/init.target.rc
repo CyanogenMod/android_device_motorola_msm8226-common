@@ -38,6 +38,8 @@ on init
     stop ril-daemon
 
 on fs
+    chmod 755 /gpecheck.sh
+    exec /gpecheck.sh
     mount_all fstab.qcom
 
     # Keeping following partitions outside fstab file. As user may not have
