@@ -34,12 +34,12 @@ on early-init
     symlink /data/tombstones /tombstones
 
 on init
+    chmod 755 /gpecheck.sh
+    exec /gpecheck.sh
     # CM: We use our own ril-daemon service definition, see mmi-ril-daemon
     stop ril-daemon
 
 on fs
-    chmod 755 /gpecheck.sh
-    exec /gpecheck.sh
     mount_all fstab.qcom
 
     # Keeping following partitions outside fstab file. As user may not have

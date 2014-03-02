@@ -3,7 +3,7 @@
 # Check if this is a GPE device and copy in the right fstab
 #
 
-FSTYPE=`/sbin/blkid /dev/block/mmcblk0p36 | cut -d ' ' -f3 | cut -d '"' -f2`
+FSTYPE=`/sbin/bbx blkid /dev/block/mmcblk0p36 | /sbin/bbx cut -d ' ' -f3 | /sbin/bbx cut -d '"' -f2`
 
 if [ "$FSTYPE" == "ext4" ]
 then
