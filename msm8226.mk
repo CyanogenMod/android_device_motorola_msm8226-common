@@ -87,7 +87,6 @@ PRODUCT_PACKAGES += \
 # Init scripts
 PRODUCT_PACKAGES += \
     init.mmi.boot.sh \
-    init.mmi.radio.sh \
     init.mmi.rc \
     init.mmi.touch.sh \
     init.qcom.post_boot.sh \
