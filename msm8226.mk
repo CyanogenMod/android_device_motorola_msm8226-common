@@ -159,7 +159,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.fuse_sdcard=true \
     ro.crypto.fuse_sdcard=true \
     ro.nfc.port=I2C \
-    ro.cwm.forbid_format="/fsg,/firmware,/persist,/modem,/boot"
+    ro.cwm.forbid_format="/fsg,/firmware,/persist,/boot"
 
 # Radio
 PRODUCT_PROPERTY_OVERRIDES += \
