@@ -162,10 +162,14 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # Radio
 PRODUCT_PROPERTY_OVERRIDES += \
-    rild.libpath=/system/vendor/lib/libril-qc-qmi-1.so
+    rild.libpath=/system/vendor/lib/libril-qc-qmi-1.so \
     persist.radio.msgtunnel.start=false \
     persist.sys.ssr.restart_level=3 \
-    persist.sys.qc.sub.rdump.on=1
+    persist.sys.qc.sub.rdump.on=1 \
+    ro.telephony.default_network=7 \
+    telephony.lteOnCdmaDevice=0 \
+    persist.radio.no_wait_for_card=1 \
+    persist.radio.dfr_mode_set=1
 
 # Opengles version 3
 PRODUCT_PROPERTY_OVERRIDES += \
