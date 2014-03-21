@@ -1,3 +1,6 @@
+# App
+app/TimeService.apk
+
 # Bins
 bin/adsprpcd
 bin/akmd8963
@@ -158,6 +161,7 @@ vendor/lib/lib-rtpsl.so
 vendor/lib/libsensor1.so
 vendor/lib/libssd.so
 vendor/lib/libtime_genoff.so
+vendor/lib/libTimeService.so
 vendor/lib/libthermalclient.so
 vendor/lib/libxml.so
 
