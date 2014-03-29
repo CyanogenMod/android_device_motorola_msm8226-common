@@ -24,7 +24,6 @@ DEVICE_PACKAGE_OVERLAYS += $(LOCAL_PATH)/overlay
 # Audio
 PRODUCT_PACKAGES += \
     audio_policy.msm8226 \
-    audio.primary.msm8226 \
     libaudioparameter \
     libqcomvisualizer \
     libqcomvoiceprocessing
