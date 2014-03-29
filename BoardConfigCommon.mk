@@ -71,8 +71,8 @@ TARGET_QCOM_DISPLAY_VARIANT := caf-new
 
 TARGET_QCOM_MEDIA_VARIANT := caf-new
 
-# Use stock power hal
-TARGET_USES_CM_POWERHAL :=
+# Use qcom power hal
+TARGET_POWERHAL_VARIANT := qcom
 
 # Hardware tunables framework
 BOARD_HARDWARE_CLASS := device/motorola/msm8226-common/cmhw/

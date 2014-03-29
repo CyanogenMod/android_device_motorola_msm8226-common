@@ -70,7 +70,6 @@ framework/qcrilhook.jar
 
 # HAL
 lib/hw/camera.msm8226.so
-lib/hw/power.msm8226.so
 lib/hw/sensors.msm8226.so
 
 # Libs
