@@ -106,4 +106,10 @@
 
     <!-- Whether to enable auto provisioning the app for new SIM card on boot.-->
     <bool name="config_auto_provision_enable">true</bool>
+
+    <!-- Set to true if we need to not prefer an APN.
+         This is being added to enable a simple scenario of pre-paid
+         provisioning on some carriers, working around a bug (7305641)
+         where if the preferred is used we don't try the others. -->
+    <bool name="config_dontPreferApn">true</bool>
 </resources>
