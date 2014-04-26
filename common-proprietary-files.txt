@@ -9,7 +9,6 @@ bin/ap_gain_mmul.bin
 bin/batt_health
 bin/bridgemgrd
 bin/btnvtool
-bin/charge_only_mode
 bin/charger_monitor
 bin/dbvc_atvc_property_set
 bin/ds_fmc_appd
@@ -22,8 +21,6 @@ bin/imsdatadaemon
 bin/imsqmidaemon
 bin/ims_rtp_daemon
 bin/irsc_util
-bin/moto_com.sh
-bin/mount_ext4.sh
 bin/mpdecision
 bin/netmgrd
 bin/nl_listener

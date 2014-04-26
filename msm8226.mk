@@ -102,6 +102,10 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/config/audio_effects.conf:system/vendor/etc/audio_effects.conf \
     $(LOCAL_PATH)/config/mixer_paths.xml:system/etc/mixer_paths.xml
 
+# Charger/ moto uses a funky ro.bootmode=mot-charger
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/moto_com.sh:system/bin/moto_com.sh
+
 # EGL config
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/config/egl.cfg:system/lib/egl/egl.cfg
