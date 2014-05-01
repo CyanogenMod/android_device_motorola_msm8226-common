@@ -63,9 +63,6 @@ AUDIO_FEATURE_DISABLED_SSR := true
 BOARD_HAVE_QCOM_FM := true
 AUDIO_FEATURE_DISABLED_ANC_HEADSET := true
 
-# Charger resources
-BOARD_CHARGER_RES := device/motorola/qcom-common/modules/charger
-
 # Graphics
 BOARD_EGL_CFG := $(LOCAL_PATH)/config/egl.cfg
 TARGET_DISPLAY_USE_RETIRE_FENCE :=

@@ -32,7 +32,7 @@ case "$mode" in
         echo 1 > /sys/module/pm_8x60/modes/cpu0/power_collapse/idle_enabled
         echo mem > /sys/power/autosleep
 
-        /charger
+        /system/bin/charge_only_mode
 
 	echo 3 > /sys/module/lpm_levels/enable_low_power/l2
 	echo 255 >/sys/class/leds/lcd-backlight/brightness

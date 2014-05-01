@@ -57,6 +57,7 @@ PRODUCT_PACKAGES += qrngp
 
 # Utilities
 PRODUCT_PACKAGES += \
+    charge_only_mode \
     mkfs.f2fs \
     fsck.f2fs \
     fibmap.f2fs \
@@ -102,7 +103,7 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/config/audio_effects.conf:system/vendor/etc/audio_effects.conf \
     $(LOCAL_PATH)/config/mixer_paths.xml:system/etc/mixer_paths.xml
 
-# Charger/ moto uses a funky ro.bootmode=mot-charger
+# Charger - moto uses a funky ro.bootmode=mot-charger
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/moto_com.sh:system/bin/moto_com.sh
 
