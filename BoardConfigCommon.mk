@@ -73,6 +73,8 @@ TARGET_QCOM_MEDIA_VARIANT := caf-new
 # Use qcom power hal
 TARGET_POWERHAL_VARIANT := qcom
 
+TARGET_HW_DISK_ENCRYPTION := true
+
 # Hardware tunables framework
 BOARD_HARDWARE_CLASS := device/motorola/msm8226-common/cmhw/
 
