@@ -1,5 +1,5 @@
 # App
-app/TimeService.apk
+-app/TimeService.apk
 
 # Bins
 bin/adsprpcd
@@ -62,8 +62,8 @@ etc/Headset_cal.acdb
 etc/Speaker_cal.acdb
 
 # Framework
-framework/qcnvitems.jar
-framework/qcrilhook.jar
+-framework/qcnvitems.jar
+-framework/qcrilhook.jar
 
 # HAL
 lib/hw/audio.primary.msm8226.so
@@ -156,7 +156,7 @@ vendor/lib/lib-rtpdaemoninterface.so
 vendor/lib/lib-rtpsl.so
 vendor/lib/libsensor1.so
 vendor/lib/libssd.so
-vendor/lib/libtime_genoff.so
+-vendor/lib/libtime_genoff.so
 vendor/lib/libTimeService.so
 vendor/lib/libthermalclient.so
 vendor/lib/libxml.so
