@@ -206,6 +206,8 @@ vendor/lib/liboemcamera.so
 ## Adreno GPU
 etc/firmware/a300_pfp.fw
 etc/firmware/a300_pm4.fw
+etc/firmware/a330_pfp.fw
+etc/firmware/a330_pm4.fw
 vendor/lib/egl/eglsubAndroid.so
 vendor/lib/egl/libEGL_adreno.so
 vendor/lib/egl/libGLESv1_CM_adreno.so
