@@ -68,6 +68,9 @@ BOARD_EGL_CFG := $(LOCAL_PATH)/config/egl.cfg
 TARGET_DISPLAY_USE_RETIRE_FENCE :=
 TARGET_QCOM_DISPLAY_VARIANT := caf-new
 
+# Enables Adreno RS driver
+OVERRIDE_RS_DRIVER := libRSDriver_adreno.so
+
 TARGET_QCOM_MEDIA_VARIANT := caf-new
 
 # Use qcom power hal
