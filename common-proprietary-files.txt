@@ -19,6 +19,7 @@ etc/Handset_cal.acdb
 etc/Hdmi_cal.acdb
 etc/Headset_cal.acdb
 etc/Speaker_cal.acdb
+lib/hw/audio_policy.msm8226.so
 lib/hw/audio.primary.msm8226.so
 lib/libmotaudioutils.so
 vendor/lib/libacdbloader.so

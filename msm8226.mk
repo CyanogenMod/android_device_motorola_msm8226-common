@@ -24,9 +24,15 @@ DEVICE_PACKAGE_OVERLAYS += $(LOCAL_PATH)/overlay
 # Audio
 PRODUCT_PACKAGES += \
     audio_policy.msm8226 \
+    libaudio-resampler \
     libaudioparameter \
     libqcomvisualizer \
-    libqcomvoiceprocessing
+    libqcompostprocbundle \
+    libqcomvoiceprocessing \
+    tinycap \
+    tinymix \
+    tinypcminfo \
+    tinyplay
 
 # Ebtables
 PRODUCT_PACKAGES += \
@@ -165,7 +171,14 @@ PRODUCT_PROPERTY_OVERRIDES += \
     audio.offload.gapless.enabled=true \
     av.offload.enable=true \
     mm.enable.smoothstreaming=true \
-    qcom.hw.aac.encoder=true
+    qcom.hw.aac.encoder=true \
+    persist.audio.calfile0=/etc/Bluetooth_cal.acdb \
+    persist.audio.calfile1=/etc/General_cal.acdb \
+    persist.audio.calfile2=/etc/Global_cal.acdb \
+    persist.audio.calfile3=/etc/Handset_cal.acdb \
+    persist.audio.calfile4=/etc/Hdmi_cal.acdb \
+    persist.audio.calfile5=/etc/Headset_cal.acdb \
+    persist.audio.calfile6=/etc/Speaker_cal.acdb
 
 # Misc
 PRODUCT_PROPERTY_OVERRIDES += \
