@@ -41,10 +41,26 @@ PRODUCT_PACKAGES += \
     FM2 \
     FMRecord
 
+# GPS
+PRODUCT_PACKAGES += \
+    gps.msm8226
+
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/gps/gps.conf:system/etc/gps.conf \
+    $(LOCAL_PATH)/gps/flp.conf:system/etc/flp.conf \
+    $(LOCAL_PATH)/gps/izat.conf:system/etc/izat.conf \
+    $(LOCAL_PATH)/gps/quipc.conf:system/etc/quipc.conf \
+    $(LOCAL_PATH)/gps/sap.conf:system/etc/sap.conf
+
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.qc.sdk.izat.premium_enabled=0 \
+    ro.qc.sdk.izat.service_mask=0x0 \
+    persist.gps.qc_nlp_in_use=0 \
+    ro.gps.agps_provider=1
+
 # HAL
 PRODUCT_PACKAGES += \
     copybit.msm8226\
-    gps.msm8226 \
     gralloc.msm8226 \
     hwcomposer.msm8226 \
     keystore.msm8226 \
@@ -111,9 +127,8 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/config/egl.cfg:system/lib/egl/egl.cfg
 
-# Sap/location secuity configuration file
+# Location secuity configuration file
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/config/sap.conf:system/etc/sap.conf \
     $(LOCAL_PATH)/config/sec_config:system/etc/sec_config
 
 # Media config

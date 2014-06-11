@@ -1,4 +1,4 @@
-# Copyright (c) 2009-2013, The Linux Foundation. All rights reserved.
+# Copyright (c) 2009-2012,2014 The Linux Foundation. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -219,16 +219,13 @@ on post-fs-data
     mkdir /data/system 0775 system system
     #symlink /data/misc/wifi/wpa_supplicant /data/system/wpa_supplicant
 
-    #Create directories for gpsone_daemon services
-    mkdir /data/misc/gpsone_d 0770 system gps
-
-    #Create directories for QuIPS
-    mkdir /data/misc/quipc 0770 gps system
-
     #Create directories for Location services
     mkdir /data/misc/location 0770 gps gps
     mkdir /data/misc/location/mq 0770 gps gps
     mkdir /data/misc/location/xtwifi 0770 gps gps
+    mkdir /data/misc/location/gpsone_d 0770 system gps
+    mkdir /data/misc/location/quipc 0770 gps system
+    mkdir /data/misc/location/gsiff 0770 gps gps
 
     #Create directory from IMS services
     mkdir /data/shared 0755
@@ -461,6 +458,48 @@ service dhcpcd_bnep3 /system/bin/dhcpcd -BKLG
 service dhcpcd_bnep4 /system/bin/dhcpcd -BKLG
     disabled
     oneshot
+
+service gpsone_daemon /system/bin/gpsone_daemon
+    class late_start
+    user gps
+    group gps inet net_raw
+    disabled
+
+service quipc_igsn /system/bin/quipc_igsn
+    class late_start
+    user gps
+    group inet gps qcom_diag
+    disabled
+
+service quipc_main /system/bin/quipc_main
+    class late_start
+    user gps
+    group gps net_admin wifi inet qcom_diag
+    disabled
+
+service location_mq /system/bin/location-mq
+    class late_start
+    user gps
+    group gps
+    disabled
+
+service xtwifi_inet /system/bin/xtwifi-inet-agent
+    class late_start
+    user gps
+    group inet gps
+    disabled
+
+service xtwifi_client /system/bin/xtwifi-client
+    class late_start
+    user gps
+    group net_admin wifi inet gps
+    disabled
+
+service lowi-server /system/bin/lowi-server
+    class late_start
+    user gps
+    group gps net_admin wifi inet qcom_diag
+    disabled
 
 service fm_dl /system/bin/sh /system/etc/init.qcom.fm.sh
     class late_start

@@ -92,10 +92,21 @@ bin/fmconfig
 bin/fm_qsoc_patches
 
 # GPS
+-app/com.qualcomm.location.apk
+bin/gsiff_daemon
+bin/quipc_igsn
+bin/quipc_main
+etc/permissions/com.qualcomm.location.xml
 lib/libloc_api_v02.so
-lib/libgeofence.so
+lib/libloc_ds_api.so
+vendor/lib/hw/flp.default.so
+vendor/lib/libgeofence.so
+vendor/lib/libizat_core.so
+vendor/lib/liblbs_core.so
+vendor/lib/liblocationservice.so
 vendor/lib/libquipc_os_api.so
 vendor/lib/libquipc_ulp_adapter.so
+vendor/lib/libulp2.so
 
 # Graphics
 vendor/lib/egl/eglsubAndroid.so
@@ -223,6 +234,7 @@ vendor/lib/libril-qcril-hook-oem.so
 
 # Sensors
 bin/akmd8963
+etc/sensor_def_qcomdev.conf
 lib/hw/sensors.msm8226.so
 lib/libmot_sensorlistener.so
 vendor/lib/libsensor1.so
