@@ -253,12 +253,12 @@ case "$target" in
       ln -s /system/lib/modules/pronto/pronto_wlan.ko \
 		/system/lib/modules/wlan.ko
       # Populate the writable driver configuration file
-      #if [ ! -e /data/misc/wifi/WCNSS_qcom_cfg.ini ]; then
-      #    cp /system/etc/wifi/WCNSS_qcom_cfg.ini \
-	  #	/data/misc/wifi/WCNSS_qcom_cfg.ini
-      #    chown system:wifi /data/misc/wifi/WCNSS_qcom_cfg.ini
-      #    chmod 660 /data/misc/wifi/WCNSS_qcom_cfg.ini
-      #fi
+#      if [ ! -e /data/misc/wifi/WCNSS_qcom_cfg.ini ]; then
+#          cp /system/etc/wifi/WCNSS_qcom_cfg.ini \
+#		/data/misc/wifi/WCNSS_qcom_cfg.ini
+#          chown -h system:wifi /data/misc/wifi/WCNSS_qcom_cfg.ini
+#          chmod -h 660 /data/misc/wifi/WCNSS_qcom_cfg.ini
+#      fi
 
       # The property below is used in Qcom SDK for softap to determine
       # the wifi driver config file
@@ -275,6 +275,17 @@ case "$target" in
       ;;
       esac
       ;;
+
+    apq8084*)
+      echo "*** Use the CNSS CLD driver.**"
+      setprop wlan.driver.ath 0
+
+      # Use different wpa_supplicant.conf template between wcn driver
+      # and ath6kl driver
+      rm /system/etc/wifi/wpa_supplicant.conf
+      ln -s /system/etc/wifi/wpa_supplicant_wcn.conf \
+                /system/etc/wifi/wpa_supplicant.conf
+    ;;
 
     msm8960*)
 

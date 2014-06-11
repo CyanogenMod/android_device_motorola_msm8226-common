@@ -1,8 +1,8 @@
 #!/system/bin/sh
 
 # We take this from cpuinfo because hex "letters" are lowercase there
-set -A cinfo $(cat /proc/cpuinfo)
-hw=${cinfo[74]#?}
+set -A cinfo `cat /proc/cpuinfo | /system/bin/grep Revision`
+hw=${cinfo[2]#?}
 
 # Now "cook" the value so it can be matched against devtree names
 m2=${hw%?}
@@ -77,6 +77,17 @@ fi
 
 setprop ro.manufacturedate $mdate
 unset fti y m d year month day utag_fti pds_fti fti_utag mdate
+
+t=$(getprop ro.build.tags)
+if [[ "$t" != *release* ]]; then
+	for p in $(cat /proc/cmdline); do
+		if [ ${p%%:*} = "@" ]; then
+			v=${p#@:}; a=${v%=*}; b=${v#*=}
+			${a%%:*} ${a##*:} $b
+	fi
+	done
+fi
+unset p v a b t
 
 # Cleanup stale/incorrect programmed model value
 # Real values will never contain substrings matching "internal" device name
