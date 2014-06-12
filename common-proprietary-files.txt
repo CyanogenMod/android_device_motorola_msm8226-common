@@ -1,58 +1,11 @@
-# App
--app/TimeService.apk
-
-# Bins
+# ADSP
 bin/adsprpcd
-bin/akmd8963
+lib/rfsa/adsp/libadsp_denoise_skel.so
+vendor/lib/libadsprpc.so
+
+# Audio
 bin/ap_gain.bin
 bin/ap_gain_mmul.bin
-bin/batt_health
-bin/bridgemgrd
-bin/btnvtool
-bin/charger_monitor
-bin/dbvc_atvc_property_set
-bin/ds_fmc_appd
-bin/fmconfig
-bin/fm_qsoc_patches
-bin/ftmipcd
-bin/hardware_revisions.sh
-bin/hci_qcomm_init
-bin/imsdatadaemon
-bin/imsqmidaemon
-bin/ims_rtp_daemon
-bin/irsc_util
-bin/mpdecision
-bin/netmgrd
-bin/nl_listener
-bin/port-bridge
-bin/ptt_socket_app
-bin/qmi_motext_hook
-bin/qmiproxy
-bin/qmuxd
-bin/qseecomd
-bin/radish
-bin/refuse
-bin/rfs_access
-bin/rmt_storage
-bin/sapd
-bin/subsystem_ramdump
-bin/thermal-engine
-bin/time_daemon
-
-# Etc
-etc/firmware/cpp_firmware_v1_1_1.fw
-etc/firmware/cpp_firmware_v1_1_6.fw
-etc/firmware/cpp_firmware_v1_2_0.fw
-etc/firmware/synaptics-s2316-13091704-175833-falcon.tdat
-etc/firmware/venus.b00
-etc/firmware/venus.b01
-etc/firmware/venus.b02
-etc/firmware/venus.b03
-etc/firmware/venus.b04
-etc/firmware/venus.mbn
-etc/firmware/venus.mdt
-etc/permissions/qcnvitems.xml
-etc/permissions/qcrilhook.xml
 etc/Bluetooth_cal.acdb
 etc/General_cal.acdb
 etc/Global_cal.acdb
@@ -60,119 +13,23 @@ etc/Handset_cal.acdb
 etc/Hdmi_cal.acdb
 etc/Headset_cal.acdb
 etc/Speaker_cal.acdb
-
-# Framework
--framework/qcnvitems.jar
--framework/qcrilhook.jar
-
-# HAL
 lib/hw/audio.primary.msm8226.so
-lib/hw/camera.msm8226.so
-lib/hw/sensors.msm8226.so
-
-# Libs
-lib/rfsa/adsp/libadsp_denoise_skel.so
 vendor/lib/libacdbloader.so:lib/libacdbloader.so
-lib/libadropbox.so
-lib/libbabysit.so
-lib/libdrmdecrypt.so
-lib/libloc_api_v02.so
-lib/libmdmcutback.so
-lib/libmmjpeg_interface.so
-lib/libmotext_inf.so
-lib/libmot_sensorlistener.so
-lib/libqomx_core.so
-vendor/lib/libQSEEComAPI.so
-vendor/lib/libalarmservice_jni.so
 vendor/lib/libacdbloader.so
 vendor/lib/libacdbmapper.so
 vendor/lib/libacdbrtac.so
 vendor/lib/libadiertac.so
-vendor/lib/libadsprpc.so
 vendor/lib/libaudcal.so
 vendor/lib/libaudioalsa.so
-vendor/lib/libconfigdb.so
-vendor/lib/libdiag.so
-vendor/lib/libDivxDrm.so
-vendor/lib/lib-dplmedia.so
-vendor/lib/libdrmdiag.so
-vendor/lib/libdrmfs.so
-vendor/lib/libdrmtime.so
-vendor/lib/libdsi_netctrl.so
-vendor/lib/libdsnetutils.so
-vendor/lib/libdsucsd.so
-vendor/lib/libdsutils.so
-vendor/lib/libExtendedExtractor.so
-vendor/lib/libFileMux.so
-vendor/lib/libgeofence.so:lib/libgeofence.so
-vendor/lib/libHevcSwDecoder.so
-vendor/lib/libI420colorconvert.so
-vendor/lib/libidl.so
-vendor/lib/lib-imsdpl.so
-vendor/lib/lib-imsqimf.so
-vendor/lib/lib-imsrcs.so
-vendor/lib/lib-imsSDP.so
-vendor/lib/lib-imsvt.so
-vendor/lib/lib-imsxml.so
-vendor/lib/libjpegdhw.so
-vendor/lib/libjpegehw.so
-vendor/lib/libmm-abl.so
-vendor/lib/libmm-abl-oem.so
-vendor/lib/libmm-color-convertor.so
-vendor/lib/libmmipl.so
-vendor/lib/libmmjpeg.so
-vendor/lib/libmmosal.so
-vendor/lib/libmmparser.so
-vendor/lib/libmmqjpeg_codec.so
-vendor/lib/libmmrtpencoder.so
-vendor/lib/libnetmgr.so
-vendor/lib/liboemcrypto.so
-vendor/lib/libOmxAacDec.so
-vendor/lib/libOmxAmrwbplusDec.so
-vendor/lib/libOmxEvrcDec.so
-vendor/lib/libOmxQcelp13Dec.so
-vendor/lib/libOmxWmaDec.so
-vendor/lib/libqcci_legacy.so
-vendor/lib/libqc-opt.so
-vendor/lib/libqdi.so
-vendor/lib/libqdp.so
-vendor/lib/libqmi.so
-vendor/lib/libqmi_cci.so
-vendor/lib/libqmi_client_qmux.so
-vendor/lib/libqmi_common_so.so
-vendor/lib/libqmi_csi.so
-vendor/lib/libqmi_csvt_srvc.so
-vendor/lib/libqmi_encdec.so
-vendor/lib/libqmiservices.so
-vendor/lib/libqomx_jpegenc.so
-vendor/lib/libquipc_os_api.so
-vendor/lib/libquipc_ulp_adapter.so
-vendor/lib/libril-qc-qmi-1.so
-vendor/lib/libril-qcril-hook-oem.so
-vendor/lib/librpmb.so
-vendor/lib/lib-rtpcommon.so
-vendor/lib/lib-rtpcore.so
-vendor/lib/lib-rtpdaemoninterface.so
-vendor/lib/lib-rtpsl.so
-vendor/lib/libsensor1.so
-vendor/lib/libssd.so
--vendor/lib/libtime_genoff.so
-vendor/lib/libTimeService.so
-vendor/lib/libthermalclient.so
-vendor/lib/libxml.so
 
-# DRM
-lib/libWVphoneAPI.so
-vendor/lib/drm/libdrmwvmplugin.so
-vendor/lib/mediadrm/libwvdrmengine.so
-vendor/lib/libwvdrm_L1.so
-vendor/lib/libwvm.so
-vendor/lib/libWVStreamControlAPI_L1.so
+# Bluetooth
+bin/btnvtool
+bin/hci_qcomm_init
 
 # Camera
-bin/mm-pp-daemon
 bin/mm-qcamera-app
 bin/mm-qcamera-daemon
+lib/hw/camera.msm8226.so
 lib/libchromatix_ar0543_common.so
 lib/libchromatix_ar0543_default_video.so
 lib/libchromatix_ar0543_hfr_60.so
@@ -180,7 +37,9 @@ lib/libchromatix_ar0543_preview.so
 lib/libchromatix_ar0543_snapshot.so
 lib/libmmcamera_ar0543.so
 lib/libmmcamera_interface.so
+lib/libmmjpeg_interface.so
 lib/libmm-qcamera.so
+lib/libqomx_core.so
 vendor/lib/libmmcamera2_c2d_module.so
 vendor/lib/libmmcamera2_cpp_module.so
 vendor/lib/libmmcamera2_iface_modules.so
@@ -201,13 +60,44 @@ vendor/lib/libmmcamera_sp1628.so
 vendor/lib/libmmcamera_tintless_algo.so
 vendor/lib/libmmcamera_tuning.so
 vendor/lib/libmmcamera_wavelet_lib.so
+vendor/lib/libmmipl.so
+vendor/lib/libmmjpeg.so
+vendor/lib/libmmqjpeg_codec.so
+vendor/lib/libqomx_jpegenc.so
 vendor/lib/liboemcamera.so
 
-## Adreno GPU
-etc/firmware/a300_pfp.fw
-etc/firmware/a300_pm4.fw
-etc/firmware/a330_pfp.fw
-etc/firmware/a330_pm4.fw
+# Camera firmware
+etc/firmware/cpp_firmware_v1_1_1.fw
+etc/firmware/cpp_firmware_v1_1_6.fw
+etc/firmware/cpp_firmware_v1_2_0.fw
+
+# DRM
+bin/qseecomd
+lib/libdrmdecrypt.so
+lib/libWVphoneAPI.so
+vendor/lib/drm/libdrmwvmplugin.so
+vendor/lib/mediadrm/libwvdrmengine.so
+vendor/lib/libdrmdiag.so
+vendor/lib/libdrmfs.so
+vendor/lib/libdrmtime.so
+vendor/lib/libQSEEComAPI.so
+vendor/lib/librpmb.so
+vendor/lib/libssd.so
+vendor/lib/libwvdrm_L1.so
+vendor/lib/libwvm.so
+vendor/lib/libWVStreamControlAPI_L1.so
+
+# FM radio
+bin/fmconfig
+bin/fm_qsoc_patches
+
+# GPS
+lib/libloc_api_v02.so
+lib/libgeofence.so
+vendor/lib/libquipc_os_api.so
+vendor/lib/libquipc_ulp_adapter.so
+
+# Graphics
 vendor/lib/egl/eglsubAndroid.so
 vendor/lib/egl/libEGL_adreno.so
 vendor/lib/egl/libGLESv1_CM_adreno.so
@@ -227,9 +117,148 @@ vendor/lib/librs_adreno.so
 vendor/lib/libRSDriver_adreno.so
 vendor/lib/libsc-a3xx.so
 
+
+# Graphics firmware
+etc/firmware/a300_pfp.fw
+etc/firmware/a300_pm4.fw
+etc/firmware/a330_pfp.fw
+etc/firmware/a330_pm4.fw
+
+# IMS - currently unused but have dependencies to qmi
+bin/imsdatadaemon
+bin/imsqmidaemon
+bin/ims_rtp_daemon
+vendor/lib/lib-dplmedia.so
+vendor/lib/lib-imsdpl.so
+vendor/lib/lib-imsqimf.so
+vendor/lib/lib-imsrcs.so
+vendor/lib/lib-imsSDP.so
+vendor/lib/lib-imsvt.so
+vendor/lib/lib-imsxml.so
+vendor/lib/libmmrtpencoder.so
+vendor/lib/lib-rtpcommon.so
+vendor/lib/lib-rtpcore.so
+vendor/lib/lib-rtpdaemoninterface.so
+vendor/lib/lib-rtpsl.so
+
 # Keystore
 vendor/firmware/keymaster/keymaster.b00
 vendor/firmware/keymaster/keymaster.b01
 vendor/firmware/keymaster/keymaster.b02
 vendor/firmware/keymaster/keymaster.b03
 vendor/firmware/keymaster/keymaster.mdt
+
+# Media
+vendor/lib/libDivxDrm.so
+vendor/lib/libExtendedExtractor.so
+vendor/lib/libFileMux.so
+-vendor/lib/libHevcSwDecoder.so
+vendor/lib/libI420colorconvert.so
+vendor/lib/libjpegdhw.so
+vendor/lib/libjpegehw.so
+vendor/lib/libmmosal.so
+vendor/lib/libmmparser.so
+vendor/lib/libmm-color-convertor.so
+vendor/lib/libOmxAacDec.so
+vendor/lib/libOmxAmrwbplusDec.so
+vendor/lib/libOmxEvrcDec.so
+vendor/lib/libOmxQcelp13Dec.so
+vendor/lib/libOmxWmaDec.so
+
+# Moto
+bin/batt_health
+bin/dbvc_atvc_property_set
+bin/hardware_revisions.sh
+bin/refuse
+
+# Perf
+bin/mpdecision
+vendor/lib/libqc-opt.so
+
+# Postprocessing
+bin/mm-pp-daemon
+vendor/lib/libmm-abl.so
+vendor/lib/libmm-abl-oem.so
+
+# Qualcomm framework
+bin/irsc_util
+vendor/lib/libconfigdb.so
+vendor/lib/libdiag.so
+vendor/lib/libdsi_netctrl.so
+vendor/lib/libdsnetutils.so
+vendor/lib/libdsucsd.so
+vendor/lib/libdsutils.so
+vendor/lib/libidl.so
+vendor/lib/libqcci_legacy.so
+vendor/lib/libqdi.so
+vendor/lib/libqdp.so
+vendor/lib/libqmi.so
+vendor/lib/libqmi_cci.so
+vendor/lib/libqmi_client_qmux.so
+vendor/lib/libqmi_common_so.so
+vendor/lib/libqmi_csi.so
+vendor/lib/libqmi_csvt_srvc.so
+vendor/lib/libqmi_encdec.so
+vendor/lib/libqmiservices.so
+
+# Radio
+bin/netmgrd
+bin/qmuxd
+bin/radish
+bin/rfs_access
+bin/rmt_storage
+bin/qmi_motext_hook
+bin/qmiproxy
+etc/permissions/qcnvitems.xml
+etc/permissions/qcrilhook.xml
+-framework/qcnvitems.jar
+-framework/qcrilhook.jar
+lib/libadropbox.so
+lib/libbabysit.so
+lib/libmdmcutback.so
+lib/libmotext_inf.so
+vendor/lib/libnetmgr.so
+vendor/lib/libril-qc-qmi-1.so
+vendor/lib/libril-qcril-hook-oem.so
+
+# Sensors
+bin/akmd8963
+lib/hw/sensors.msm8226.so
+lib/libmot_sensorlistener.so
+vendor/lib/libsensor1.so
+
+# Touch fw
+etc/firmware/synaptics-s2316-13091704-175833-falcon.tdat
+
+# Thermal
+bin/thermal-engine
+vendor/lib/libthermalclient.so
+
+# Time services
+-app/TimeService.apk
+bin/time_daemon
+-vendor/lib/libtime_genoff.so
+vendor/lib/libTimeService.so
+
+# Venus (media) firmware
+etc/firmware/venus.b00
+etc/firmware/venus.b01
+etc/firmware/venus.b02
+etc/firmware/venus.b03
+etc/firmware/venus.b04
+etc/firmware/venus.mbn
+etc/firmware/venus.mdt
+
+# Misc
+bin/bridgemgrd
+bin/charger_monitor
+bin/ds_fmc_appd
+bin/ftmipcd
+bin/nl_listener
+bin/port-bridge
+bin/ptt_socket_app
+bin/sapd
+bin/subsystem_ramdump
+vendor/lib/libalarmservice_jni.so
+vendor/lib/liboemcrypto.so
+vendor/lib/libxml.so
