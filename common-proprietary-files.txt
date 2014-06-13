@@ -290,12 +290,15 @@ etc/firmware/venus.b04
 etc/firmware/venus.mbn
 etc/firmware/venus.mdt
 
+# WiFi
+bin/ptt_socket_app
+lib/libqsap_sdk.so
+
 # Misc
 bin/bridgemgrd
 bin/ds_fmc_appd
 bin/ftmipcd
 bin/nl_listener
 bin/port-bridge
-bin/ptt_socket_app
 vendor/lib/libalarmservice_jni.so
 vendor/lib/libxml.so
