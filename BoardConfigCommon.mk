@@ -76,6 +76,9 @@ TARGET_QCOM_MEDIA_VARIANT := caf-new
 # Use qcom power hal
 TARGET_POWERHAL_VARIANT := qcom
 
+# Enable CPU boosting events in the power HAL
+TARGET_USES_CPU_BOOST_HINT := true
+
 TARGET_HW_DISK_ENCRYPTION := true
 
 # Hardware tunables framework
