@@ -28,6 +28,7 @@ TARGET_BOARD_PLATFORM_GPU := qcom-adreno305
 TARGET_BOARD_PLATFORM := msm8226
 TARGET_BOOTLOADER_BOARD_NAME := MSM8226
 TARGET_CPU_VARIANT := krait
+TARGET_USE_KINGFISHER_OPTIMIZATION := true
 
 -include device/motorola/qcom-common/BoardConfigCommon.mk
 
@@ -62,6 +63,7 @@ BOARD_USES_CUSTOM_AUDIO_PLATFORM_PATH := device/motorola/msm8226-common/audio
 AUDIO_FEATURE_DISABLED_FM :=
 AUDIO_FEATURE_DISABLED_SSR := true
 BOARD_HAVE_QCOM_FM := true
+AUDIO_FEATURE_DISABLED_ANC_HEADSET := true
 AUDIO_FEATURE_DISABLED_MULTI_VOICE_SESSIONS := true
 
 # Graphics
@@ -71,11 +73,16 @@ TARGET_QCOM_DISPLAY_VARIANT := caf-bfam
 
 TARGET_QCOM_MEDIA_VARIANT := caf-bfam
 
+# Enables Adreno RS driver
+OVERRIDE_RS_DRIVER := libRSDriver_adreno.so
+
 # Kernel handles input boosting
 TARGET_POWERHAL_NO_TOUCH_BOOST := true
 
+TARGET_HW_DISK_ENCRYPTION := true
+
 # Assert
-TARGET_OTA_ASSERT_DEVICE := xt1031,xt1032,xt1034,falcon_umts,falcon_cdma,falcon_retuaws
+TARGET_OTA_ASSERT_DEVICE := xt1031,xt1032,xt1033,xt1034,falcon_umts,falcon_umtsds,falcon_cdma,falcon_retuaws,falcon,falcon_gpe
 
 # Recovery
 TARGET_RECOVERY_FSTAB := $(LOCAL_PATH)/rootdir/etc/fstab.qcom

@@ -353,7 +353,7 @@ service p2p_supplicant /system/bin/wpa_supplicant \
     -I/system/etc/wifi/p2p_supplicant_overlay.conf -N \
     -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf \
     -I/system/etc/wifi/wpa_supplicant_overlay.conf \
-    -O/data/misc/wifi/sockets -puse_p2p_group_interface=1 -d \
+    -O/data/misc/wifi/sockets -puse_p2p_group_interface=1 \
     -e/data/misc/wifi/entropy.bin -g@android:wpa_wlan0
 #   we will start as root and wpa_supplicant will switch to user wifi
 #   after setting up the capabilities required for WEXT
@@ -367,7 +367,7 @@ service p2p_supplicant /system/bin/wpa_supplicant \
 service wpa_supplicant /system/bin/wpa_supplicant \
     -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf \
     -I/system/etc/wifi/wpa_supplicant_overlay.conf \
-    -O/data/misc/wifi/sockets -d \
+    -O/data/misc/wifi/sockets \
     -e/data/misc/wifi/entropy.bin -g@android:wpa_wlan0
     #   we will start as root and wpa_supplicant will switch to user wifi
     #   after setting up the capabilities required for WEXT
@@ -439,30 +439,6 @@ service dhcpcd_bnep3 /system/bin/dhcpcd -BKLG
 service dhcpcd_bnep4 /system/bin/dhcpcd -BKLG
     disabled
     oneshot
-
-service gpsone_daemon /system/bin/gpsone_daemon
-    class late_start
-    user gps
-    group gps qcom_oncrpc inet net_raw
-    disabled
-
-service location_mq /system/bin/location-mq
-    class late_start
-    user gps
-    group gps
-    disabled
-
-service xtwifi_inet /system/bin/xtwifi-inet-agent
-    class late_start
-    user gps
-    group inet gps
-    disabled
-
-service xtwifi_client /system/bin/xtwifi-client
-    class late_start
-    user gps
-    group net_admin wifi inet gps
-    disabled
 
 service fm_dl /system/bin/sh /system/etc/init.qcom.fm.sh
     class late_start
@@ -554,7 +530,6 @@ service fuse_usbdisk /system/bin/sdcard -u 1023 -g 1023  -w 1023 -d /mnt/media_r
 on property:init.svc.sdcard=running
     wait /mnt/shell/emulated/0 600
     mount none /mnt/shell/emulated/0 /storage/emulated/legacy bind
-
 
 service ssr_diag /system/bin/ssr_diag
     class late_start

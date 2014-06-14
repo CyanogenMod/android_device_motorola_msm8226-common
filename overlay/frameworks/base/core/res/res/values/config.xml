@@ -79,20 +79,9 @@
         <item>75</item>
     </integer-array>
 
-    <!-- Vibrator pattern to be used as for notifications while alerts
-         are disabled (e.g. during phone calls) if enabled by the user.
-     -->
-    <!-- <integer-array name="config_notificationNoAlertsVibePattern">
-        <item>0</item>
-        <item>30</item>
-        <item>75</item>
-        <item>30</item>
-    </integer-array> -->
-
-    <!-- Component name of the service providing geofence API support. -->
-    <!-- <string name="config_geofenceProvider" translatable="false">com.qualcomm.services.location</string> -->
-
-    <!-- Enable overlay for all location components. -->
-    <bool name="config_enableNetworkLocationOverlay" translatable="false">false</bool>
-    <bool name="config_enableFusedLocationOverlay" translatable="false">false</bool>
+    <!-- Set to true if we need to not prefer an APN.
+         This is being added to enable a simple scenario of pre-paid
+         provisioning on some carriers, working around a bug (7305641)
+         where if the preferred is used we don't try the others. -->
+    <bool name="config_dontPreferApn">true</bool>
 </resources>

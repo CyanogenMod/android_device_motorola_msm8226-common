@@ -39,6 +39,7 @@ PRODUCT_PACKAGES += \
 # HAL
 PRODUCT_PACKAGES += \
     copybit.msm8226\
+    gps.msm8226 \
     gralloc.msm8226 \
     hwcomposer.msm8226 \
     keystore.msm8226 \
@@ -51,6 +52,7 @@ PRODUCT_PACKAGES += qrngp
 
 # Utilities
 PRODUCT_PACKAGES += \
+    charge_only_mode \
     mkfs.f2fs \
     fsck.f2fs \
     fibmap.f2fs \
@@ -69,13 +71,13 @@ PRODUCT_PACKAGES += WCNSS_qcom_wlan_factory_nv.bin
 PRODUCT_PACKAGES += \
     fstab.qcom \
     init.qcom.rc \
+    init.recovery.qcom.rc \
     init.target.rc \
     ueventd.qcom.rc
 
 # Init scripts
 PRODUCT_PACKAGES += \
     init.mmi.boot.sh \
-    init.mmi.radio.sh \
     init.mmi.rc \
     init.mmi.touch.sh \
     init.qcom.post_boot.sh \
@@ -93,18 +95,18 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/config/audio_effects.conf:system/vendor/etc/audio_effects.conf \
     $(LOCAL_PATH)/config/mixer_paths.xml:system/etc/mixer_paths.xml
 
+# Charger - moto uses a funky ro.bootmode=mot-charger
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/moto_com.sh:system/bin/moto_com.sh
+
 # EGL config
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/config/egl.cfg:system/lib/egl/egl.cfg
 
 # Gps/location secuity configuration file
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/config/gps.conf:system/etc/gps.conf \
-    $(LOCAL_PATH)/config/izat.conf:system/etc/izat.conf \
-    $(LOCAL_PATH)/config/quipc.conf:system/etc/quipc.conf \
     $(LOCAL_PATH)/config/sap.conf:system/etc/sap.conf \
-    $(LOCAL_PATH)/config/sec_config:system/etc/sec_config \
-    $(LOCAL_PATH)/config/xtwifi.conf:system/etc/xtwifi.conf
+    $(LOCAL_PATH)/config/sec_config:system/etc/sec_config
 
 # Media config
 PRODUCT_COPY_FILES += \
@@ -131,10 +133,16 @@ PRODUCT_PROPERTY_OVERRIDES += \
     qcom.bt.le_dev_pwr_class=1 \
     ro.qc.sdk.audio.ssr=false \
     persist.audio.fluence.voicecall=true \
+    persist.audio.fluence.voicerec=false \
     ro.qc.sdk.audio.fluencetype=fluence \
+    persist.audio.fluence.speaker=true \
+    use.voice.path.for.pcm.voip=true \
+    use.dedicated.device.for.voip=true \
     audio.offload.buffer.size.kb=32 \
     audio.offload.gapless.enabled=true \
-    av.offload.enable=true
+    av.offload.enable=true \
+    mm.enable.smoothstreaming=true \
+    qcom.hw.aac.encoder=true
 
 # Misc
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -153,10 +161,12 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # Radio
 PRODUCT_PROPERTY_OVERRIDES += \
-    rild.libpath=/system/vendor/lib/libril-qc-qmi-1.so
+    rild.libpath=/system/vendor/lib/libril-qc-qmi-1.so \
     persist.radio.msgtunnel.start=false \
     persist.sys.ssr.restart_level=3 \
-    persist.sys.qc.sub.rdump.on=1
+    persist.sys.qc.sub.rdump.on=1 \
+    persist.radio.no_wait_for_card=1 \
+    persist.radio.dfr_mode_set=1
 
 # Opengles version 3
 PRODUCT_PROPERTY_OVERRIDES += \

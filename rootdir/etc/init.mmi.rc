@@ -248,12 +248,6 @@ service aplogd /system/bin/aplogd
     # for kernel logging.
     disabled
 
-service mmi-radio-sh /system/bin/sh /init.mmi.radio.sh
-    class core
-    user radio
-    group radio
-    oneshot
-
 on property:persist.sys.diag_mdlog.on=1
     start diag_mdlog
 
