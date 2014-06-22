@@ -24,7 +24,6 @@ DEVICE_PACKAGE_OVERLAYS += $(LOCAL_PATH)/overlay
 # Audio
 PRODUCT_PACKAGES += \
     audio_policy.msm8226 \
-    audio.primary.msm8226 \
     libaudioparameter \
     libqcompostprocbundle \
     libqcomvisualizer \
@@ -52,7 +51,6 @@ PRODUCT_PACKAGES += qrngp
 
 # Utilities
 PRODUCT_PACKAGES += \
-    charge_only_mode \
     mkfs.f2fs \
     fsck.f2fs \
     fibmap.f2fs \
@@ -69,9 +67,11 @@ PRODUCT_PACKAGES += WCNSS_qcom_wlan_factory_nv.bin
 
 # Ramdisk
 PRODUCT_PACKAGES += \
+    bbx \
     fstab.qcom \
+    gpecheck.sh \
+    gpe-fstab.qcom \
     init.qcom.rc \
-    init.recovery.qcom.rc \
     init.target.rc \
     ueventd.qcom.rc
 
@@ -95,7 +95,7 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/config/audio_effects.conf:system/vendor/etc/audio_effects.conf \
     $(LOCAL_PATH)/config/mixer_paths.xml:system/etc/mixer_paths.xml
 
-# Charger - moto uses a funky ro.bootmode=mot-charger
+# Charger/ moto uses a funky ro.bootmode=mot-charger
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/moto_com.sh:system/bin/moto_com.sh
 
@@ -103,7 +103,7 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/config/egl.cfg:system/lib/egl/egl.cfg
 
-# Gps/location secuity configuration file
+# Sap/location secuity configuration file
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/config/sap.conf:system/etc/sap.conf \
     $(LOCAL_PATH)/config/sec_config:system/etc/sec_config
@@ -133,16 +133,11 @@ PRODUCT_PROPERTY_OVERRIDES += \
     qcom.bt.le_dev_pwr_class=1 \
     ro.qc.sdk.audio.ssr=false \
     persist.audio.fluence.voicecall=true \
-    persist.audio.fluence.voicerec=false \
     ro.qc.sdk.audio.fluencetype=fluence \
-    persist.audio.fluence.speaker=true \
-    use.voice.path.for.pcm.voip=true \
-    use.dedicated.device.for.voip=true \
     audio.offload.buffer.size.kb=32 \
     audio.offload.gapless.enabled=true \
     av.offload.enable=true \
-    mm.enable.smoothstreaming=true \
-    qcom.hw.aac.encoder=true
+    mm.enable.smoothstreaming=true
 
 # Misc
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -157,16 +152,15 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.gps.qc_nlp_in_use=0 \
     persist.fuse_sdcard=true \
     ro.crypto.fuse_sdcard=true \
-    ro.nfc.port=I2C
+    ro.nfc.port=I2C \
+    ro.cwm.forbid_format="/fsg,/firmware,/persist,/boot"
 
 # Radio
 PRODUCT_PROPERTY_OVERRIDES += \
-    rild.libpath=/system/vendor/lib/libril-qc-qmi-1.so \
+    rild.libpath=/system/vendor/lib/libril-qc-qmi-1.so
     persist.radio.msgtunnel.start=false \
     persist.sys.ssr.restart_level=3 \
-    persist.sys.qc.sub.rdump.on=1 \
-    persist.radio.no_wait_for_card=1 \
-    persist.radio.dfr_mode_set=1
+    persist.sys.qc.sub.rdump.on=1
 
 # Opengles version 3
 PRODUCT_PROPERTY_OVERRIDES += \
