@@ -119,6 +119,9 @@ on post-fs-data
     mkdir /data/ss-ram-dumps 0750 radio log
     mkdir /data/ss-ram-dumps/bp-dumps 0750 radio log
 
+    # Create directory for cutback
+    mkdir /data/misc/cutback 0770 radio wifi
+
     # To remove apanic proc entry
     write /proc/apanic_console 1
 
@@ -133,8 +136,6 @@ on post-fs-data
 
     start batt_health
 
-    # Motorola Charge_only_mode
-    exec /system/bin/sh /system/bin/moto_com.sh
 
 service batt_health /system/bin/batt_health
     class main
@@ -143,6 +144,8 @@ service batt_health /system/bin/batt_health
 on early-boot
 # Annotate panics with helpful information
      exec /system/bin/apanic_annotate.sh build
+# Motorola Charge_only_mode
+    exec /system/bin/sh /system/bin/moto_com.sh
 
 on boot
     # Change ownership and permission for vibrator
@@ -156,6 +159,8 @@ on boot
     mkdir /data/aplogd 0750 log log
 
     # Change the ownership of touch screen files for tcmd
+    chown root mot_tcmd /sys/bus/i2c/drivers/aps_ts/5-0034/drv_irq
+    chown root mot_tcmd /sys/bus/i2c/drivers/aps_ts/5-0034/hw_irqstat
     chown root mot_tcmd /sys/bus/i2c/drivers/synaptics_dsx_i2c/5-0020/drv_irq
     chown root mot_tcmd /sys/bus/i2c/drivers/synaptics_dsx_i2c/5-0020/hw_irqstat
     chown root mot_tcmd /sys/bus/i2c/drivers/synaptics_dsx_i2c/5-0020/reset
@@ -181,33 +186,35 @@ on boot
     chmod 0664 /sys/class/leds/charging/brightness
     chmod 0664 /sys/class/leds/lcd-backlight/brightness
 
-    # Optimize TCP parameters for QCOM-8226 products without LTE support
+    # Optimize TCP parameters for QCOM-8x26 products with LTE support
     # This init file will override the values defined in init.rc file.
     # Carrier specific init.<carrier>.rc file will override this file.
     # ReadMin, ReadInitial, ReadMax, WriteMin, WriteInitial, WriteMax,
     setprop net.tcp.buffersize.default 131072,262144,1048576,4096,16384,262144
     setprop net.tcp.buffersize.wifi 131072,262144,3145728,4096,221184,3145728
-    setprop net.tcp.buffersize.umts 131072,262144,1452023,4096,16384,399360
-    setprop net.tcp.buffersize.edge 16384,32768,131070,4096,16384,65536
+    setprop net.tcp.buffersize.umts 131072,262144,1452032,4096,16384,399360
+    setprop net.tcp.buffersize.edge 16384,32768,131072,4096,16384,65536
     setprop net.tcp.buffersize.gprs 4096,8192,24576,4096,8192,24576
-    setprop net.tcp.buffersize.hspa 131072,262144,1452023,4096,16384,399360
-    setprop net.tcp.buffersize.hsdpa 131072,262144,1452023,4096,16384,399360
-    setprop net.tcp.buffersize.hsupa 131072,262144,1452023,4096,16384,399360
-    setprop net.tcp.buffersize.hspap 131072,262144,1452023,4096,16384,399360
+    setprop net.tcp.buffersize.hspa 131072,262144,2441216,4096,16384,399360
+    setprop net.tcp.buffersize.hsdpa 131072,262144,2441216,4096,16384,399360
+    setprop net.tcp.buffersize.hsupa 131072,262144,2441216,4096,16384,399360
+    setprop net.tcp.buffersize.hspap 131072,262144,2441216,4096,16384,399360
     setprop net.tcp.buffersize.cdma  4096,12288,49152,4096,12288,49152
-    setprop net.tcp.buffersize.1xrtt 16384,32768,131070,4096,16384,102400
-    setprop net.tcp.buffersize.evdo  16384,32768,131070,4096,16384,102400
+    setprop net.tcp.buffersize.1xrtt 16384,32768,131072,4096,16384,102400
+    setprop net.tcp.buffersize.evdo  16384,32768,131072,4096,16384,102400
     setprop net.tcp.buffersize.evdo_b 131072,262144,1048576,4096,16384,524288
     setprop net.tcp.buffersize.ehrpd  131072,262144,1048576,4096,16384,524288
-    setprop net.tcp.buffersize.2ghotspot 4096,16384,65536,16384,32768,131070
-    setprop net.tcp.buffersize.2ghotspot2 4096,16384,102400,16384,32768,131070
-    setprop net.tcp.buffersize.3ghotspot 4096,16384,399360,131072,262144,1452032
+    setprop net.tcp.buffersize.lte 524288,1048576,8388608,262144,524288,4194304
+    setprop net.tcp.buffersize.2ghotspot 4096,16384,65536,16384,32768,131072
+    setprop net.tcp.buffersize.2ghotspot2 4096,16384,102400,16384,32768,131072
+    setprop net.tcp.buffersize.3ghotspot 4096,16384,399360,131072,262144,2441216
     setprop net.tcp.buffersize.3ghotspot2 4096,16384,524288,131072,262144,1048576
+    setprop net.tcp.buffersize.4ghotspot 262144,524288,4194304,524288,1048576,8388608
 
     # Assign TCP buffer thresholds to be ceiling value of technology maximums
     # Increased technology maximums should be reflected here.
-    write /proc/sys/net/core/rmem_max  3145728
-    write /proc/sys/net/core/wmem_max  3145728
+    write /proc/sys/net/core/rmem_max  8388608
+    write /proc/sys/net/core/wmem_max  8388608
 
     # create the necessary data dirs for tpapi with proper permission
     mkdir /dev/tpapi 02770 mot_tpapi mot_tpapi
@@ -256,9 +263,9 @@ on property:persist.sys.diag_mdlog.on=0
 
 service diag_mdlog /system/bin/diag_mdlog-wrap
     class main
-    socket mdlog_cmd stream 0660 system diag
+    socket mdlog_cmd stream 0660 log diag
     user log
-    group log sdcard_rw sdcard_r media_rw qcom_diag
+    group log sdcard_rw sdcard_r media_rw qcom_diag mount
     disabled
 
 service dropboxd /system/bin/dropboxd
@@ -275,7 +282,7 @@ service mmi-boot-sh /system/bin/sh /init.mmi.boot.sh
     user root
     oneshot
 
-service mmi-touch-sh /system/bin/sh /init.mmi.touch.sh synaptics melfas
+service mmi-touch-sh /system/bin/logwrapper /system/bin/sh /init.mmi.touch.sh synaptics aps
     class late_start
     user root
     oneshot

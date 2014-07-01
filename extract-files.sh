@@ -23,17 +23,23 @@ function extract() {
         fi
         if [ "$COPY_FROM" = "" ]; then
             # Try CM target first
-            adb pull /system/$DEST $2/$DEST
-            # if file does not exist try OEM target
-            if [ "$?" != "0" ]; then
-                adb pull /system/$FILE $2/$DEST
+            if [ -f /system/$DEST ]; then
+                adb pull /system/$DEST $2/$DEST
+            else
+                # if file does not exist try OEM target
+                if [ "$?" != "0" ]; then
+                    adb pull /system/$FILE $2/$DEST
+                fi
             fi
         else
             # Try CM target first
-            cp $COPY_FROM/$DEST $2/$DEST
-            # if file does not exist try OEM target
-            if [ "$?" != "0" ]; then
-                cp $COPY_FROM/$FILE $2/$DEST
+            if [ -f $COPY_FROM/$DEST ]; then
+                cp $COPY_FROM/$DEST $2/$DEST
+            else
+                # if file does not exist try OEM target
+                if [ "$?" != "0" ]; then
+                    cp $COPY_FROM/$FILE $2/$DEST
+                fi
             fi
         fi
     done
