@@ -22,6 +22,7 @@ etc/Speaker_cal.acdb
 lib/hw/audio_policy.msm8226.so
 lib/hw/audio.primary.msm8226.so
 lib/libmotaudioutils.so
+lib/libtinyalsa.so
 vendor/lib/libacdbloader.so
 vendor/lib/libacdbmapper.so
 vendor/lib/libacdbrtac.so
