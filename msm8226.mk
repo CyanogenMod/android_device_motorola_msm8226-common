@@ -23,7 +23,12 @@ DEVICE_PACKAGE_OVERLAYS += $(LOCAL_PATH)/overlay
 
 # Audio
 PRODUCT_PACKAGES += \
+    audiod \
     audio_policy.msm8226 \
+    audio.a2dp.default \
+    audio.primary.msm8226 \
+    audio.r_submix.default \
+    audio.usb.default \
     libaudio-resampler \
     libaudioparameter \
     libqcomvisualizer \
