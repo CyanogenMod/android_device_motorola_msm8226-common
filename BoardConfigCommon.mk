@@ -77,6 +77,9 @@ TARGET_QCOM_DISPLAY_VARIANT := caf-new
 # Enables Adreno RS driver
 OVERRIDE_RS_DRIVER := libRSDriver_adreno.so
 
+# Lights
+TARGET_PROVIDES_LIBLIGHT := true
+
 TARGET_QCOM_MEDIA_VARIANT := caf-new
 
 # Use qcom power hal
