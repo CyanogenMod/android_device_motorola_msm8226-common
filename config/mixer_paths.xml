@@ -296,6 +296,10 @@
 		<ctl name="SPK DAC Switch" value="1" />
 	</path>
 
+	<path name="speaker-lite">
+		<path name="speaker" />
+	</path>
+
 	<path name="speaker-reverse">
 		<!-- mono speaker, no channel swap here -->
 		<path name="speaker" />
@@ -359,6 +363,10 @@
 		<ctl name="HPHR Volume" value="11" />
 	</path>
 
+	<path name="headphones-lite">
+		<path name="headphones" />
+	</path>
+
 	<path name="headset-mic">
 		<path name="adc2" />
 		<ctl name="ADC1 Volume" value="0" />
@@ -391,6 +399,10 @@
 		<path name="headphones" />
 	</path>
 
+	<path name="voice-headphones-lite">
+		<path name="voice-headphones" />
+	</path>
+
 	<path name="voice-headset-mic">
 		<path name="headset-mic" />
 	</path>
@@ -408,6 +420,10 @@
 		<ctl name="HPHR Volume" value="11" />
 		<ctl name="RX3 MIX1 INP1" value="RX1" />
 		<ctl name="SPK DAC Switch" value="1" />
+	</path>
+
+	<path name="speaker-and-headphones-lite">
+		<path name="speaker-and-headphones" />
 	</path>
 
 	<path name="voice-rec-mic">
@@ -522,14 +538,26 @@
 		<ctl name="HPHR Volume" value="11" />
 	</path>
 
+	<path name="tty-headphones-lite">
+		<path name="tty-headphones" />
+	</path>
+
 	<path name="voice-tty-full-headphones">
 		<ctl name="TTY Mode" value="FULL" />
 		<path name="tty-headphones" />
 	</path>
 
+	<path name="voice-tty-full-headphones-lite">
+		<path name="voice-tty-full-headphones" />
+	</path>
+
 	<path name="voice-tty-vco-headphones">
 		<ctl name="TTY Mode" value="VCO" />
 		<path name="tty-headphones" />
+	</path>
+
+	<path name="voice-tty-vco-headphones-lite">
+		<path name="voice-tty-vco-headphones" />
 	</path>
 
 	<path name="voice-tty-hco-handset">
