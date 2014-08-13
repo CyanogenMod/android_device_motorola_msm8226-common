@@ -267,7 +267,6 @@ vendor/lib/libril-qcril-hook-oem.so
 
 # Sensors
 bin/akmd8963
-lib/hw/sensors.msm8226.so
 
 # Touch fw
 etc/firmware/aps-Falc-01210000-0121-falcon.tdat
