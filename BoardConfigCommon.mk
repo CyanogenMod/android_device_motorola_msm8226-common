@@ -14,13 +14,13 @@
 # limitations under the License.
 
 # inherit from the proprietary version
--include vendor/motorola/falcon/BoardConfigVendor.mk
+-include vendor/motorola/msm8226-common/BoardConfigVendor.mk
 
-LOCAL_PATH := device/motorola/falcon
+LOCAL_PATH := device/motorola/msm8226-common
 
 BOARD_VENDOR := motorola-qcom
 
-TARGET_SPECIFIC_HEADER_PATH := device/motorola/falcon/include
+TARGET_SPECIFIC_HEADER_PATH := device/motorola/msm8226-common/include
 
 # Platform
 TARGET_BOARD_PLATFORM := msm8226
@@ -39,17 +39,12 @@ TARGET_USE_QCOM_BIONIC_OPTIMIZATION := true
 TARGET_BOOTLOADER_BOARD_NAME := MSM8226
 TARGET_NO_BOOTLOADER := true
 
-# Assert
-TARGET_OTA_ASSERT_DEVICE := xt1031,xt1032,xt1033,xt1034,falcon_umts,falcon_umtsds,falcon_cdma,falcon_retuaws,falcon,falcon_gpe
-
 # Kernel
-BOARD_CUSTOM_BOOTIMG_MK := $(LOCAL_PATH)/mkbootimg.mk
 BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.console=ttyHSL0 androidboot.hardware=qcom user_debug=31 msm_rtb.filter=0x37 vmalloc=400M utags.blkdev=/dev/block/platform/msm_sdcc.1/by-name/utags androidboot.write_protect=0 zcache
 BOARD_KERNEL_BASE := 0x00000000
 BOARD_KERNEL_PAGESIZE := 2048
 BOARD_KERNEL_SEPARATED_DT := true
 BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x01000000 --tags_offset 0x00000100
-TARGET_KERNEL_CONFIG := msm8226_mmi_defconfig
 TARGET_KERNEL_SOURCE := kernel/motorola/msm8226
 
 WLAN_MODULES:
@@ -95,10 +90,7 @@ USE_OPENGL_RENDERER := true
 TARGET_HW_DISK_ENCRYPTION := true
 
 # Init
-TARGET_INIT_VENDOR_LIB := libinit_msm
-TARGET_LIBINIT_DEFINES_FILE := $(LOCAL_PATH)/init/init_falcon.c
 TARGET_NR_SVC_SUPP_GIDS := 28
-TARGET_UNIFIED_DEVICE := true
 
 # Lights
 TARGET_PROVIDES_LIBLIGHT := true
@@ -117,9 +109,6 @@ TARGET_USES_CPU_BOOST_HINT := true
 # Partitions
 BOARD_FLASH_BLOCK_SIZE := 131072
 BOARD_HAS_LARGE_FILESYSTEM := true
-BOARD_BOOTIMAGE_PARTITION_SIZE := 0x00A00000
-BOARD_RECOVERYIMAGE_PARTITION_SIZE := 0x00A00000
-BOARD_SYSTEMIMAGE_PARTITION_SIZE := 1560281088
 
 # Qualcomm support
 COMMON_GLOBAL_CFLAGS += -DQCOM_BSP
@@ -136,8 +125,6 @@ TARGET_RECOVERY_FSTAB := $(LOCAL_PATH)/rootdir/etc/fstab.qcom
 TARGET_RECOVERY_PIXEL_FORMAT := "RGBX_8888"
 TARGET_USERIMAGES_USE_EXT4 := true
 TARGET_USERIMAGES_USE_F2FS := true
-
-# Releasetools
 
 # SELinux
 BOARD_SEPOLICY_DIRS += \
