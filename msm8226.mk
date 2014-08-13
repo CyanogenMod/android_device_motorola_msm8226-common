@@ -200,8 +200,6 @@ PRODUCT_PACKAGES += \
 
 PRODUCT_PACKAGES += \
     bbx \
-    fstab.qcom \
-    gpe-fstab.qcom \
     gpecheck.sh \
     init.class_main.sh \
     init.mmi.boot.sh \
