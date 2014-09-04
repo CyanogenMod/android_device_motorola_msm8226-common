@@ -41,6 +41,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.bluetooth.hfp.ver=1.6 \
     ro.qualcomm.bt.hci_transport=smd
 
+# Camera
+PRODUCT_PROPERTY_OVERRIDES += \
+    camera2.portability.force_api=1
+
 # Display
 PRODUCT_PROPERTY_OVERRIDES += \
     debug.composition.type=dyn \
