@@ -180,10 +180,6 @@ on boot
     setprop ro.hw.hwrev ${ro.boot.hwrev}
     setprop ro.hw.radio ${ro.boot.radio}
 
-    # activate zram
-    swapon_all fstab.qcom
-    write /proc/sys/vm/page-cluster
-
 # msm specific files that need to be created on /data
 on post-fs-data
     # we will remap this as /mnt/sdcard with the sdcard fuse tool
