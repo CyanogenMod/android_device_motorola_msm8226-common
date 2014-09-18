@@ -60,6 +60,7 @@ on init
     symlink /storage/sdcard1 /external_sd
     symlink /storage/usbdisk /usbdisk
     symlink /storage/usbdisk /mnt/usbdisk
+    mount /dev/block/mmcblk1p1 /external_sd
 
 on fs
     setprop ro.crypto.fuse_sdcard true
