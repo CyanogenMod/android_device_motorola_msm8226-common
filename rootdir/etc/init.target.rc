@@ -62,8 +62,8 @@ on post-fs-data
     mkdir /data/tombstones 0771 system system
     mkdir /tombstones/modem 0771 system system
 
-on post-fs
     restorecon /data/media /data/media/0 /data/media/legacy /data/media/obb
+
     # Mount PDS
     wait /dev/block/platform/msm_sdcc.1/by-name/pds
     exec /system/etc/mount_pds.sh
@@ -88,6 +88,9 @@ on boot
     mkdir /cache/trace 0777 root shell
     chown root shell /cache/trace
     chmod 0777 /cache/trace
+
+on property:vold.decrypt=trigger_restart_framework
+    stop rild
 
 #start camera server as daemon
 service qcamerasvr /system/bin/mm-qcamera-daemon
