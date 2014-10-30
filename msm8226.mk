@@ -203,7 +203,6 @@ PRODUCT_PACKAGES += \
     gpecheck.sh \
     init.class_main.sh \
     init.mmi.boot.sh \
-    init.mmi.rc \
     init.mmi.touch.sh \
     init.qcom.class_core.sh \
     init.qcom.early_boot.sh \
@@ -214,7 +213,6 @@ PRODUCT_PACKAGES += \
     init.qcom.usb.rc \
     init.qcom.usb.sh \
     init.recovery.qcom.rc \
-    init.target.rc \
     ueventd.qcom.rc
 
 # Thermal

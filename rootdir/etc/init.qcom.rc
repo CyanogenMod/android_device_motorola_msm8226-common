@@ -31,6 +31,20 @@ import init.qcom.usb.rc
 on early-init
     write /sys/block/mmcblk0/queue/scheduler noop
 
+    # Create firmware mount point
+    mkdir /firmware 0771 system system
+
+    # Create PDS mount point
+    mkdir /pds 0755 root root
+
+    # Create modem FSG mount point
+    mkdir /fsg 755 root root
+
+    chown system system /sys/kernel/debug
+    chmod 0775 /sys/kernel/debug
+
+    symlink /data/tombstones /tombstones
+
 on init
     loglevel 8
 
@@ -62,8 +76,209 @@ on init
     symlink /storage/usbdisk /usbdisk
     symlink /storage/usbdisk /mnt/usbdisk
 
+    chmod 755 /gpecheck.sh
+    exec /gpecheck.sh
+
+    # CM: We use our own ril-daemon service definition, see mmi-ril-daemon
+    stop ril-daemon
+
+    # Configure coredump
+    write /proc/sys/kernel/core_pattern "|/system/bin/coredump %e %p %t"
+    write /proc/self/coredump_filter "0x7f"
+
+    # Setup kernel dropbox permissions so that dropboxd can utilize it
+    chown root diag /sys/kernel/dropbox/event
+    chown root diag /sys/kernel/dropbox/data
+
 on fs
+    mount_all fstab.qcom
+
+    # Keeping following partitions outside fstab file. As user may not have
+    # these partition flashed on the device. Failure to mount any partition in fstab file
+    # results in failure to launch late-start class.
+
+    wait /dev/block/platform/msm_sdcc.1/by-name/persist
+    mount ext4 /dev/block/platform/msm_sdcc.1/by-name/persist /persist nosuid nodev barrier=1
+
+    wait /dev/block/platform/msm_sdcc.1/by-name/fsg
+    mount ext4 /dev/block/platform/msm_sdcc.1/by-name/fsg /fsg ro nosuid nodev barrier=0
+
+    wait /dev/block/platform/msm_sdcc.1/by-name/modem
+    exec /system/bin/resize2fs /dev/block/platform/msm_sdcc.1/by-name/modem
+    mount ext4 /dev/block/platform/msm_sdcc.1/by-name/modem /firmware ro nosuid nodev barrier=0
+    write /sys/kernel/boot_adsp/boot 1
+
+    # Set correct permissions for HOB, DHOB
+    exec /system/bin/chmod -L 660 /dev/block/platform/msm_sdcc.1/by-name/hob
+    exec /system/bin/chmod -L 660 /dev/block/platform/msm_sdcc.1/by-name/dhob
+    exec /system/bin/chmod -L 660 /dev/block/platform/msm_sdcc.1/by-name/clogo
+    exec /system/bin/chown -L root:radio /dev/block/platform/msm_sdcc.1/by-name/hob
+    exec /system/bin/chown -L root:radio /dev/block/platform/msm_sdcc.1/by-name/dhob
+    exec /system/bin/chown -L root:mot_tcmd /dev/block/platform/msm_sdcc.1/by-name/clogo
+
+    # Set correct permissions for CID
+    exec /system/bin/chmod -L 660 /dev/block/platform/msm_sdcc.1/by-name/cid
+    exec /system/bin/chown -L root:mot_dbvc /dev/block/platform/msm_sdcc.1/by-name/cid
+
+    # Set permissions for BL logs
+    exec /system/bin/chmod -L 640 /dev/block/platform/msm_sdcc.1/by-name/logs
+    exec /system/bin/chown -L root:system /dev/block/platform/msm_sdcc.1/by-name/logs
+
+    # activate zram
+    swapon_all fstab.qcom
+    write /proc/sys/vm/page-cluster 0
+
     setprop ro.crypto.fuse_sdcard true
+
+on post-fs-data
+    mkdir /data/tombstones 0771 system system
+    mkdir /tombstones/modem 0771 system system
+
+    # we will remap this as /mnt/sdcard with the sdcard fuse tool
+    mkdir /data/media 0770 media_rw media_rw
+    chown media_rw media_rw /data/media
+
+    restorecon /data/media /data/media/0 /data/media/legacy /data/media/obb
+
+    # Mount PDS
+    wait /dev/block/platform/msm_sdcc.1/by-name/pds
+    exec /system/etc/mount_pds.sh
+
+    # Trigger the defuse tool
+    setprop installd.post_fs_data_ready 1
+
+    mkdir /data/misc/bluetooth 0770 bluetooth bluetooth
+
+    # Create the directories used by the Wireless subsystem
+    mkdir /data/misc/wifi 0770 wifi wifi
+    mkdir /data/misc/wifi/sockets 0770 wifi wifi
+    mkdir /data/misc/wifi/wpa_supplicant 0770 wifi wifi
+    mkdir /data/misc/dhcp 0770 dhcp dhcp
+    chown dhcp dhcp /data/misc/dhcp
+
+    # Create directory used by audio subsystem
+    mkdir /data/misc/audio 0770 audio audio
+
+    # Create directory used by the DASH client
+    mkdir /data/misc/dash 0770 media audio
+
+    # Mounting of persist is moved to 'on emmc-fs' and 'on fs' sections
+    # We chown/chmod /persist again so because mount is run as root + defaults
+    chown system system /persist
+    chmod 0771 /persist
+    chmod 0664 /sys/devices/platform/msm_sdcc.1/polling
+    chmod 0664 /sys/devices/platform/msm_sdcc.2/polling
+    chmod 0664 /sys/devices/platform/msm_sdcc.3/polling
+    chmod 0664 /sys/devices/platform/msm_sdcc.4/polling
+
+    # Chown polling nodes as needed from UI running on system server
+    chown system system /sys/devices/platform/msm_sdcc.1/polling
+    chown system system /sys/devices/platform/msm_sdcc.2/polling
+    chown system system /sys/devices/platform/msm_sdcc.3/polling
+    chown system system /sys/devices/platform/msm_sdcc.4/polling
+
+   # Setup correct permissions for dbvc and atvc
+    mkdir /pds/public/atvc 0770 mot_atvc shell
+    chmod 0770 /pds/public/atvc
+    mkdir /data/local/dbvc 0750 mot_tcmd shell
+    mkdir /data/local/atvc 0775 mot_tcmd shell
+
+    #Create the symlink to qcn wpa_supplicant folder for ar6000 wpa_supplicant
+    mkdir /data/system 0775 system system
+    #symlink /data/misc/wifi/wpa_supplicant /data/system/wpa_supplicant
+
+    # Wifi
+    restorecon /data/hostapd
+    restorecon /data/misc/wifi/hostapd/wlan0
+
+    #Create directories for gpsone_daemon services
+    mkdir /data/misc/gpsone_d 0770 system gps
+
+    #Create directories for QuIPS
+    mkdir /data/misc/quipc 0770 system gps
+
+    #Create directories for Location services
+    mkdir /data/misc/location 0770 gps gps
+    mkdir /data/misc/location/mq 0770 gps gps
+    mkdir /data/misc/location/xtwifi 0770 gps gps
+
+    #Create directory from IMS services
+    mkdir /data/shared 0755
+    chown system system /data/shared
+
+    #Create directory for FOTA
+    mkdir /data/fota 0771
+    chown system system /data/fota
+
+    #Create directory for hostapd
+    mkdir /data/hostapd 0770 system wifi
+
+    # Create /data/time folder for time-services
+    mkdir /data/time/ 0700 system system
+
+    mkdir /data/audio/ 0770 media audio
+    # Enable the setgid bit on the directory
+    chmod 2770 /data/audio
+
+    setprop vold.post_fs_data_done 1
+
+    #Create a folder for SRS to be able to create a usercfg file
+    mkdir /data/data/media 0770 media media
+
+   # Create moodle directory that MOODLE APP can write to
+    mkdir /data/local/moodle 0770 graphics mot_tcmd
+
+    # services directory for activation
+    mkdir /pds/public/svcs 0770 system mot_tcmd
+    chmod 0770 /pds/public/svcs
+
+    # Setup folders for diag_mdlog
+    mkdir /data/diag_mdlog 0750 system log
+    mkdir /data/diag_mdlog/logs 0750 log log
+
+    # Setup folder for native to transfer data to NativeDropBoxAgent
+    mkdir /data/system/dropbox-add 0730 system diag
+
+    # Set correct permissions for UTAGS
+    exec /system/bin/chown -L mot_tcmd:system /dev/block/platform/msm_sdcc.1/by-name/utags
+    exec /system/bin/chown -L mot_tcmd:system /dev/block/platform/msm_sdcc.1/by-name/utagsBackup
+    exec /system/bin/chmod -L 0660 /dev/block/platform/msm_sdcc.1/by-name/utags
+    exec /system/bin/chmod -L 0660 /dev/block/platform/msm_sdcc.1/by-name/utagsBackup
+
+    # backup directory for omadm
+    mkdir /pds/public/omadm 0700 radio radio
+    chmod 0700 /pds/public/omadm
+
+    #Subsystem RAM-dumps
+    mkdir /data/ss-ram-dumps 0750 radio log
+    mkdir /data/ss-ram-dumps/bp-dumps 0750 radio log
+
+    # Create directory for cutback
+    mkdir /data/misc/cutback 0770 radio wifi
+
+    # To remove apanic proc entry
+    write /proc/apanic_console 1
+
+    # Create directory used by power_supply_logger
+    mkdir /data/power_supply_logger 0750 mot_pwric log
+
+    # Setup folder for aplogd
+    mkdir /data/aplogd 0750 log log
+
+    # create the necessary data dirs for tpapi with proper permission
+    mkdir /dev/tpapi 02770 mot_tpapi mot_tpapi
+    mkdir /data/tpapi 02770 mot_tpapi mot_tpapi
+    mkdir /data/tpapi/etc 02770 mot_tpapi mot_tpapi
+    mkdir /data/tpapi/etc/tpa 02770 mot_tpapi mot_tpapi
+    mkdir /data/tpapi/etc/tpa/persistent 02770 mot_tpapi mot_tpapi
+
+    # Permissions for battery health daemon
+    chown mot_pwric mot_pwric /sys/module/qpnp_bms/parameters/last_ocv_uv
+    chown mot_pwric mot_pwric /sys/module/qpnp_charger/parameters/bms_chrg_capacity
+    chown mot_pwric mot_pwric /sys/module/qpnp_charger/parameters/bms_chrg_capacity_temp
+    chown mot_pwric mot_pwric /sys/module/qpnp_charger/parameters/chrg_timestamp
+
+    start batt_health
 
 on early-boot
     # set RLIMIT_MEMLOCK to 64MB
@@ -72,6 +287,9 @@ on early-boot
     write /sys/module/subsystem_restart/parameters/enable_debug ${persist.sys.ssr.enable_debug}
     exec /system/bin/sh /init.qcom.early_boot.sh ${ro.board.platform}
     exec /system/bin/sh /init.qcom.syspart_fixup.sh ${ro.board.platform} ${ro.serialno}
+
+    # Motorola Charge_only_mode
+    exec /system/bin/sh /system/etc/moto_com.sh
 
 on boot
     # mount debugfs for systrace
@@ -118,12 +336,10 @@ on boot
 #   ReadMin, ReadInitial, ReadMax, WriteMin, WriteInitial, WriteMax,
     setprop net.tcp.buffersize.wifi    524288,2097152,4194304,262144,524288,1048576
 
-
     setprop ro.telephony.call_ring.multiple false
 
     #Remove SUID bit for iproute2 ip tool
     chmod 0755 /system/bin/ip
-
 
     chmod 0444 /sys/devices/platform/msm_hsusb/gadget/usb_state
 
@@ -141,6 +357,36 @@ on boot
     setprop net.tcp.usercfg.default    0
     setprop net.tcp.usercfg.wifi       1
     setprop net.tcp.usercfg.lte        1
+
+    # Optimize TCP parameters for QCOM-8x26 products with LTE support
+    # This init file will override the values defined in init.rc file.
+    # Carrier specific init.<carrier>.rc file will override this file.
+    # ReadMin, ReadInitial, ReadMax, WriteMin, WriteInitial, WriteMax,
+    setprop net.tcp.buffersize.default 131072,262144,1048576,4096,16384,262144
+    setprop net.tcp.buffersize.wifi 131072,262144,3145728,4096,221184,3145728
+    setprop net.tcp.buffersize.umts 131072,262144,1452032,4096,16384,399360
+    setprop net.tcp.buffersize.edge 16384,32768,131072,4096,16384,65536
+    setprop net.tcp.buffersize.gprs 4096,8192,24576,4096,8192,24576
+    setprop net.tcp.buffersize.hspa 131072,262144,2441216,4096,16384,399360
+    setprop net.tcp.buffersize.hsdpa 131072,262144,2441216,4096,16384,399360
+    setprop net.tcp.buffersize.hsupa 131072,262144,2441216,4096,16384,399360
+    setprop net.tcp.buffersize.hspap 131072,262144,2441216,4096,16384,399360
+    setprop net.tcp.buffersize.cdma  4096,12288,49152,4096,12288,49152
+    setprop net.tcp.buffersize.1xrtt 16384,32768,131072,4096,16384,102400
+    setprop net.tcp.buffersize.evdo  16384,32768,131072,4096,16384,102400
+    setprop net.tcp.buffersize.evdo_b 131072,262144,1048576,4096,16384,524288
+    setprop net.tcp.buffersize.ehrpd  131072,262144,1048576,4096,16384,524288
+    setprop net.tcp.buffersize.lte 524288,1048576,8388608,262144,524288,4194304
+    setprop net.tcp.buffersize.2ghotspot 4096,16384,65536,16384,32768,131072
+    setprop net.tcp.buffersize.2ghotspot2 4096,16384,102400,16384,32768,131072
+    setprop net.tcp.buffersize.3ghotspot 4096,16384,399360,131072,262144,2441216
+    setprop net.tcp.buffersize.3ghotspot2 4096,16384,524288,131072,262144,1048576
+    setprop net.tcp.buffersize.4ghotspot 262144,524288,4194304,524288,1048576,8388608
+
+    # Assign TCP buffer thresholds to be ceiling value of technology maximums
+    # Increased technology maximums should be reflected here.
+    write /proc/sys/net/core/rmem_max  8388608
+    write /proc/sys/net/core/wmem_max  8388608
 
     #To allow interfaces to get v6 address when tethering is enabled
     write /proc/sys/net/ipv6/conf/rmnet0/accept_ra 2
@@ -176,87 +422,103 @@ on boot
     mkdir /data/nfc 0770 nfc nfc
     mkdir /data/nfc/param 0770 nfc nfc
 
+    # AK9863 Magnetometer
+    chown compass compass /sys/class/compass/akm8963/enable_acc
+    chown compass compass /sys/class/compass/akm8963/enable_mag
+    chown compass compass /sys/class/compass/akm8963/enable_ori
+    chown compass compass /sys/class/compass/akm8963/delay_acc
+    chown compass compass /sys/class/compass/akm8963/delay_mag
+    chown compass compass /sys/class/compass/akm8963/delay_ori
+    chown compass compass /sys/class/compass/akm8963/accel
+
+    # CT406 Light sensor and proximity
+    chown system system /sys/module/ct406/parameters/als_enable
+    chmod 0660 /sys/module/ct406/parameters/als_enable
+    chown system system /sys/module/ct406/parameters/prox_enable
+    chmod 0660 /sys/module/ct406/parameters/prox_enable
+    chown system system /sys/module/ct406/parameters/ip_enable
+    chmod 0660 /sys/module/ct406/parameters/ip_enable
+    chown system system /sys/module/ct406/parameters/als_delay
+    chmod 0660 /sys/module/ct406/parameters/als_delay
+
+    # NFC PN544
+    chown nfc nfc /sys/devices/virtual/misc/pn544/pn544_control_dev
+    chmod 0660 /sys/devices/virtual/misc/pn544/pn544_control_dev
+
+    # Change the ownership of touch screen files for tcmd
+    chown root mot_tcmd /sys/bus/i2c/drivers/aps_ts/5-0034/drv_irq
+    chown root mot_tcmd /sys/bus/i2c/drivers/aps_ts/5-0034/hw_irqstat
+    chown root mot_tcmd /sys/bus/i2c/drivers/synaptics_dsx_i2c/5-0020/drv_irq
+    chown root mot_tcmd /sys/bus/i2c/drivers/synaptics_dsx_i2c/5-0020/hw_irqstat
+    chown root mot_tcmd /sys/bus/i2c/drivers/synaptics_dsx_i2c/5-0020/reset
+
+    # Change ownership and permission for led
+    chown system system /sys/class/leds/red/brightness
+    chown system system /sys/class/leds/red/blink
+    chown system system /sys/class/leds/green/brightness
+    chown system system /sys/class/leds/blue/brightness
+    chown system system /sys/class/leds/white/brightness
+    chown system system /sys/class/leds/white/blink
+    chown system system /sys/class/leds/rgb/control
+    chown system system /sys/class/leds/led:flash_0/brightness
+    chown system system /sys/class/leds/charging/brightness
+    chmod 0664 /sys/class/leds/red/brightness
+    chmod 0664 /sys/class/leds/red/blink
+    chmod 0664 /sys/class/leds/green/brightness
+    chmod 0664 /sys/class/leds/blue/brightness
+    chmod 0664 /sys/class/leds/white/brightness
+    chmod 0664 /sys/class/leds/white/blink
+    chmod 0664 /sys/class/leds/rgb/control
+    chmod 0664 /sys/class/leds/led:flash_0/brightness
+    chmod 0664 /sys/class/leds/charging/brightness
+    chmod 0664 /sys/class/leds/lcd-backlight/brightness
+
+    # Enable writing to led blink node from userspace
+    chown system system /sys/class/leds/red/blink
+    chown system system /sys/class/leds/green/blink
+
+    # Enable writing to brightness node under torch-light from userspace
+    chown system system /sys/class/leds/torch-light/brightness
+    chmod 0666 /sys/class/leds/torch-light/brightness
+
+    # Permissions for Factory Test of Charging Paths
+    chown mot_pwric mot_pwric /sys/class/power_supply/battery/device/force_chg_auto_enable
+    chown mot_pwric mot_pwric /sys/class/power_supply/battery/device/force_chg_ibatt
+    chown mot_pwric mot_pwric /sys/class/power_supply/battery/device/force_chg_itrick
+    chown mot_pwric mot_pwric /sys/class/power_supply/battery/device/force_chg_iusb
+    chown mot_pwric mot_pwric /sys/class/power_supply/battery/device/force_chg_usb_suspend
+    chown mot_pwric mot_pwric /sys/class/power_supply/battery/device/force_chg_fail_clear
+    chown mot_pwric mot_pwric /sys/class/power_supply/battery/device/force_chg_usb_otg_ctl
+
+    # Change ownership and permission for vibrator
+    chown system system /sys/class/timed_output/vibrator/enable
+    chmod 0660 /sys/class/timed_output/vibrator/enable
+    chown system system /sys/devices/virtual/timed_output/vibrator/vtg_level
+    chmod 0660 /sys/devices/virtual/timed_output/vibrator/vtg_level
+
+    # display color calibration
+    chown system system /sys/devices/platform/kcal_ctrl.0/kcal
+    chown system system /sys/devices/platform/kcal_ctrl.0/kcal_ctrl
+
+    # setup trace dir
+    mkdir /cache/trace 0777 root shell
+    chown root shell /cache/trace
+    chmod 0777 /cache/trace
+
     # Flash storage isn't a good entropy source, and only causes locking
     # overhead in the kernel. Turn it off.
     write /sys/block/mmcblk0/queue/add_random 0
 
+    # Force all SSR systems to 'related' so they attempt self-recovery without
+    # rebooting the device
+    write /sys/bus/msm_subsys/devices/subsys0/restart_level related
+    write /sys/bus/msm_subsys/devices/subsys1/restart_level related
+    write /sys/bus/msm_subsys/devices/subsys2/restart_level related
+    write /sys/bus/msm_subsys/devices/subsys3/restart_level related
+
     setprop ro.hw.device ${ro.boot.device}
     setprop ro.hw.hwrev ${ro.boot.hwrev}
     setprop ro.hw.radio ${ro.boot.radio}
-
-# msm specific files that need to be created on /data
-on post-fs-data
-    # we will remap this as /mnt/sdcard with the sdcard fuse tool
-    mkdir /data/media 0770 media_rw media_rw
-    chown media_rw media_rw /data/media
-
-    mkdir /data/misc/bluetooth 0770 bluetooth bluetooth
-
-    # Create the directories used by the Wireless subsystem
-    mkdir /data/misc/wifi 0770 wifi wifi
-    mkdir /data/misc/wifi/sockets 0770 wifi wifi
-    mkdir /data/misc/wifi/wpa_supplicant 0770 wifi wifi
-    mkdir /data/misc/dhcp 0770 dhcp dhcp
-    chown dhcp dhcp /data/misc/dhcp
-
-    # Create directory used by audio subsystem
-    mkdir /data/misc/audio 0770 audio audio
-
-    # Create directory used by the DASH client
-    mkdir /data/misc/dash 0770 media audio
-
-    # Mounting of persist is moved to 'on emmc-fs' and 'on fs' sections
-    # We chown/chmod /persist again so because mount is run as root + defaults
-    chown system system /persist
-    chmod 0771 /persist
-    chmod 0664 /sys/devices/platform/msm_sdcc.1/polling
-    chmod 0664 /sys/devices/platform/msm_sdcc.2/polling
-    chmod 0664 /sys/devices/platform/msm_sdcc.3/polling
-    chmod 0664 /sys/devices/platform/msm_sdcc.4/polling
-
-    # Chown polling nodes as needed from UI running on system server
-    chown system system /sys/devices/platform/msm_sdcc.1/polling
-    chown system system /sys/devices/platform/msm_sdcc.2/polling
-    chown system system /sys/devices/platform/msm_sdcc.3/polling
-    chown system system /sys/devices/platform/msm_sdcc.4/polling
-
-    #Create the symlink to qcn wpa_supplicant folder for ar6000 wpa_supplicant
-    mkdir /data/system 0775 system system
-    #symlink /data/misc/wifi/wpa_supplicant /data/system/wpa_supplicant
-
-    #Create directories for gpsone_daemon services
-    mkdir /data/misc/gpsone_d 0770 system gps
-
-    #Create directories for QuIPS
-    mkdir /data/misc/quipc 0770 system gps
-
-    #Create directories for Location services
-    mkdir /data/misc/location 0770 gps gps
-    mkdir /data/misc/location/mq 0770 gps gps
-    mkdir /data/misc/location/xtwifi 0770 gps gps
-
-    #Create directory from IMS services
-    mkdir /data/shared 0755
-    chown system system /data/shared
-
-    #Create directory for FOTA
-    mkdir /data/fota 0771
-    chown system system /data/fota
-
-    #Create directory for hostapd
-    mkdir /data/hostapd 0770 system wifi
-
-    # Create /data/time folder for time-services
-    mkdir /data/time/ 0700 system system
-
-    mkdir /data/audio/ 0770 media audio
-    # Enable the setgid bit on the directory
-    chmod 2770 /data/audio
-
-    setprop vold.post_fs_data_done 1
-
-    #Create a folder for SRS to be able to create a usercfg file
-    mkdir /data/data/media 0770 media media
 
 on property:init.svc.surfaceflinger=stopped
     stop ppd
@@ -279,14 +541,10 @@ service qcom-c_main-sh /system/bin/sh /init.class_main.sh
     user root
     oneshot
 
-service ril-qmi /system/bin/sh /init.qcom.ril.sh
-    class main
-    user root
-    oneshot
-
 on property:vold.decrypt=trigger_restart_framework
     start qcom-c_main-sh
     start config_bluetooth
+    stop rild
 
 on property:persist.env.fastdorm.enabled=true
     setprop persist.radio.data_no_toggle 1
@@ -614,6 +872,202 @@ on property:persist.usb.hvdcp.detect=true
 
 on property:persist.usb.hvdcp.detect=false
     stop hvdcp
+
+#start camera server as daemon
+service qcamerasvr /system/bin/mm-qcamera-daemon
+    class late_start
+    user camera
+    group camera system inet input graphics
+
+# Allow usb charging to be disabled persistently
+on property:persist.usb.chgdisabled=1
+    write /sys/class/power_supply/battery/charging_enabled 0
+
+on property:persist.usb.chgdisabled=0
+    write /sys/class/power_supply/battery/charging_enabled 1
+
+service time_daemon /system/bin/time_daemon
+    class late_start
+    user root
+    group root
+
+service mpdecision /system/bin/mpdecision --avg_comp
+    user root
+    group root system
+    disabled
+
+#start GNSS/Sensor interface daemon
+service gsiff_daemon /system/bin/gsiff_daemon
+    class late_start
+    user system
+    group gps net_raw
+
+service thermal-engine /system/bin/thermal-engine -c /etc/thermal-engine-8226.conf
+    class main
+    user root
+    group root
+
+service qrngd /system/bin/qrngd -f
+    class main
+    user root
+    group root
+
+service qrngp /system/bin/qrngp
+    class main
+    user root
+    group root
+    oneshot
+    disabled
+
+on property:sys.boot_completed=1
+    start qrngp
+
+service qseecomd /system/bin/qseecomd
+    class late_start
+    user root
+    group root
+
+service audiod /system/bin/audiod
+    class late_start
+    user system
+    group system
+
+service adsprpcd /system/bin/adsprpcd
+    class main
+    user media
+    group media
+
+service wcnss-service /system/bin/wcnss_service
+    class late_start
+    user root
+    group system wifi
+    oneshot
+
+service ppd /system/bin/mm-pp-daemon
+    class late_start
+    user system
+    socket pps stream 0660 system system
+    group system graphics
+
+on property:init.svc.surfaceflinger=stopped
+    stop ppd
+
+service mmi-ril-daemon /system/bin/rild
+    class main
+    socket rild stream 660 root radio
+    socket rild-debug stream 660 radio system
+    socket cutback stream 660 media radio
+    user root
+    group radio cache inet misc audio sdcard_rw qcom_oncrpc qcom_diag log net_raw diag
+
+service ftmipcd /system/bin/ftmipcd
+    user radio
+    group radio inet qcom_diag
+    disabled
+    oneshot
+
+on property:ro.bootmode=factory
+    start ftmipcd
+
+on property:persist.log.aplogd.enable=1
+    start aplogd
+
+on property:persist.log.aplogd.enable=0
+    stop aplogd
+
+service aplogd /system/bin/aplogd
+    class main
+    #user log
+    #group log system sdcard_rw sdcard_r media_rw mount
+    # The user and group definitions above are intentionally disabled and left
+    # only as documentation. It actually starts as root and immediately drops
+    # to log plus those groups after preserving CAP_SYS_ADMIN, which is required
+    # for kernel logging.
+    disabled
+
+on property:persist.sys.diag_mdlog.on=1
+    start diag_mdlog
+
+on property:persist.sys.diag_mdlog.on=0
+    stop diag_mdlog
+
+service diag_mdlog /system/bin/diag_mdlog-wrap
+    class main
+    socket mdlog_cmd stream 0660 log diag
+    user log
+    group log sdcard_rw sdcard_r media_rw qcom_diag mount
+    disabled
+
+service dropboxd /system/bin/dropboxd
+    class late_start
+    user diag
+    group diag
+
+on property:installd.post_fs_data_ready=1
+    exec /system/bin/refuse
+
+service mmi-boot-sh /system/bin/sh /init.mmi.boot.sh
+    class core
+    user root
+    oneshot
+
+service mmi-touch-sh /system/bin/logwrapper /system/bin/sh /init.mmi.touch.sh synaptics aps
+    class late_start
+    user root
+    oneshot
+
+# Magnetometer
+service akmd8963 /system/bin/akmd8963
+    class main
+    user compass
+    group compass misc input
+
+on property:ro.debuggable=1
+    # disable dmesg restrict in eng/userdebug build
+    write /proc/sys/kernel/dmesg_restrict 0
+    # enable group read/write to /dev/log/kernel
+    chmod 0660 /dev/log/kernel
+
+service hw_revs /system/bin/logwrapper /system/bin/hardware_revisions.sh
+    class main
+    user system
+    group system
+    oneshot
+
+# DHCP service for Ethernet
+service dhcpcd_eth0 /system/bin/dhcpcd -G
+   class late_start
+   disabled
+   oneshot
+
+service iprenew_eth0 /system/bin/dhcpcd -nBK
+   class late_start
+   disabled
+   oneshot
+
+service atvc_core /system/bin/dbvc_atvc_property_set
+   class core
+   user mot_atvc
+   group mot_tpapi
+   oneshot
+
+service atvc /system/bin/dbvc_atvc_property_set
+   class late_start
+   user mot_atvc
+   group mot_tpapi
+   oneshot
+
+service ss_rdump /system/bin/subsystem_ramdump 1 0
+   class late_start
+   user radio
+   group log sdcard_rw sdcard_r diag
+
+on property:persist.sys.qc.sub.rdump.on=*
+   write /sys/module/subsystem_restart/parameters/enable_ramdumps ${persist.sys.qc.sub.rdump.on}
+
+service batt_health /system/bin/batt_health
+    class main
+    group mot_pwric
 
 # CM Performance Profiles
 
