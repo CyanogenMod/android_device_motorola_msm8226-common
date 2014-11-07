@@ -138,8 +138,13 @@ PRODUCT_PACKAGES += \
     libstagefrighthw \
     qcmediaplayer
 
+# Tcmiface
+PRODUCT_PACKAGES += \
+    tcmiface
+
 PRODUCT_BOOT_JARS += \
-    qcmediaplayer
+    qcmediaplayer \
+    tcmiface
 
 # Power
 PRODUCT_PACKAGES += \
