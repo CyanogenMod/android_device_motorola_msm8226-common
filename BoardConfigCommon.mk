@@ -80,6 +80,9 @@ USE_OPENGL_RENDERER := true
 # Encryption
 TARGET_HW_DISK_ENCRYPTION := true
 
+# Logging
+TARGET_USES_LOGD := false
+
 # Lights
 TARGET_PROVIDES_LIBLIGHT := true
 
