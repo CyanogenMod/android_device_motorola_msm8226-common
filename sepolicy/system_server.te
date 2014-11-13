@@ -1,0 +1,29 @@
+allow system_server diagnostic_device:chr_file rw_file_perms;
+
+allow system_server init:unix_dgram_socket sendto;
+allow system_server wpa_socket:unix_dgram_socket sendto;
+
+qmux_socket(system_server)
+
+# PowerManagerService
+unix_socket_connect(system_server, sensors, sensors)
+allow system_server sensors_socket:sock_file read;
+allow system_server sensors:unix_stream_socket sendto;
+
+# mpdecision access
+unix_socket_connect(system_server, mpdecision, mpdecision)
+unix_socket_send(system_server, mpdecision, mpdecision)
+allow system_server mpdecision:unix_stream_socket sendto;
+allow system_server mpdecision_socket:dir search;
+
+allow system_server self:capability sys_module;
+allow system_server sysfs:file { read open write };
+allow system_server adbd_socket:sock_file write;
+allow system_server_app cache_file:file { write lock open setattr };
+allow system_server sdcard_internal:dir search;
+allow system_server sdcard_internal:file { read open };
+allow system_server init_shell:binder call;
+allow system_server sysfs_writable:file { write open };
+allow system_server device:chr_file { read ioctl open };
+allow system_server camera:binder transfer;
+allow system_server cache_backup_file:file relabelto;
