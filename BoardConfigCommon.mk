@@ -67,9 +67,6 @@ BOARD_HAVE_BLUETOOTH_QCOM := true
 # Camera
 USE_DEVICE_SPECIFIC_CAMERA := true
 
-# Classpath
-PRODUCT_BOOT_JARS := $(subst $(space),:,$(PRODUCT_BOOT_JARS))
-
 # CMHW
 BOARD_HARDWARE_CLASS := $(LOCAL_PATH)/cmhw/
 
