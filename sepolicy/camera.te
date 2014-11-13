@@ -32,6 +32,6 @@ allow camera device:chr_file { read write ioctl open };
 allow camera mpdecision:unix_stream_socket connectto;
 allow camera servicemanager:binder call;
 allow camera socket_device:sock_file write;
-allow camera system:binder call;
-allow camera system:unix_stream_socket { read write setopt };
+allow camera system_server:binder call;
+allow camera system_server:unix_stream_socket { read write setopt };
 allow camera system_data_file:file { open write };

@@ -152,7 +152,7 @@ BOARD_SEPOLICY_UNION += \
     sensors.te \
     shell.te \
     surfaceflinger.te \
-    system.te \
+    system_server.te \
     tee.te \
     te_macros \
     thermald.te \
