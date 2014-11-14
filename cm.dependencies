@@ -4,6 +4,10 @@
     "target_path": "device/qcom/common"
   },
   {
+    "repository": "android_device_qcom_sepolicy",
+    "target_path": "device/qcom/sepolicy"
+  },
+  {
     "repository": "android_kernel_motorola_msm8226",
     "target_path": "kernel/motorola/msm8226"
   },
