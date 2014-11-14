@@ -112,16 +112,6 @@
         <item>75</item>
     </integer-array>
 
-    <!-- Vibrator pattern to be used as for notifications while alerts
-         are disabled (e.g. during phone calls) if enabled by the user.
-     -->
-    <integer-array name="config_notificationNoAlertsVibePattern">
-        <item>0</item>
-        <item>30</item>
-        <item>75</item>
-        <item>30</item>
-    </integer-array>
-
     <!-- If the DUN connection for this CDMA device supports more than just DUN -->
     <!-- traffic you should list them here. -->
     <!-- If this device is not CDMA this is ignored.  If this list is empty on -->
@@ -173,9 +163,6 @@
     <!-- Is the notification LED intrusive? Used to decide if there should be a disable option -->
     <bool name="config_intrusiveNotificationLed">true</bool>
 
-    <!-- Does the notification LED support multiple colors? Used to decide if the user can change the colors -->
-    <bool name="config_multiColorNotificationLed">false</bool>
-
     <!-- If this is true, the screen will come on when you unplug usb/power/whatever. -->
     <bool name="config_unplugTurnsOnScreen">true</bool>
 
@@ -186,9 +173,6 @@
          it causes the device to wake up.
          The default is false. -->
     <bool name="config_lidControlsSleep">true</bool>
-
-    <!-- Device supports LED flashlight -->
-    <bool name="config_enableTorch">true</bool>
 
     <!-- Boolean indicating whether Softap requires reloading AP firmware -->
     <bool name="config_wifiApFirmwareReload">false</bool>
@@ -214,10 +198,6 @@
         config to 7. -->
     <integer name="config_deviceHardwareKeys">0</integer>
 
-    <!-- Performance profiles -->
-    <string name="config_perf_profile_prop">sys.perf.profile</string>
-    <string name="config_perf_profile_default_entry">1</string>
-
     <!-- Component name of the geofence services provider. -->
     <string name="config_geofenceServicesProvider" translatable="false">com.motorola.motgeofencesvc</string>
 
@@ -226,9 +206,6 @@
 
     <!-- Default interface to monitor data use -->
     <string name="config_datause_iface">rmnet0</string>
-
-    <!-- Whether to enable auto provisioning the app for new SIM card on boot.-->
-    <bool name="config_auto_provision_enable">true</bool>
 
     <!-- Boolean indicating if restoring network selection should be skipped -->
     <!-- The restoring is handled by modem if it is true-->
