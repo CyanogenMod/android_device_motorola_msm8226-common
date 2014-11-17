@@ -217,7 +217,12 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     hostapd.accept \
     hostapd.deny \
-    hostapd_default.conf
+    hostapd_default.conf \
+    libwpa_client \
+    hostapd \
+    dhcpcd.conf \
+    wpa_supplicant \
+    wpa_supplicant.conf
 
 PRODUCT_PACKAGES += \
     p2p_supplicant_overlay.conf \
