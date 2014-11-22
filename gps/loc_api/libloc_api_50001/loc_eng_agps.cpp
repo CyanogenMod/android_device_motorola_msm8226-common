@@ -627,7 +627,7 @@ AgpsStateMachine::AgpsStateMachine(servicerType servType,
     mStatePtr(new AgpsReleasedState(this)),mType(type),
     mAPN(NULL),
     mAPNLen(0),
-    mBearer(AGPS_APN_BEARER_INVALID),
+    mBearer(APN_IP_INVALID),
     mEnforceSingleSubscriber(enforceSingleSubscriber),
     mServicer(Servicer :: getServicer(servType, (void *)cb_func))
 {
@@ -761,12 +761,13 @@ int AgpsStateMachine::sendRsrcRequest(AGpsStatusValue action) const
         nifRequest.status = action;
 
         if (s == NULL) {
-            nifRequest.ipv4_addr = INADDR_NONE;
-            nifRequest.ipv6_addr[0] = 0;
+            nifRequest.ipaddr = INADDR_NONE;
+            memset(&nifRequest.addr, 0, sizeof(nifRequest.addr));
             nifRequest.ssid[0] = '\0';
             nifRequest.password[0] = '\0';
         } else {
-            s->setIPAddresses(nifRequest.ipv4_addr, (char*)nifRequest.ipv6_addr);
+            s->setIPAddresses(nifRequest.ipaddr,
+                    (char *)&((struct sockaddr_in6*)&(nifRequest.addr))->sin6_addr);
             s->setWifiInfo(nifRequest.ssid, nifRequest.password);
         }
 
@@ -960,7 +961,7 @@ void DSStateMachine :: informStatus(AgpsRsrcStatus status, int ID) const
     case RSRC_GRANTED:
         mLocAdapter->atlOpenStatus(ID, 1,
                                                      NULL,
-                                                     AGPS_APN_BEARER_INVALID,
+                                                     APN_IP_INVALID,
                                                      AGPS_TYPE_INVALID);
         break;
     default:

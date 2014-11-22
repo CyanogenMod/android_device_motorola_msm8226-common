@@ -202,14 +202,14 @@ const char* loc_get_ni_encoding_name(GpsNiEncodingType encoding)
 
 static loc_name_val_s_type loc_eng_agps_bears[] =
 {
-    NAME_VAL( AGPS_APN_BEARER_INVALID ),
-    NAME_VAL( AGPS_APN_BEARER_IPV4 ),
-    NAME_VAL( AGPS_APN_BEARER_IPV4 ),
-    NAME_VAL( AGPS_APN_BEARER_IPV4V6 )
+    NAME_VAL( APN_IP_INVALID ),
+    NAME_VAL( APN_IP_IPV4 ),
+    NAME_VAL( APN_IP_IPV4 ),
+    NAME_VAL( APN_IP_IPV4V6 )
 };
 static int loc_eng_agps_bears_num = sizeof(loc_eng_agps_bears) / sizeof(loc_name_val_s_type);
 
-const char* loc_get_agps_bear_name(AGpsBearerType bearer)
+const char* loc_get_agps_bear_name(ApnIpType bearer)
 {
     return loc_get_name_from_val(loc_eng_agps_bears, loc_eng_agps_bears_num, (long) bearer);
 }
