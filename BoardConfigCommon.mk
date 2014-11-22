@@ -80,6 +80,9 @@ USE_OPENGL_RENDERER := true
 # Encryption
 TARGET_HW_DISK_ENCRYPTION := true
 
+# Fonts
+EXTENDED_FONT_FOOTPRINT := true
+
 # Lights
 TARGET_PROVIDES_LIBLIGHT := true
 
