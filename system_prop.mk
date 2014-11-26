@@ -59,10 +59,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.gps.qc_nlp_in_use=1 \
     persist.loc.nlp_name=com.qualcomm.services.location
 
-# Media
-PRODUCT_PROPERTY_OVERRIDEs += \
-    media.stagefright.use-awesome=true
-
 # NITZ
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.rild.nitz_plmn="" \
