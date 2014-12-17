@@ -530,7 +530,6 @@ service batt_health /system/bin/batt_health
 
 on property:vold.decrypt=trigger_restart_framework
     start config_bluetooth
-    start ril-qmi
 
 service config_bluetooth /system/bin/sh /system/etc/init.qcom.bt.sh
     class core
