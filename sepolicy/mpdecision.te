@@ -1,0 +1,1 @@
+allow mpdecision self:capability sys_nice;

@@ -117,6 +117,29 @@ TARGET_USERIMAGES_USE_F2FS := true
 # SELinux
 -include device/qcom/sepolicy/sepolicy.mk
 
+BOARD_SEPOLICY_DIRS += \
+    device/motorola/msm8226-common/sepolicy
+
+BOARD_SEPOLICY_UNION += \
+    atvc.te \
+    batt_health.te \
+    device.te \
+    file_contexts \
+    file.te \
+    init.te \
+    init_shell.te \
+    keystore.te \
+    mm-pp-daemon.te \
+    mpdecision.te \
+    platform_app.te \
+    property_contexts \
+    property.te \
+    rild.te \
+    rmt_storage.te \
+    system_app.te \
+    thermal-engine.te \
+    ueventd.te
+
 # Vold
 BOARD_VOLD_DISC_HAS_MULTIPLE_MAJORS := true
 BOARD_VOLD_EMMC_SHARES_DEV_MAJOR := true
