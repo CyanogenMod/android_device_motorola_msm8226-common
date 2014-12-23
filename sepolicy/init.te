@@ -1,0 +1,6 @@
+allow init cid_block_device:blk_file setattr;
+allow init clogo_block_device:blk_file setattr;
+allow init gpecheck_file:file { setattr write unlink };
+allow init hob_block_device:blk_file setattr;
+allow init logs_block_device:blk_file setattr;
+allow init utags_block_device:blk_file setattr;
