@@ -497,6 +497,10 @@ on boot
     setprop ro.hw.hwrev ${ro.boot.hwrev}
     setprop ro.hw.radio ${ro.boot.radio}
 
+# Low Memory Killer
+    chmod 660 /sys/module/lowmemorykiller/parameters/minfree
+    write /sys/module/lowmemorykiller/parameters/minfree 2048,3072,4096,13820,17275,20730
+
 # Services start here
 
 service adsprpcd /system/bin/adsprpcd
