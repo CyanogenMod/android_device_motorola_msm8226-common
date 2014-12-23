@@ -1,0 +1,1 @@
+allow mm-pp-daemon pps_socket:sock_file { write };
