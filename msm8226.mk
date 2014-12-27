@@ -173,11 +173,6 @@ PRODUCT_BOOT_JARS += \
 PRODUCT_PACKAGES += \
     power.msm8226
 
-# QRNG
-PRODUCT_PACKAGES += \
-    qrngd \
-    qrngp
-
 # Ramdisk
 PRODUCT_PACKAGES += \
     init.crda.sh \
