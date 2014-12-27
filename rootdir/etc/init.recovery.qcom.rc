@@ -1,7 +1,3 @@
-on init
-    chmod 755 /gpecheck.sh
-    exec /gpecheck.sh
-
 on boot
     # Enable Power modes and set the CPU Freq Sampling rates
     write /sys/module/msm_pm/modes/cpu0/power_collapse/suspend_enabled 1

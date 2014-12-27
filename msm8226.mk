@@ -180,8 +180,6 @@ PRODUCT_PACKAGES += \
     mount_pds.sh
 
 PRODUCT_PACKAGES += \
-    bbx \
-    gpecheck.sh \
     init.mmi.boot.sh \
     init.mmi.touch.sh \
     init.qcom.rc \
