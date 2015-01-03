@@ -584,4 +584,8 @@
 		<path name="handset-mic" />
 	</path>
 
+	<path name="voip-sub-mic-comm">
+		<path name="handset-mic" />
+	</path>
+
 </mixer>
