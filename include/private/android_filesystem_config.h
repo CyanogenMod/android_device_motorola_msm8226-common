@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 The Android Open Source Project
+ * Copyright (C) 2007 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@
 #ifdef HAVE_ANDROID_OS
 #include <linux/capability.h>
 #else
-#include "android_filesystem_capability.h"
+#include <private/android_filesystem_capability.h>
 #endif
 
 /* This is the master Users and Groups config for the platform.
@@ -77,8 +77,6 @@
 #define AID_SDCARD_AV     1034  /* external storage audio/video access */
 #define AID_SDCARD_ALL    1035  /* access all users external storage */
 #define AID_AUDIT         1036  /* audit daemon */
-#define AID_FM_RADIO      1037  /* FM radio */
-#define AID_SMARTCARD     1138  /* smart card subsystem */
 
 #define AID_THEMEMAN      1300  /* theme manager */
 
@@ -98,8 +96,10 @@
 #define AID_NET_BT_STACK  3008  /* bluetooth: access config files */
 #define AID_QCOM_ONCRPC   3009  /* can read/write /dev/oncrpc files */
 #define AID_QCOM_DIAG     3010  /* can read/write /dev/diag */
-#define AID_QCOM_THERMAL  3011  /* access for thermal-client socket */
+#define AID_SENSORS       3011  /* access to /dev/socket/sensor_ctl_socket & QCCI/QCSI */
+#define AID_IMS           3012  /* can read/write /dev/socket/imsrtp */
 
+/* Motorola IDs */
 #define AID_MOT_ACCY      9000  /* access to accessory */
 #define AID_MOT_PWRIC     9001  /* power IC */
 #define AID_MOT_USB       9002  /* mot usb */
@@ -115,6 +115,7 @@
 #define AID_MOT_ATVC      9012  /* mot_atvc - This is for use of the ATVC service ONLY */
 #define AID_SPRINT_EXTENSION 9013  /* IKASANTISPRINT-149 sprint extension service */
 #define AID_MOT_DBVC      9014  /* mot_dbvc - This group is used to access DataBlock feature related data */
+/* Motorola IDs */
 
 #define AID_MISC          9998  /* access to misc storage */
 #define AID_NOBODY        9999
@@ -189,27 +190,28 @@ static const struct android_id_info android_ids[] = {
     { "net_bw_acct",   AID_NET_BW_ACCT, },
     { "qcom_oncrpc", AID_QCOM_ONCRPC, },
     { "qcom_diag", AID_QCOM_DIAG, },
+    { "ims", AID_IMS, },
     { "net_bt_stack",  AID_NET_BT_STACK, },
 
-    { "smartcard", AID_SMARTCARD, },
-    { "qcom_thermal", AID_QCOM_THERMAL, },
-    { "fm_radio",  AID_FM_RADIO, },
-    { "mot_accy",  AID_MOT_ACCY, },
-    { "mot_pwric", AID_MOT_PWRIC, },
-    { "mot_usb",   AID_MOT_USB, },
-    { "mot_drm",   AID_MOT_DRM, },
-    { "mot_tcmd",  AID_MOT_TCMD, },
-    { "mot_sec_rtc",   AID_MOT_SEC_RTC, },
-    { "mot_tombstone", AID_MOT_TOMBSTONE, },
-    { "mot_tpapi",     AID_MOT_TPAPI, },
-    { "mot_secclkd",   AID_MOT_SECCLKD, },
-    { "mot_whisper",   AID_MOT_WHISPER, },
-    { "mot_caif",  AID_MOT_CAIF, },
-    { "mot_dlna",  AID_MOT_DLNA, },
-    { "mot_atvc",	AID_MOT_ATVC, },
+    /* Motorola IDs */
+    { "mot_accy",	AID_MOT_ACCY, },
+    { "mot_pwric",	AID_MOT_PWRIC, },
+    { "mot_usb",	AID_MOT_USB, },
+    { "mot_drm",	AID_MOT_DRM, },
+    { "mot_tcmd",	AID_MOT_TCMD, },
+    { "mot_sec_rtc",	AID_MOT_SEC_RTC, },
+    { "mot_tombstone",	AID_MOT_TOMBSTONE, },
+    { "mot_tpapi",	AID_MOT_TPAPI, },
+    { "mot_secclkd",	AID_MOT_SECCLKD, },
+    { "mot_whisper",	AID_MOT_WHISPER, },
+    { "mot_caif",	AID_MOT_CAIF, },
+    { "mot_dlna",	AID_MOT_DLNA, },
+    { "mot_atvc",      AID_MOT_ATVC, },
     { "sprint_extension", AID_SPRINT_EXTENSION, },
     { "mot_dbvc",	AID_MOT_DBVC, },
+    /* Motorola IDs */
 
+    { "sensors",       AID_SENSORS, },
     { "misc",          AID_MISC, },
     { "nobody",        AID_NOBODY, },
     { "theme_man", AID_THEMEMAN },
@@ -266,7 +268,6 @@ static const struct fs_path_config android_dirs[] = {
 static const struct fs_path_config android_files[] = {
     { 00440, AID_ROOT,      AID_SHELL,     0, "system/etc/init.goldfish.rc" },
     { 00550, AID_ROOT,      AID_SHELL,     0, "system/etc/init.goldfish.sh" },
-    { 00550, AID_SYSTEM,    AID_SYSTEM,    0, "system/etc/init.qcom.sdio.sh" },
     { 00440, AID_ROOT,      AID_SHELL,     0, "system/etc/init.trout.rc" },
     { 00550, AID_ROOT,      AID_SHELL,     0, "system/etc/init.ril" },
     { 00550, AID_ROOT,      AID_SHELL,     0, "system/etc/init.testmenu" },
