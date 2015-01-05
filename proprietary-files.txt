@@ -79,10 +79,8 @@ etc/firmware/cpp_firmware_v1_2_0.fw
 
 # DRM
 bin/qseecomd
-lib/libdrmdecrypt.so
-lib/libWVphoneAPI.so
 vendor/lib/drm/libdrmwvmplugin.so
-vendor/lib/mediadrm/libwvdrmengine.so
+vendor/lib/libdrmdecrypt.so
 vendor/lib/libdrmdiag.so
 vendor/lib/libdrmfs.so
 vendor/lib/libdrmtime.so
@@ -93,6 +91,7 @@ vendor/lib/libStDrvInt.so
 vendor/lib/libwvdrm_L1.so
 vendor/lib/libwvm.so
 vendor/lib/libWVStreamControlAPI_L1.so
+vendor/lib/mediadrm/libwvdrmengine.so
 
 # Fastcharge
 bin/hvdcp
