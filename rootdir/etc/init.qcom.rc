@@ -597,7 +597,7 @@ on property:persist.radio.multisim.config=dsds
     start mmi-ril-daemon1
 
 on property:vold.decrypt=trigger_restart_framework
-    stop rild
+    stop ril-daemon
 
 service mmi-ril-daemon /system/bin/rild
     class main
@@ -607,10 +607,10 @@ service mmi-ril-daemon /system/bin/rild
     user root
     group radio cache inet misc audio sdcard_rw qcom_oncrpc qcom_diag log net_raw diag
 
-service mmi-ril-daemon1 /system/bin/rild -c 1
+service mmi-ril-daemon1 /system/bin/rild -c 2
     class main
-    socket rild1 stream 660 root radio
-    socket rild-debug1 stream 660 radio system
+    socket rild2 stream 660 root radio
+    socket rild-debug2 stream 660 radio system
     user root
     group radio cache inet misc audio sdcard_rw qcom_oncrpc qcom_diag log net_raw diag
     disabled
