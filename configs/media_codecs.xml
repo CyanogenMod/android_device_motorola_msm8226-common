@@ -19,6 +19,8 @@
      for attribution purposes only.
 -->
 <MediaCodecs>
+    <Include href="media_codecs_google_audio.xml" />
+    <Include href="media_codecs_google_telephony.xml" />
     <Encoders>
         <MediaCodec name="OMX.qcom.video.encoder.avc" type="video/avc" >
             <Quirk name="requires-allocate-on-input-ports" />
@@ -169,7 +171,6 @@
             <Quirk name="requires-allocate-on-output-ports" />
         </MediaCodec>
     </Decoders>
-    <Include href="media_codecs_google_audio.xml" />
-    <Include href="media_codecs_google_telephony.xml" />
     <Include href="media_codecs_google_video.xml" />
+    <Include href="media_codecs_ffmpeg.xml" />
 </MediaCodecs>
