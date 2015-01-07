@@ -598,6 +598,12 @@ service mmi-boot-sh /system/bin/sh /init.mmi.boot.sh
     user root
     oneshot
 
+on property:persist.radio.force.singlesim=true
+    setprop persist.radio.multisim.config ""
+    setprop persist.radio.dont_use_dsd ""
+    setprop persist.radio.plmn_name_cmp ""
+    stop mmi-ril-daemon1
+
 on property:persist.radio.multisim.config=dsds
     stop ril-daemon
     start mmi-ril-daemon
