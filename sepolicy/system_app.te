@@ -1,2 +1,2 @@
 allow system_app shell_data_file:dir search;
-allow system_app vibeamp_sysfs:file { getattr open read write };
+allow system_app cmhw_sysfs:file { getattr open read write };
