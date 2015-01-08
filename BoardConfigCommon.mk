@@ -84,6 +84,9 @@ USE_OPENGL_RENDERER := true
 # Encryption
 TARGET_HW_DISK_ENCRYPTION := true
 
+# FM
+TARGET_QCOM_NO_FM_FIRMWARE := true
+
 # Fonts
 EXTENDED_FONT_FOOTPRINT := true
 
