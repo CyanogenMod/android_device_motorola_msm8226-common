@@ -7,6 +7,14 @@
 /data/cam_socket([0-9])+                                    u:object_r:camera_socket:s0
 
 # CMHW
+/sys/devices/platform/kcal_ctrl.0/kcal                      u:object_r:kcalctrl_sysfs:s0
+/sys/devices/platform/kcal_ctrl.0/kcal_enable               u:object_r:kcalctrl_sysfs:s0
+/sys/devices/platform/kcal_ctrl.0/kcal_cont                 u:object_r:kcalctrl_sysfs:s0
+/sys/devices/platform/kcal_ctrl.0/kcal_hue                  u:object_r:kcalctrl_sysfs:s0
+/sys/devices/platform/kcal_ctrl.0/kcal_invert               u:object_r:kcalctrl_sysfs:s0
+/sys/devices/platform/kcal_ctrl.0/kcal_min                  u:object_r:kcalctrl_sysfs:s0
+/sys/devices/platform/kcal_ctrl.0/kcal_sat                  u:object_r:kcalctrl_sysfs:s0
+/sys/devices/platform/kcal_ctrl.0/kcal_val                  u:object_r:kcalctrl_sysfs:s0
 /sys/devices/virtual/timed_output/vibrator/vtg_level        u:object_r:vibeamp_sysfs:s0
 
 # Motorola services
