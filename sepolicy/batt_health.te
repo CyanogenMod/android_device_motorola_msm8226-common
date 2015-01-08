@@ -4,6 +4,8 @@ init_daemon_domain(batt_health);
 
 allow batt_health batt_health_data_file:dir search;
 allow batt_health batt_health_data_file:file { setattr };
+allow batt_health batt_health_data_file:dir w_dir_perms;
+allow batt_health batt_health_data_file:file create_file_perms;
 allow batt_health pds_file:dir search;
 allow batt_health pds_file:file { open read };
 allow batt_health self:capability { dac_override net_admin setuid chown fowner fsetid };
