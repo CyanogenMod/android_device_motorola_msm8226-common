@@ -29,8 +29,12 @@
 # Sensors
 /dev/akm8963                                                u:object_r:sensors_device:s0
 /dev/akm8963_dev                                            u:object_r:sensors_device:s0
+/dev/bma2x2                                                 u:object_r:sensors_device:s0
+/dev/bmg                                                    u:object_r:sensors_device:s0
+/dev/bmm050                                                 u:object_r:sensors_device:s0
 /dev/l3g4200d                                               u:object_r:sensors_device:s0
 /dev/lis3dh                                                 u:object_r:sensors_device:s0
+/dev/stk3x1x                                                u:object_r:sensors_device:s0
 /data/misc/akmd_set.txt                                     u:object_r:sensors_data_file:s0
 
 # Thermal

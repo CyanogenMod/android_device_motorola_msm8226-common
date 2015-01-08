@@ -223,15 +223,18 @@
 # SECURITY
 /dev/sec                  0660   system     drmrpc
 
-# AK8963 Magnetometer
+# Magnetometer
 /dev/akm8963              0660   compass    compass
 /dev/akm8963_dev          0660   compass    compass
+/dev/bmm050               0660   compass    compass
 
-# LIS3DH accelerometer
+# Accelerometer
+/dev/bma2x2               0660   compass    compass
 /dev/lis3dh               0660   compass    compass
 
-# L3G4200D Gyro
+# Gyro
 /dev/l3g4200d             0660   compass    compass
+/dev/bmg                  0660   compass    compass
 
 #PN544 NFC
 /dev/pn544                0660   nfc        nfc
@@ -255,3 +258,4 @@
 
 # From moto ueventd.rc
 /dev/assd                 0660   smartcard  smartcard
+
