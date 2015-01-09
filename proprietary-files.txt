@@ -96,10 +96,6 @@ vendor/lib/mediadrm/libwvdrmengine.so
 # Fastcharge
 bin/hvdcp
 
-# FM radio
-bin/fmconfig
-bin/fm_qsoc_patches
-
 # GPS
 -app/com.qualcomm.location/com.qualcomm.location.apk
 -app/com.qualcomm.services.location/com.qualcomm.services.location.apk
