@@ -130,7 +130,6 @@ BOARD_SEPOLICY_UNION += \
     mediaserver.te \
     mm-pp-daemon.te \
     mm-qcamerad.te \
-    mpdecision.te \
     platform_app.te \
     property_contexts \
     property.te \
