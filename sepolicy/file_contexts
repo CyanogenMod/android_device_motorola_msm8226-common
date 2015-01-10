@@ -44,3 +44,7 @@
 /sys/devices/f9925000.i2c/i2c-3/3-0048/temp1_input          u:object_r:sysfs_thermal:s0
 /sys/devices/f9925000.i2c/i2c-3/3-0048/temp1_max            u:object_r:sysfs_thermal:s0
 /sys/devices/f9925000.i2c/i2c-3/3-0048/temp1_max_hyst       u:object_r:sysfs_thermal:s0
+
+# WiFi
+/data/misc/cutback(/.*)?                                    u:object_r:wifi_data_file:s0
+/data/misc/wifi/sockets(/.*)?                               u:object_r:wpa_socket:s0
