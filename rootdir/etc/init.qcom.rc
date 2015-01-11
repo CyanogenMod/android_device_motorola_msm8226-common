@@ -134,15 +134,6 @@ on post-fs-data
     # Trigger the defuse tool
     setprop installd.post_fs_data_ready 1
 
-    mkdir /data/misc/bluetooth 0770 bluetooth bluetooth
-
-    # Create the directories used by the Wireless subsystem
-    mkdir /data/misc/wifi 0770 wifi wifi
-    mkdir /data/misc/wifi/sockets 0770 wifi wifi
-    mkdir /data/misc/wifi/wpa_supplicant 0770 wifi wifi
-    mkdir /data/misc/dhcp 0770 dhcp dhcp
-    chown dhcp dhcp /data/misc/dhcp
-
     # Create directory used by audio subsystem
     mkdir /data/misc/audio 0770 audio audio
 
@@ -171,10 +162,6 @@ on post-fs-data
     chmod 0770 /pds/public/atvc
     mkdir /data/local/dbvc 0750 mot_tcmd shell
     mkdir /data/local/atvc 0775 mot_tcmd shell
-
-    #Create the symlink to qcn wpa_supplicant folder for ar6000 wpa_supplicant
-    mkdir /data/system 0775 system system
-    #symlink /data/misc/wifi/wpa_supplicant /data/system/wpa_supplicant
 
     # Wifi
     restorecon /data/hostapd
@@ -555,13 +542,6 @@ service hciattach /system/bin/sh /system/etc/init.qcom.bt.sh
     group bluetooth net_bt_admin
     disabled
     oneshot
-
-service hostapd /system/bin/hostapd -dddd /data/hostapd/hostapd.conf
-    class late_start
-    user root
-    group root
-    oneshot
-    disabled
 
 on property:persist.usb.hvdcp.detect=false
     stop hvdcp
