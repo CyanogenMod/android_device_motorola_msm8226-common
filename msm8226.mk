@@ -185,10 +185,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/thermal-engine-8226.conf:system/etc/thermal-engine-8226.conf
 
-# Torch
-PRODUCT_PACKAGES += \
-    Torch
-
 # USB
 PRODUCT_PACKAGES += \
     com.android.future.usb.accessory
@@ -196,9 +192,7 @@ PRODUCT_PACKAGES += \
 # Wifi
 PRODUCT_PACKAGES += \
     dhcpcd.conf \
-    hostapd.accept \
     hostapd_default.conf \
-    hostapd.deny \
     hostapd \
     wpa_supplicant \
     wpa_supplicant.conf
