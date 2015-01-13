@@ -543,17 +543,6 @@ service hciattach /system/bin/sh /system/etc/init.qcom.bt.sh
     disabled
     oneshot
 
-on property:persist.usb.hvdcp.detect=false
-    stop hvdcp
-
-on property:persist.usb.hvdcp.detect=true
-    start hvdcp
-
-service hvdcp /system/bin/hvdcp
-    class core
-    user root
-    disabled
-
 service hw_revs /system/bin/hardware_revisions.sh
     class main
     user system
@@ -609,14 +598,6 @@ service moto_charge_only_mode /system/bin/charge_only_mode
     user root
     disabled
 
-on property:installd.post_fs_data_ready=1
-    start moto_refuse
-
-service moto_refuse /system/bin/refuse
-    user root
-    disabled
-    oneshot
-
 service mpdecision /system/bin/mpdecision --avg_comp
     user root
     group root system
@@ -636,18 +617,6 @@ service ppd /system/bin/mm-pp-daemon
     user system
     socket pps stream 0660 system system
     group system graphics
-
-service ptt_ffbm /system/bin/ptt_socket_app -f -d
-    user root
-    group root
-    disabled
-    oneshot
-
-service ptt_socket_app /system/bin/ptt_socket_app -d
-    class main
-    user root
-    group root
-    oneshot
 
 service qcamerasvr /system/bin/mm-qcamera-daemon
     class late_start
