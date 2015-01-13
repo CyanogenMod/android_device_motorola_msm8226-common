@@ -609,15 +609,6 @@ on property:ro.use_data_netmgrd=false
 service netmgrd /system/bin/netmgrd
     class main
 
-on property:init.svc.surfaceflinger=stopped
-    stop ppd
-
-service ppd /system/bin/mm-pp-daemon
-    class late_start
-    user system
-    socket pps stream 0660 system system
-    group system graphics
-
 service qcamerasvr /system/bin/mm-qcamera-daemon
     class late_start
     user camera
