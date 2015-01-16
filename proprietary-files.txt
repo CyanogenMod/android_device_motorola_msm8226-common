@@ -62,7 +62,6 @@ vendor/lib/libmmcamera_hdr_gb_lib.so
 vendor/lib/libmmcamera_hdr_lib.so
 vendor/lib/libmmcamera_imglib.so
 vendor/lib/libmmcamera_mt9m114.so
-vendor/lib/libmmcamera_sp1628.so
 vendor/lib/libmmcamera_tintless_algo.so
 vendor/lib/libmmcamera_tuning.so
 vendor/lib/libmmcamera_wavelet_lib.so
@@ -87,14 +86,10 @@ vendor/lib/libdrmtime.so
 vendor/lib/libQSEEComAPI.so
 vendor/lib/librpmb.so
 vendor/lib/libssd.so
-vendor/lib/libStDrvInt.so
 vendor/lib/libwvdrm_L1.so
 vendor/lib/libwvm.so
 vendor/lib/libWVStreamControlAPI_L1.so
 vendor/lib/mediadrm/libwvdrmengine.so
-
-# Fastcharge
-bin/hvdcp
 
 # GPS
 -app/com.qualcomm.location/com.qualcomm.location.apk
@@ -154,34 +149,6 @@ etc/firmware/a300_pm4.fw
 etc/firmware/a330_pfp.fw
 etc/firmware/a330_pm4.fw
 
-# IMS - currently unused but have dependencies to qmi
-bin/imsdatadaemon
-bin/imsqmidaemon
-bin/ims_rtp_daemon
-etc/permissions/ims.xml
--framework/imslibrary.jar
-vendor/lib/lib-dplmedia.so
-vendor/lib/lib-imsdpl.so
-vendor/lib/lib-imsqimf.so
-vendor/lib/lib-imsrcs.so
-vendor/lib/lib-imss.so
-vendor/lib/lib-imsSDP.so
-vendor/lib/lib-imsvt.so
-vendor/lib/lib-imsxml.so
-vendor/lib/lib-rcsimssjni.so
-vendor/lib/lib-rcsjni.so
-vendor/lib/lib-rtpcommon.so
-vendor/lib/lib-rtpcore.so
-vendor/lib/lib-rtpdaemoninterface.so
-vendor/lib/lib-rtpsl.so
-vendor/lib/libmmrtpencoder.so
-
-# Listen service
-vendor/lib/liblistenhardware.so
-vendor/lib/liblistenjni.so
-vendor/lib/liblistensoundmodel.so
-vendor/lib/liblisten.so
-
 # Media
 vendor/lib/libDivxDrm.so
 vendor/lib/libExtendedExtractor.so
@@ -200,24 +167,15 @@ vendor/lib/libOmxWmaDec.so
 bin/batt_health
 bin/dbvc_atvc_property_set
 bin/hardware_revisions.sh
-bin/refuse
 
 # Perf
 bin/mpdecision
 vendor/lib/libqc-opt.so
 
-# Postprocessing
-bin/mm-pp-daemon
-vendor/lib/libdisp-aba.so
-vendor/lib/libmm-abl.so
-vendor/lib/libmm-abl-oem.so
-vendor/lib/libsensor1.so
-
 # Qualcomm framework
 bin/irsc_util
 vendor/lib/libdiag.so
 vendor/lib/libdsi_netctrl.so
-vendor/lib/libdsnetutils.so
 vendor/lib/libdsutils.so
 vendor/lib/libidl.so
 vendor/lib/libqcci_legacy.so
@@ -231,6 +189,7 @@ vendor/lib/libqmi_csi.so
 vendor/lib/libqmi_csvt_srvc.so
 vendor/lib/libqmi_encdec.so
 vendor/lib/libqmiservices.so
+vendor/lib/libsmemlog.so
 
 # Radio
 -app/qcrilmsgtunnel/qcrilmsgtunnel.apk
@@ -247,19 +206,22 @@ etc/permissions/qcrilhook.xml
 -framework/qcrilhook.jar
 lib/libadropbox.so
 lib/libmdmcutback.so
+lib/libmdmdetect.so
 lib/libmotext_inf.so
 lib/libqmimotext.so
 lib/libqsap_sdk.so
 lib/libril.so
+vendor/lib/libconfigdb.so
 vendor/lib/libnetmgr.so
 vendor/lib/libril-qc-qmi-1.so
 vendor/lib/libril-qcril-hook-oem.so
+vendor/lib/libxml.so
 
 # Sensors
 bin/akmd8963
 
 # Touch fw
-etc/firmware/aps-Falc-01210000-0121-falcon.tdat
+etc/firmware/aps-Falc-01300000-0130-falcon.tdat
 etc/firmware/synaptics-s2316-13091704-175833-falcon.tdat
 
 # Thermal
@@ -281,6 +243,3 @@ etc/firmware/venus.b03
 etc/firmware/venus.b04
 etc/firmware/venus.mbn
 etc/firmware/venus.mdt
-
-# WiFi
-bin/ptt_socket_app
