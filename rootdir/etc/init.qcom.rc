@@ -86,6 +86,9 @@ on init
     chown root diag /sys/kernel/dropbox/event
     chown root diag /sys/kernel/dropbox/data
 
+    # Titan sensors
+    chown root input /sys/class/sig_sensor/g_sensor/en_sig_motion
+    chown root input /sys/class/srot_sensor/g_sensor/en_disp_rotation
 on fs
     mount_all fstab.qcom
     write /sys/kernel/boot_adsp/boot 1
@@ -119,6 +122,7 @@ on fs
 on post-fs-data
     mkdir /data/tombstones 0771 system system
     mkdir /tombstones/modem 0771 system system
+    mkdir /data/misc/sensor 2755 system compass
 
     # we will remap this as /mnt/sdcard with the sdcard fuse tool
     mkdir /data/media 0770 media_rw media_rw
@@ -494,6 +498,13 @@ service akmd8963 /system/bin/akmd8963
     class main
     user compass
     group compass misc input
+
+# Titan sensor service
+service sensord /system/bin/sensord
+    user system
+    group compass misc input
+    class core
+    oneshot
 
 service atvc_core /system/bin/dbvc_atvc_property_set
     class core
