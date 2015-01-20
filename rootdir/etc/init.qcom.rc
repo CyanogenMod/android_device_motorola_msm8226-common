@@ -191,6 +191,9 @@ on post-fs-data
     # Enable the setgid bit on the directory
     chmod 2770 /data/audio
 
+    # Create directory for titan sensors
+    mkdir /data/misc/sensor 2755 system compass
+
     setprop vold.post_fs_data_done 1
 
     #Create a folder for SRS to be able to create a usercfg file
@@ -403,6 +406,10 @@ on boot
     chmod 0660 /sys/module/ct406/parameters/ip_enable
     chown system system /sys/module/ct406/parameters/als_delay
     chmod 0660 /sys/module/ct406/parameters/als_delay
+
+    # Titan sensors
+    chown root input /sys/class/sig_sensor/g_sensor/en_sig_motion
+    chown root input /sys/class/srot_sensor/g_sensor/en_disp_rotation
 
     # NFC PN544
     chown nfc nfc /sys/devices/virtual/misc/pn544/pn544_control_dev
@@ -639,6 +646,11 @@ service fuse_sdcard1 /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/sdcard1
 service fuse_usbdisk /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/usbdisk /storage/usbdisk
     class late_start
     disabled
+
+service sensord /system/bin/sensord
+    user system
+    group compass misc input
+    class core
 
 # SSR
 on property:persist.sys.ssr.restart_level=*
