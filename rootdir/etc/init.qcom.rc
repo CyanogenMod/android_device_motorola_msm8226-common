@@ -119,6 +119,7 @@ on fs
 on post-fs-data
     mkdir /data/tombstones 0771 system system
     mkdir /tombstones/modem 0771 system system
+    mkdir /data/misc/sensor 2755 system compass
 
     # we will remap this as /mnt/sdcard with the sdcard fuse tool
     mkdir /data/media 0770 media_rw media_rw
@@ -404,6 +405,10 @@ on boot
     chown system system /sys/module/ct406/parameters/als_delay
     chmod 0660 /sys/module/ct406/parameters/als_delay
 
+    # Titan sensors
+    chown root input /sys/class/sig_sensor/g_sensor/en_sig_motion
+    chown root input /sys/class/srot_sensor/g_sensor/en_disp_rotation
+
     # NFC PN544
     chown nfc nfc /sys/devices/virtual/misc/pn544/pn544_control_dev
     chmod 0660 /sys/devices/virtual/misc/pn544/pn544_control_dev
@@ -494,6 +499,13 @@ service akmd8963 /system/bin/akmd8963
     class main
     user compass
     group compass misc input
+
+# Titan sensor service
+service sensord /system/bin/sensord
+    user system
+    group compass misc input
+    class core
+    oneshot
 
 service atvc_core /system/bin/dbvc_atvc_property_set
     class core
