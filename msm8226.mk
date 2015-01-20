@@ -207,6 +207,8 @@ PRODUCT_PACKAGES += \
     libQWiFiSoftApCfg \
     wcnss_service
 
+ifneq ($(filter falcon peregrine,$(TARGET_DEVICE)),)
 PRODUCT_COPY_FILES += \
     kernel/motorola/msm8226/drivers/staging/prima/firmware_bin/WCNSS_cfg.dat:system/etc/firmware/wlan/prima/WCNSS_cfg.dat \
     kernel/motorola/msm8226/drivers/staging/prima/firmware_bin/WCNSS_qcom_cfg.ini:system/etc/firmware/wlan/prima/WCNSS_qcom_cfg.ini
+endif
