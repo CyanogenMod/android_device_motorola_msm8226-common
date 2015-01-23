@@ -594,6 +594,7 @@ service moto_charge_only_mode /system/bin/charge_only_mode
     disabled
 
 service mpdecision /system/bin/mpdecision --avg_comp
+    class main
     user root
     group root system
     disabled
