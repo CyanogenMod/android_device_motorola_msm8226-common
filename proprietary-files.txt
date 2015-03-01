@@ -181,9 +181,6 @@ vendor/lib/libril-qc-qmi-1.so
 vendor/lib/libril-qcril-hook-oem.so
 vendor/lib/libxml.so
 
-# Sensors
-bin/akmd8963
-
 # Touch fw
 etc/firmware/aps-Falc-01300000-0130-falcon.tdat
 etc/firmware/synaptics-s2316-13091704-175833-falcon.tdat
