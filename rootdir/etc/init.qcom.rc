@@ -470,6 +470,10 @@ on boot
     chown system system /sys/devices/virtual/graphics/fb0/rgb
     chmod 0660 /sys/devices/virtual/graphics/fb0/rgb
 
+    # High brightness mode
+    chown system system /sys/devices/virtual/graphics/fb0/hbm
+    chmod 0660 /sys/devices/virtual/graphics/fb0/hbm
+
     # setup trace dir
     mkdir /cache/trace 0777 root shell
     chown root shell /cache/trace
