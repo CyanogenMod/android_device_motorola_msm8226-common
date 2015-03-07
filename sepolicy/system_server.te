@@ -1,0 +1,2 @@
+allow system_server kcalctrl_sysfs:file { getattr open read write };
+allow system_server vibeamp_sysfs:file { getattr open read write };
