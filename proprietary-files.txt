@@ -131,6 +131,9 @@ bin/batt_health
 bin/dbvc_atvc_property_set
 bin/hardware_revisions.sh
 
+# Offline charging
+bin/charge_only_mode
+
 # Perf
 bin/mpdecision
 vendor/lib/libqc-opt.so
