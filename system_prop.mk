@@ -86,7 +86,9 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.radio.apm_sim_not_pwdn=1 \
     persist.radio.dfr_mode_set=1 \
     persist.radio.msgtunnel.start=false \
-    persist.radio.no_wait_for_card=1
+    persist.radio.no_wait_for_card=1 \
+    rild.libargs=-d /dev/smd0 \
+    rild.libpath=/system/vendor/lib/libril-qc-qmi-1.so
 
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.use_data_netmgrd=true
@@ -94,6 +96,17 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # Storage
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.sys.isUsbOtgEnabled=true
+
+# USB
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.usb.mtp=0x2e82 \
+    ro.usb.mtp_adb=0x2e76 \
+    ro.usb.ptp=0x2e83 \
+    ro.usb.ptp_adb=0x2e84 \
+    ro.usb.bpt=0x2e28 \
+    ro.usb.bpt_adb=0x2e29 \
+    ro.usb.bpteth=0x2e2a \
+    ro.usb.bpteth_adb=0x2e2b
 
 # Wifi
 PRODUCT_PROPERTY_OVERRIDES += \
