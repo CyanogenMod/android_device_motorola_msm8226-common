@@ -136,7 +136,8 @@ bin/hardware_revisions.sh
 
 # Perf
 bin/mpdecision
-vendor/lib/libqc-opt.so
+bin/perfd
+vendor/lib/libqti-perfd-client.so
 
 # Qualcomm framework
 bin/irsc_util

@@ -192,6 +192,12 @@ on post-fs-data
     mkdir /data/misc/sensor 0775
     exec /system/bin/chown -R input:input /data/misc/sensor
 
+    # Create PERFD deamon related dirs
+    mkdir /data/misc/perfd 0755 root system
+    chmod 2755 /data/misc/perfd
+    mkdir /data/system/perfd 0770 root system
+    chmod 2770 /data/system/perfd
+
     setprop vold.post_fs_data_done 1
 
     #Create a folder for SRS to be able to create a usercfg file

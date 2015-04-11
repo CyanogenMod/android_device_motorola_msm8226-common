@@ -86,7 +86,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.timed.enable=true \
     ro.qualcomm.cabl=0 \
-    ro.vendor.extension_library=/system/vendor/lib/libqc-opt.so
+    ro.vendor.extension_library=/system/vendor/lib/libqti-perfd-client.so
 
 # Radio
 PRODUCT_PROPERTY_OVERRIDES += \
