@@ -143,6 +143,7 @@ TARGET_USE_CUSTOM_LUN_FILE_PATH := /sys/devices/platform/msm_hsusb/gadget/lun%d/
 
 # Wifi
 BOARD_HAS_QCOM_WLAN := true
+BOARD_HAS_QCOM_WLAN_SDK := true
 BOARD_HOSTAPD_DRIVER := NL80211
 BOARD_HOSTAPD_PRIVATE_LIB := lib_driver_cmd_qcwcn
 BOARD_WLAN_DEVICE := qcwcn

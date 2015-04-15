@@ -172,7 +172,6 @@ lib/libmdmcutback.so
 lib/libmdmdetect.so
 lib/libmotext_inf.so
 lib/libqmimotext.so
-lib/libqsap_sdk.so
 lib/libril.so
 vendor/lib/libconfigdb.so
 vendor/lib/libnetmgr.so
