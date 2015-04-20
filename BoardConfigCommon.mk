@@ -61,6 +61,9 @@ BLUETOOTH_HCI_USE_MCT := true
 # Camera
 USE_DEVICE_SPECIFIC_CAMERA := true
 
+# Charger
+BOARD_CHARGING_MODE_BOOTING_LPM := /sys/class/power_supply/usb/online
+
 # CMHW
 BOARD_HARDWARE_CLASS := $(LOCAL_PATH)/cmhw/
 
