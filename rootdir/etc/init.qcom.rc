@@ -597,7 +597,7 @@ service mmi-touch-sh /system/bin/sh /init.mmi.touch.sh synaptics aps
     user root
     oneshot
 
-service moto_charge_only_mode /system/bin/charge_only_mode
+service charge_only_mode /system/bin/charge_only_mode
     user root
     disabled
 
@@ -820,7 +820,7 @@ on property:ro.bootmode=mot-charger
     write /sys/devices/system/cpu/cpu1/online 1
     write /sys/devices/system/cpu/cpu2/online 1
     write /sys/devices/system/cpu/cpu3/online 1
-    start moto_charge_only_mode
+    start charge_only_mode
 
 # CM Performance Profiles
 on property:sys.boot_completed=1
