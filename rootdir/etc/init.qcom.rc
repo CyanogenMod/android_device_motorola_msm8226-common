@@ -597,7 +597,7 @@ service mmi-touch-sh /system/bin/sh /init.mmi.touch.sh synaptics aps
     user root
     oneshot
 
-service moto_charge_only_mode /system/bin/charge_only_mode
+service charge_only_mode /system/bin/charge_only_mode
     user root
     disabled
 
@@ -788,7 +788,10 @@ service xtwifi_inet /system/bin/xtwifi-inet-agent
     disabled
 
 # Charger
-on property:ro.bootmode=mot-charger
+on charger
+    wait /dev/block/platform/msm_sdcc.1/by-name/system
+    mount ext4 /dev/block/platform/msm_sdcc.1/by-name/system /system ro barrier=1
+
     write /sys/module/lpm_levels/enable_low_power/l2 1
     write /sys/module/msm_pm/modes/cpu0/power_collapse/suspend_enabled 1
     write /sys/module/msm_pm/modes/cpu1/power_collapse/suspend_enabled 1
@@ -812,15 +815,17 @@ on property:ro.bootmode=mot-charger
     chmod 664 /sys/devices/system/cpu/cpu1/online
     chmod 664 /sys/devices/system/cpu/cpu2/online
     chmod 664 /sys/devices/system/cpu/cpu3/online
+    write /sys/module/msm_pm/modes/cpu0/standalone_power_collapse/idle_enabled 1
     write /sys/module/msm_pm/modes/cpu0/power_collapse/idle_enabled 1
     write /sys/power/autosleep "mem"
+    setprop sys.usb.config mass_storage
+    start charge_only_mode
     write /sys/module/lpm_levels/enable_low_power/l2 3
     write /sys/class/leds/lcd-backlight/brightness 255
     write /sys/module/msm_pm/modes/cpu0/power_collapse/idle_enabled 0
     write /sys/devices/system/cpu/cpu1/online 1
     write /sys/devices/system/cpu/cpu2/online 1
     write /sys/devices/system/cpu/cpu3/online 1
-    start moto_charge_only_mode
 
 # CM Performance Profiles
 on property:sys.boot_completed=1
