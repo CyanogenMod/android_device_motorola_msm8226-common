@@ -1,0 +1,2 @@
+allow bootanim mpctl_socket:sock_file write;
+allow bootanim mpdecision:unix_stream_socket connectto;
