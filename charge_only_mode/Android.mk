@@ -1,5 +1,7 @@
 # Copyright 2005 The Android Open Source Project
 
+ifneq ($(filter falcon peregrine,$(TARGET_DEVICE)),)
+
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
@@ -25,3 +27,4 @@ LOCAL_MODULE_TAGS:= optional
 LOCAL_MODULE:= charge_only_mode
 
 include $(BUILD_EXECUTABLE)
+endif
