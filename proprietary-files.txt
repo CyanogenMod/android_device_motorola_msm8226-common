@@ -40,6 +40,9 @@ etc/firmware/cpp_firmware_v1_1_1.fw
 etc/firmware/cpp_firmware_v1_1_6.fw
 etc/firmware/cpp_firmware_v1_2_0.fw
 
+# Charger
+bin/charge_only_mode
+
 # DRM
 bin/qseecomd
 vendor/lib/drm/libdrmwvmplugin.so
