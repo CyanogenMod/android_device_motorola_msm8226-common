@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2012 The Android Open Source Project
- * Copyright (C) 2014 The CyanogenMod Project
+ * Copyright (C) 2015 The CyanogenMod Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,28 @@
 #ifndef _BDROID_BUILDCFG_H
 #define _BDROID_BUILDCFG_H
 
-#define BTM_DEF_LOCAL_NAME   "Moto G"
+#include <cutils/properties.h>
+#include <string.h>
+
+inline const char* BtmGetDefaultName()
+{
+	char device[PROPERTY_VALUE_MAX];
+	property_get("ro.boot.device", device, "");
+
+	if (!strcmp("falcon", device)) {
+		return "Moto G";
+	} else if (!strcmp("peregrine", device)) {
+		return "Moto G LTE";
+	} else if (!strcmp("thea", device)) {
+		return "Moto G 2014 LTE";
+	} else if (!strcmp("titan", device)) {
+		return "Moto G 2014";
+	}
+
+	return "";
+}
+
+#define BTM_DEF_LOCAL_NAME   BtmGetDefaultName()
 #define BLUETOOTH_QTI_SW TRUE
 // Disables read remote device feature
 #define BTA_SKIP_BLE_READ_REMOTE_FEAT FALSE
