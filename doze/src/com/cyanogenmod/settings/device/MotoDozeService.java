@@ -40,18 +40,23 @@ public class MotoDozeService extends Service {
     private static final boolean DEBUG = false;
 
     private static final String GESTURE_HAND_WAVE_KEY = "gesture_hand_wave";
-    private static final int DELAY_BETWEEN_SCREENOFF_DOZE_IN_MS = 2500;
+    private static final String GESTURE_POCKET_KEY = "gesture_pocket";
+
+    private static final int POCKET_DELTA_NS = 1000 * 1000 * 1000;
 
     private Context mContext;
     private MotoProximitySensor mSensor;
     private PowerManager mPowerManager;
 
     private boolean mHandwaveGestureEnabled = true;
-    private long mLastDisplayOff;
+    private boolean mPocketGestureEnabled = true;
 
     class MotoProximitySensor implements SensorEventListener {
         private SensorManager mSensorManager;
         private Sensor mSensor;
+
+        private boolean mSawNear = false;
+        private long mInPocketTime = 0;
 
         public MotoProximitySensor(Context context) {
             mSensorManager = (SensorManager)context.getSystemService(Context.SENSOR_SERVICE);
@@ -61,11 +66,14 @@ public class MotoDozeService extends Service {
         @Override
         public void onSensorChanged(SensorEvent event) {
             boolean isNear = event.values[0] < mSensor.getMaximumRange();
-            long now = System.currentTimeMillis();
-
-            if (isNear && (now - mLastDisplayOff > DELAY_BETWEEN_SCREENOFF_DOZE_IN_MS)) {
-                launchDozePulse();
+            if (mSawNear && !isNear) {
+                if (shouldPulse(event.timestamp)) {
+                    launchDozePulse();
+                }
+            } else {
+                mInPocketTime = event.timestamp;
             }
+            mSawNear = isNear;
         }
 
         @Override
@@ -73,8 +81,21 @@ public class MotoDozeService extends Service {
             /* Empty */
         }
 
+        private boolean shouldPulse(long timestamp) {
+            long delta = timestamp - mInPocketTime;
+
+            if (mHandwaveGestureEnabled && mPocketGestureEnabled) {
+                return true;
+            } else if (mHandwaveGestureEnabled && !mPocketGestureEnabled) {
+                return delta < POCKET_DELTA_NS;
+            } else if (!mHandwaveGestureEnabled && mPocketGestureEnabled) {
+                return delta >= POCKET_DELTA_NS;
+            }
+            return false;
+        }
+
         public void enable() {
-            if (mHandwaveGestureEnabled) {
+            if (mHandwaveGestureEnabled || mPocketGestureEnabled) {
                 mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
             }
         }
@@ -135,11 +156,11 @@ public class MotoDozeService extends Service {
         if (isDozeEnabled()) {
             mSensor.enable();
         }
-        mLastDisplayOff = System.currentTimeMillis();
     }
 
     private void loadPreferences(SharedPreferences sharedPreferences) {
         mHandwaveGestureEnabled = sharedPreferences.getBoolean(GESTURE_HAND_WAVE_KEY, true);
+        mPocketGestureEnabled = sharedPreferences.getBoolean(GESTURE_POCKET_KEY, true);
     }
 
     private BroadcastReceiver mScreenStateReceiver = new BroadcastReceiver() {
@@ -159,6 +180,8 @@ public class MotoDozeService extends Service {
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
             if (GESTURE_HAND_WAVE_KEY.equals(key)) {
                 mHandwaveGestureEnabled = sharedPreferences.getBoolean(GESTURE_HAND_WAVE_KEY, true);
+            } else if (GESTURE_POCKET_KEY.equals(key)) {
+                mPocketGestureEnabled = sharedPreferences.getBoolean(key, true);
             }
         }
     };
