@@ -23,4 +23,5 @@
     <string name="pocket_gesture_title">Pocket</string>
     <string name="pocket_gesture_summary">Pulse notifications on removal from pocket</string>
 
+    <string name="ambient_display_title">Ambient display</string>
 </resources>
