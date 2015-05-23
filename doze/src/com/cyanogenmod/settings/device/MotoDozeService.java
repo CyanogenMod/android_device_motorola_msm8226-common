@@ -48,8 +48,8 @@ public class MotoDozeService extends Service {
     private MotoProximitySensor mSensor;
     private PowerManager mPowerManager;
 
-    private boolean mHandwaveGestureEnabled = true;
-    private boolean mPocketGestureEnabled = true;
+    private boolean mHandwaveGestureEnabled = false;
+    private boolean mPocketGestureEnabled = false;
 
     class MotoProximitySensor implements SensorEventListener {
         private SensorManager mSensorManager;
@@ -183,9 +183,9 @@ public class MotoDozeService extends Service {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
             if (GESTURE_HAND_WAVE_KEY.equals(key)) {
-                mHandwaveGestureEnabled = sharedPreferences.getBoolean(GESTURE_HAND_WAVE_KEY, true);
+                mHandwaveGestureEnabled = sharedPreferences.getBoolean(GESTURE_HAND_WAVE_KEY, false);
             } else if (GESTURE_POCKET_KEY.equals(key)) {
-                mPocketGestureEnabled = sharedPreferences.getBoolean(key, true);
+                mPocketGestureEnabled = sharedPreferences.getBoolean(GESTURE_POCKET_KEY, false);
             }
         }
     };
