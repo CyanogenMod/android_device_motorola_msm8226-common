@@ -141,9 +141,13 @@ public class MotoDozeService extends Service {
         return mPowerManager.isInteractive();
     }
 
-    private boolean isDozeEnabled() {
-        return Settings.Secure.getInt(mContext.getContentResolver(),
+    public static boolean isDozeEnabled(Context context) {
+        return Settings.Secure.getInt(context.getContentResolver(),
                 Settings.Secure.DOZE_ENABLED, 1) != 0;
+    }
+
+    private boolean isDozeEnabled() {
+        return isDozeEnabled(mContext);
     }
 
     private void onDisplayOn() {
