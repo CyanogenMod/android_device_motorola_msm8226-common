@@ -20,13 +20,21 @@ import com.android.internal.util.cm.ScreenType;
 
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceCategory;
+import android.provider.Settings;
 
 public class TouchscreenGestureSettings extends PreferenceActivity {
+    private static final String CATEGORY_AMBIENT_DISPLAY = "ambient_display_key";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.gesture_panel);
+        PreferenceCategory ambientDisplay = (PreferenceCategory)
+                getPreferenceManager().findPreference(CATEGORY_AMBIENT_DISPLAY);
+        if (ambientDisplay != null) {
+            ambientDisplay.setEnabled(isDozeEnabled());
+        }
     }
 
     @Override
@@ -37,5 +45,10 @@ public class TouchscreenGestureSettings extends PreferenceActivity {
         if (!ScreenType.isTablet(this)) {
             getListView().setPadding(0, 0, 0, 0);
         }
+    }
+
+    private boolean isDozeEnabled() {
+        return Settings.Secure.getInt(getContentResolver(),
+                Settings.Secure.DOZE_ENABLED, 1) != 0;
     }
 }
