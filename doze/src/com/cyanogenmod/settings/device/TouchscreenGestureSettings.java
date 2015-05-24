@@ -18,11 +18,14 @@ package com.cyanogenmod.settings.device;
 
 import com.android.internal.util.cm.ScreenType;
 
+import android.app.ActionBar;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.SwitchPreference;
 import android.provider.Settings;
+import android.view.Menu;
+import android.view.MenuItem;
 
 public class TouchscreenGestureSettings extends PreferenceActivity {
 
@@ -50,6 +53,19 @@ public class TouchscreenGestureSettings extends PreferenceActivity {
         mHandwavePreference =
             (SwitchPreference) findPreference(KEY_GESTURE_HAND_WAVE);
         mHandwavePreference.setEnabled(dozeEnabled);
+
+        final ActionBar bar = getActionBar();
+        bar.setDisplayHomeAsUpEnabled(true);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+        }
+        return false;
     }
 
     @Override
