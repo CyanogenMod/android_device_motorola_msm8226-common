@@ -28,7 +28,8 @@ include $(CLEAR_VARS)
 
 FIRMWARE_ADSP_IMAGES := \
     adsp.b00 adsp.b01 adsp.b02 adsp.b03 adsp.b04 \
-    adsp.b05 adsp.b06 adsp.b07 adsp.b08 adsp.mdt
+    adsp.b05 adsp.b06 adsp.b07 adsp.b08 adsp.b09 \
+    adsp.b10 adsp.b11 adsp.b12 adsp.mdt
 
 FIRMWARE_ADSP_SYMLINKS := $(addprefix $(TARGET_OUT_ETC)/firmware/,$(notdir $(FIRMWARE_ADSP_IMAGES)))
 $(FIRMWARE_ADSP_SYMLINKS): $(LOCAL_INSTALLED_MODULE)
@@ -80,7 +81,8 @@ ALL_DEFAULT_INSTALLED_MODULES += $(FIRMWARE_MODEM_SYMLINKS)
 
 FIRMWARE_WCNSS_IMAGES := \
     wcnss.b00 wcnss.b01 wcnss.b02 wcnss.b04 \
-    wcnss.b06 wcnss.b07 wcnss.b08 wcnss.mdt
+    wcnss.b06 wcnss.b07 wcnss.b08 wcnss.b09 \
+    wcnss.mdt
 
 FIRMWARE_WCNSS_SYMLINKS := $(addprefix $(TARGET_OUT_ETC)/firmware/,$(notdir $(FIRMWARE_WCNSS_IMAGES)))
 $(FIRMWARE_WCNSS_SYMLINKS): $(LOCAL_INSTALLED_MODULE)
