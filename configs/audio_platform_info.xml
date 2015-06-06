@@ -27,6 +27,7 @@
 <audio_platform_info>
 
     <acdb_ids>
+        <device name="SND_DEVICE_IN_VOICE_SPEAKER_DMIC" acdb_id="11" />
         <device name="SND_DEVICE_IN_CAMCORDER_MIC" acdb_id="50" />
         <device name="SND_DEVICE_IN_VOICE_DMIC" acdb_id="6" />
         <device name="SND_DEVICE_IN_VOICE_REC_MIC" acdb_id="61" />
@@ -41,6 +42,7 @@
     </pcm_ids>
 
     <device_names>
+        <device name="SND_DEVICE_IN_VOICE_SPEAKER_DMIC" alias="voice-speaker-mic" />
         <device name="SND_DEVICE_IN_CAMCORDER_MIC" alias="camcorder-mic-bf" />
     </device_names>
 
