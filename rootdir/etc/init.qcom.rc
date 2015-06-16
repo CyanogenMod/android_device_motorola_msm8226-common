@@ -528,7 +528,7 @@ service batt_health /system/bin/batt_health
 on property:vold.decrypt=trigger_restart_framework
     start config_bluetooth
 
-service config_bluetooth /system/bin/sh /system/etc/init.qcom.bt.sh
+service config_bluetooth /system/bin/sh /system/etc/init.qcom.bt.sh "onboot"
     class core
     user root
     oneshot
@@ -649,9 +649,9 @@ service fuse_usbdisk /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/usbdisk
     disabled
 
 service sensord /system/bin/sensord
-    user system
+    class main
+    user compass
     group compass misc input
-    class core
 
 # SSR
 on property:persist.sys.ssr.restart_level=*

@@ -74,9 +74,6 @@ TARGET_USES_C2D_COMPOSITION := true
 TARGET_USES_ION := true
 USE_OPENGL_RENDERER := true
 
-# Encryption
-TARGET_HW_DISK_ENCRYPTION := true
-
 # FM
 TARGET_QCOM_NO_FM_FIRMWARE := true
 
@@ -137,7 +134,8 @@ BOARD_SEPOLICY_UNION += \
     rmt_storage.te \
     system_app.te \
     system_server.te \
-    thermal-engine.te
+    thermal-engine.te \
+    vold.te
 
 # Vold
 BOARD_VOLD_DISC_HAS_MULTIPLE_MAJORS := true
