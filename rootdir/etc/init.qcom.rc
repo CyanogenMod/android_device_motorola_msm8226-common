@@ -602,6 +602,7 @@ service charge_only_mode /system/bin/charge_only_mode
     disabled
 
 service mpdecision /system/bin/mpdecision --avg_comp
+    class main
     user root
     group root system
     disabled
@@ -649,9 +650,9 @@ service fuse_usbdisk /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/usbdisk
     disabled
 
 service sensord /system/bin/sensord
-    user system
+    class main
+    user compass
     group compass misc input
-    class core
 
 # SSR
 on property:persist.sys.ssr.restart_level=*
