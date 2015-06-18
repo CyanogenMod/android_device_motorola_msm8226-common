@@ -134,7 +134,8 @@ BOARD_SEPOLICY_UNION += \
     rmt_storage.te \
     system_app.te \
     system_server.te \
-    thermal-engine.te
+    thermal-engine.te \
+    vold.te
 
 # Vold
 BOARD_VOLD_DISC_HAS_MULTIPLE_MAJORS := true
