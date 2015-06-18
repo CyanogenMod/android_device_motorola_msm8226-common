@@ -643,7 +643,7 @@ service fuse_usbdisk /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/usbdisk
 service sensord /system/bin/sensord
     user system
     group compass misc input
-    class core
+    class main
 
 # SSR
 on property:persist.sys.ssr.restart_level=*
