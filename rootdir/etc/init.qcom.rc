@@ -565,9 +565,6 @@ on property:persist.radio.multisim.config=dsds
     start ril-daemon
     start ril-daemon1
 
-on property:vold.decrypt=trigger_restart_framework
-    stop ril-daemon
-
 service_redefine ril-daemon /system/bin/rild
     class main
     socket rild stream 660 root radio
