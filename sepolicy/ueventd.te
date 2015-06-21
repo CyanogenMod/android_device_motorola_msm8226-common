@@ -1,0 +1,2 @@
+allow ueventd sensors_device:file { setattr getattr };
+
