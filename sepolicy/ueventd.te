@@ -1,0 +1,1 @@
+allow ueventd sysfs_input:file rw_file_perms;

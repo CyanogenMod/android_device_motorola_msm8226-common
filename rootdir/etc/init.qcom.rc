@@ -638,7 +638,7 @@ service fuse_usbdisk /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/usbdisk
     disabled
 
 service sensord /system/bin/sensord
-    user system
+    user compass
     group compass misc input
     class main
 
