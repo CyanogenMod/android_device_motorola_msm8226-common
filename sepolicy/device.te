@@ -4,3 +4,6 @@ type clogo_block_device, dev_type;
 type logs_block_device, dev_type;
 type hob_block_device, dev_type;
 type utags_block_device, dev_type;
+
+# Sensor sysfs
+type sysfs_devices_sensors, dev_type;

@@ -1,0 +1,1 @@
+allow  sysfs_devices_sensors sysfs:filesystem associate;
