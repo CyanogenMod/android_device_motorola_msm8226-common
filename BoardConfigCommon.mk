@@ -132,9 +132,11 @@ BOARD_SEPOLICY_UNION += \
     property.te \
     rild.te \
     rmt_storage.te \
+    sensord.te \
     system_app.te \
     system_server.te \
     thermal-engine.te \
+    ueventd.te \
     vold.te
 
 # Vold
