@@ -1,2 +1,5 @@
 allow system_server display_sysfs:file { getattr open read write };
 allow system_server vibeamp_sysfs:file { getattr open read write };
+allow system_server sensors_data_file:dir { read write getattr setattr search };
+allow system_server sensors_data_file:fifo_file { read write open };
+allow system_server sensors_device:file rw_file_perms;
