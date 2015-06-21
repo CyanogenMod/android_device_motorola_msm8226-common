@@ -1,0 +1,16 @@
+type sensord, domain;
+type sensord_exec, exec_type, file_type;
+init_daemon_domain(sensord)
+
+allow sensord input_device:dir { search };
+allow sensord input_device:chr_file { read write open };
+allow sensord input_device:file { read };
+
+allow sensord sensors_data_file:fifo_file { create read write unlink open setattr };
+allow sensord sensors_data_file:file { create getattr setattr open read write append unlink };
+allow sensord sensors_data_file:dir { search getattr setattr write add_name remove_name };
+allow sensord sensors_device:chr_file { open read write ioctl };
+allow sensord sysfs:file { write };
+allow sensord system_data_file:dir { write add_name };
+
+type_transition sensord system_data_file:file sensors_data_file;
