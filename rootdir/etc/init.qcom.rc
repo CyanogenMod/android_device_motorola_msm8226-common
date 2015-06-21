@@ -189,7 +189,8 @@ on post-fs-data
     chmod 2770 /data/audio
 
     # Create directory for titan sensors
-    mkdir /data/misc/sensor 2755 system compass
+    mkdir /data/misc/sensor 0775
+    exec /system/bin/chown -R input:input /data/misc/sensor
 
     setprop vold.post_fs_data_done 1
 
@@ -639,8 +640,8 @@ service fuse_usbdisk /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/usbdisk
     disabled
 
 service sensord /system/bin/sensord
-    user system
-    group compass misc input
+    user input
+    group input
     class main
 
 # SSR

@@ -8,3 +8,6 @@ type vibeamp_sysfs, fs_type, sysfs_type;
 
 # PDS
 type pds_file, file_type;
+
+# Sensors
+type sysfs_devices_sensors, sysfs_type;
