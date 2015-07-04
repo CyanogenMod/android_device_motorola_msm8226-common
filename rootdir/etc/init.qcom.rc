@@ -545,6 +545,13 @@ service hw_revs /system/bin/hardware_revisions.sh
     group system
     oneshot
 
+service restart_ril /system/bin/restart_ril.sh
+    class late_start
+    user system
+    group system
+    disabled
+    oneshot
+
 service irsc_util /system/bin/irsc_util "/etc/sec_config"
     class main
     user root
@@ -565,6 +572,9 @@ on property:persist.radio.multisim.config=dsds
     stop ril-daemon
     start ril-daemon
     start ril-daemon1
+
+on property:vold.decrypt=trigger_restart_framework
+    start restart_ril
 
 service_redefine ril-daemon /system/bin/rild
     class main
