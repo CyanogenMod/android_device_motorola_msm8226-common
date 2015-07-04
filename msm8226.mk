@@ -165,7 +165,8 @@ PRODUCT_PACKAGES += \
     init.crda.sh \
     init.qcom.bt.sh \
     init.qcom.fm.sh \
-    mount_pds.sh
+    init.qcom.ril.sh \
+    mount_pds.sh \
 
 PRODUCT_PACKAGES += \
     init.mmi.boot.sh \
