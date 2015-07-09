@@ -45,6 +45,7 @@ bin/charge_only_mode
 
 # DRM
 bin/qseecomd
+lib/liboemcrypto.so
 vendor/lib/drm/libdrmwvmplugin.so
 vendor/lib/libdrmdecrypt.so
 vendor/lib/libdrmdiag.so
