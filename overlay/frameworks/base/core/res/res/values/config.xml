@@ -36,9 +36,15 @@
 
          Must be overridden in platform specific overlays -->
     <integer-array name="config_autoBrightnessLevels">
-        <item>15</item>
+        <item>50</item>
         <item>100</item>
+        <item>150</item>
+        <item>200</item>
+        <item>800</item>
+        <item>1300</item>
+        <item>2000</item>
         <item>3000</item>
+        <item>4000</item>
         <item>8000</item>
     </integer-array>
 
@@ -48,47 +54,58 @@
          This must be overridden in platform specific overlays -->
     <integer-array name="config_autoBrightnessLcdBacklightValues">
         <item>24</item>
-        <item>48</item>
-        <item>108</item>
-        <item>206</item>
-        <item>246</item>
+        <item>36</item>
+        <item>47</item>
+        <item>71</item>
+        <item>118</item>
+        <item>141</item>
+        <item>165</item>
+        <item>188</item>
+        <item>212</item>
+        <item>230</item>
+        <item>255</item>
     </integer-array>
 
     <!-- Vibrator pattern for feedback about a long screen/key press -->
     <integer-array name="config_longPressVibePattern">
         <item>0</item>
+        <item>1</item>
         <item>20</item>
+        <item>21</item>
     </integer-array>
 
     <!-- Vibrator pattern for feedback about touching a virtual key -->
     <integer-array name="config_virtualKeyVibePattern">
-        <item>0</item>
-        <item>15</item>
+        <item>18</item>
     </integer-array>
 
     <!-- Vibrator pattern for a very short but reliable vibration for soft keyboard tap -->
     <integer-array name="config_keyboardTapVibePattern">
-        <item>0</item>
-        <item>13</item>
+        <item>18</item>
     </integer-array>
 
     <!-- Vibrator pattern for feedback about booting with safe mode disabled -->
     <integer-array name="config_safeModeDisabledVibePattern">
         <item>0</item>
-        <item>15</item>
+        <item>1</item>
+        <item>20</item>
+        <item>21</item>
     </integer-array>
     <integer-array name="config_safeModeEnabledVibePattern">
         <item>0</item>
-        <item>15</item>
-        <item>200</item>
+        <item>1</item>
+        <item>20</item>
+        <item>21</item>
+        <item>500</item>
+        <item>600</item>
     </integer-array>
 
     <!-- Vibrator pattern for feedback about booting with safe mode disabled -->
     <integer-array name="config_scrollBarrierVibePattern">
         <item>0</item>
-        <item>13</item>
-        <item>17</item>
-        <item>13</item>
+        <item>20</item>
+        <item>60</item>
+        <item>20</item>
     </integer-array>
 
     <!-- Vibrator pattern to be used as the default for notifications
@@ -96,9 +113,9 @@
      -->
     <integer-array name="config_defaultNotificationVibePattern">
         <item>0</item>
-        <item>230</item>
-        <item>170</item>
-        <item>230</item>
+        <item>350</item>
+        <item>250</item>
+        <item>350</item>
     </integer-array>
 
     <!-- Vibrator pattern to be used as the default for notifications
@@ -107,9 +124,9 @@
      -->
     <integer-array name="config_notificationFallbackVibePattern">
         <item>0</item>
-        <item>75</item>
-        <item>130</item>
-        <item>75</item>
+        <item>100</item>
+        <item>150</item>
+        <item>100</item>
     </integer-array>
 
     <!-- If the DUN connection for this CDMA device supports more than just DUN -->
@@ -165,9 +182,6 @@
 
     <!-- If this is true, the screen will come on when you unplug usb/power/whatever. -->
     <bool name="config_unplugTurnsOnScreen">true</bool>
-
-    <!-- If this is true, the screen will fade off. -->
-    <bool name="config_animateScreenLights">false</bool>
 
     <!-- Indicate whether closing the lid causes the device to go to sleep and opening
          it causes the device to wake up.
