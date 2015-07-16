@@ -14,3 +14,7 @@ allow init sysfs_power:file setattr;
 
 # Allow init to read battery sysfs
 allow init sysfs_battery_supply:lnk_file read;
+
+# Allow init to format userdata & cache partitions
+allow init userdata_block_device:blk_file rw_file_perms;
+allow init cache_block_device:blk_file rw_file_perms;
