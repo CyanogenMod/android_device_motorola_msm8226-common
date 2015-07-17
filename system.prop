@@ -1,4 +1,7 @@
 
+# Art
+dalvik.vm.dex2oat-swap=false
+
 # Audio
 audio.offload.24bit.enable=false
 audio.offload.buffer.size.kb=32
