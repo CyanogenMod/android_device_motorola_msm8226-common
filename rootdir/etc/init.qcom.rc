@@ -26,6 +26,7 @@
 #
 
 import init.qcom.usb.rc
+import init.target.rc
 
 on early-init
     write /sys/block/mmcblk0/queue/scheduler noop
@@ -55,23 +56,18 @@ on init
     mkdir /storage/emulated 0555 root root
 
     #External storage directories
-    mkdir /mnt/media_rw/sdcard1 0700 media_rw media_rw
-    mkdir /storage/sdcard1 0700 root root
     mkdir /mnt/media_rw/usbdisk 0700 media_rw media_rw
     mkdir /storage/usbdisk 0700 root root
 
     export EXTERNAL_STORAGE /storage/emulated/legacy
     export EMULATED_STORAGE_SOURCE /mnt/shell/emulated
     export EMULATED_STORAGE_TARGET /storage/emulated
-    export SECONDARY_STORAGE /storage/sdcard1
 
     # Support legacy paths
     symlink /storage/emulated/legacy /sdcard
     symlink /storage/emulated/legacy /mnt/sdcard
     symlink /storage/emulated/legacy /storage/sdcard0
     symlink /mnt/shell/emulated/0 /storage/emulated/legacy
-    symlink /storage/sdcard1 /mnt/sdcard1
-    symlink /storage/sdcard1 /external_sd
     symlink /storage/usbdisk /usbdisk
     symlink /storage/usbdisk /mnt/usbdisk
 
@@ -187,10 +183,6 @@ on post-fs-data
     mkdir /data/audio/ 0770 media audio
     # Enable the setgid bit on the directory
     chmod 2770 /data/audio
-
-    # Create directory for titan sensors
-    mkdir /data/misc/sensor 0775
-    exec /system/bin/chown -R input:input /data/misc/sensor
 
     setprop vold.post_fs_data_done 1
 
@@ -386,29 +378,6 @@ on boot
     mkdir /data/nfc 0770 nfc nfc
     mkdir /data/nfc/param 0770 nfc nfc
 
-    # AK9863 Magnetometer
-    chown compass compass /sys/class/compass/akm8963/enable_acc
-    chown compass compass /sys/class/compass/akm8963/enable_mag
-    chown compass compass /sys/class/compass/akm8963/enable_ori
-    chown compass compass /sys/class/compass/akm8963/delay_acc
-    chown compass compass /sys/class/compass/akm8963/delay_mag
-    chown compass compass /sys/class/compass/akm8963/delay_ori
-    chown compass compass /sys/class/compass/akm8963/accel
-
-    # CT406 Light sensor and proximity
-    chown system system /sys/module/ct406/parameters/als_enable
-    chmod 0660 /sys/module/ct406/parameters/als_enable
-    chown system system /sys/module/ct406/parameters/prox_enable
-    chmod 0660 /sys/module/ct406/parameters/prox_enable
-    chown system system /sys/module/ct406/parameters/ip_enable
-    chmod 0660 /sys/module/ct406/parameters/ip_enable
-    chown system system /sys/module/ct406/parameters/als_delay
-    chmod 0660 /sys/module/ct406/parameters/als_delay
-
-    # Titan sensors
-    chown root input /sys/class/sig_sensor/g_sensor/en_sig_motion
-    chown root input /sys/class/srot_sensor/g_sensor/en_disp_rotation
-
     # NFC PN544
     chown nfc nfc /sys/devices/virtual/misc/pn544/pn544_control_dev
     chmod 0660 /sys/devices/virtual/misc/pn544/pn544_control_dev
@@ -498,11 +467,6 @@ service adsprpcd /system/bin/adsprpcd
     class main
     user media
     group media
-
-service akmd8963 /system/bin/akmd8963
-    class main
-    user compass
-    group compass misc input
 
 service atvc_core /system/bin/dbvc_atvc_property_set
     class core
@@ -631,18 +595,9 @@ service rmt_storage /system/bin/rmt_storage
 service sdcard /system/bin/sdcard -u 1023 -g 1023 -l /data/media /mnt/shell/emulated
     class late_start
 
-service fuse_sdcard1 /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/sdcard1 /storage/sdcard1
-    class late_start
-    disabled
-
 service fuse_usbdisk /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/usbdisk /storage/usbdisk
     class late_start
     disabled
-
-service sensord /system/bin/sensord
-    user input
-    group input
-    class main
 
 # SSR
 on property:persist.sys.ssr.restart_level=*
