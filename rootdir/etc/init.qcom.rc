@@ -382,10 +382,6 @@ on boot
     # an ack packet comes out of order
     write /proc/sys/net/netfilter/nf_conntrack_tcp_be_liberal 1
 
-    # NFC local data and nfcee xml storage
-    mkdir /data/nfc 0770 nfc nfc
-    mkdir /data/nfc/param 0770 nfc nfc
-
     # AK9863 Magnetometer
     chown compass compass /sys/class/compass/akm8963/enable_acc
     chown compass compass /sys/class/compass/akm8963/enable_mag
@@ -408,10 +404,6 @@ on boot
     # Titan sensors
     chown root input /sys/class/sig_sensor/g_sensor/en_sig_motion
     chown root input /sys/class/srot_sensor/g_sensor/en_disp_rotation
-
-    # NFC PN544
-    chown nfc nfc /sys/devices/virtual/misc/pn544/pn544_control_dev
-    chmod 0660 /sys/devices/virtual/misc/pn544/pn544_control_dev
 
     # Change the ownership of touch screen files for tcmd
     chown root mot_tcmd /sys/bus/i2c/drivers/aps_ts/5-0034/drv_irq
