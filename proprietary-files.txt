@@ -176,6 +176,8 @@ lib/libmdmdetect.so
 lib/libmotext_inf.so
 lib/libqmimotext.so
 lib/libril.so
+vendor/lib/libcnefeatureconfig.so
+vendor/lib/libcneapiclient
 vendor/lib/libconfigdb.so
 vendor/lib/libnetmgr.so
 vendor/lib/libril-qc-qmi-1.so
