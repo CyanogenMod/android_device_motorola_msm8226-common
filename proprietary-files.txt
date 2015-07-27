@@ -116,6 +116,7 @@ etc/firmware/a330_pfp.fw
 etc/firmware/a330_pm4.fw
 
 # Media
+lib/libOmxVdecHevc.so
 vendor/lib/libDivxDrm.so
 vendor/lib/libExtendedExtractor.so
 -vendor/lib/libHevcSwDecoder.so
