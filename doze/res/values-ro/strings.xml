@@ -14,5 +14,7 @@
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
   <string name="screen_gestures_panel_title">Gesturi</string>
+  <string name="ambient_display_title">Afișare ambientală</string>
+  <string name="ambient_display_enable_title">Afișare ambientală</string>
   <string name="pocket_gesture_title">Buzunar</string>
 </resources>
