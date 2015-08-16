@@ -43,6 +43,18 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.software.sip.voip.xml:system/etc/permissions/android.software.sip.voip.xml \
     frameworks/native/data/etc/handheld_core_hardware.xml:system/etc/permissions/handheld_core_hardware.xml
 
+# Motorola-specific permissions
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/permissions/com.motorola.android.dm.service.xml:system/etc/permissions/com.motorola.android.dm.service.xml \
+    $(LOCAL_PATH)/permissions/com.motorola.android.tcmd.xml:system/etc/permissions/com.motorola.android.tcmd.xml \
+    $(LOCAL_PATH)/permissions/com.motorola.camera.xml:system/etc/permissions/com.motorola.camera.xml \
+    $(LOCAL_PATH)/permissions/com.motorola.context.xml:system/etc/permissions/com.motorola.context.xml \
+    $(LOCAL_PATH)/permissions/com.motorola.gallery.xml:system/etc/permissions/com.motorola.gallery.xml \
+    $(LOCAL_PATH)/permissions/com.motorola.smartaction.xml:system/etc/permissions/com.motorola.smartaction.xml \
+    $(LOCAL_PATH)/permissions/com.motorola.software.bodyguard.xml:system/etc/permissions/com.motorola.software.bodyguard.xml \
+    $(LOCAL_PATH)/permissions/com.motorola.software.guideme.xml:system/etc/permissions/com.motorola.software.guideme.xml \
+    $(LOCAL_PATH)/permissions/com.motorola.software.storageoptimizer.xml:system/etc/permissions/com.motorola.software.storageoptimizer.xml \
+
 # System Properties
 -include $(LOCAL_PATH)/system_prop.mk
 
