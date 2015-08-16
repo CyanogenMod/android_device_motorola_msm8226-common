@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<permissions>
+    <feature name="com.motorola.smartaction2" />
+    <feature name="com.motorola.smartactions2_1.1" />
+</permissions>
