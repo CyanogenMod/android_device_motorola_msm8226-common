@@ -20,6 +20,7 @@ $(call inherit-product, vendor/motorola/msm8226-common/msm8226-common-vendor.mk)
 
 # Overlay
 DEVICE_PACKAGE_OVERLAYS += $(LOCAL_PATH)/overlay
+PRODUCT_GMS_CLIENTID_BASE := android-motorola
 
 # Permissions
 PRODUCT_COPY_FILES += \
@@ -42,6 +43,26 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.wifi.xml:system/etc/permissions/android.hardware.wifi.xml \
     frameworks/native/data/etc/android.software.sip.voip.xml:system/etc/permissions/android.software.sip.voip.xml \
     frameworks/native/data/etc/handheld_core_hardware.xml:system/etc/permissions/handheld_core_hardware.xml
+
+# Motorola-specific permissions
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/permissions/com.motorola.android.dm.service.xml:system/etc/permissions/com.motorola.android.dm.service.xml \
+    $(LOCAL_PATH)/permissions/com.motorola.android.settings.shared.xml:system/etc/permissions/com.motorola.android.settings.shared.xml \
+    $(LOCAL_PATH)/permissions/com.motorola.android.tcmd.xml:system/etc/permissions/com.motorola.android.tcmd.xml \
+    $(LOCAL_PATH)/permissions/com.motorola.camera.xml:system/etc/permissions/com.motorola.camera.xml \
+    $(LOCAL_PATH)/permissions/com.motorola.context.xml:system/etc/permissions/com.motorola.context.xml \
+    $(LOCAL_PATH)/permissions/com.motorola.fpsmotosignature.xml:system/etc/permissions/com.motorola.fpsmotosignature.xml \
+    $(LOCAL_PATH)/permissions/com.motorola.frameworks.core.addon.xml:system/etc/permissions/com.motorola.frameworks.core.addon.xml \
+    $(LOCAL_PATH)/permissions/com.motorola.gallery.xml:system/etc/permissions/com.motorola.gallery.xml \
+    $(LOCAL_PATH)/permissions/com.motorola.moodle.library.xml:system/etc/permissions/com.motorola.moodle.library.xml \
+    $(LOCAL_PATH)/permissions/com.motorola.motosignature.xml:system/etc/permissions/com.motorola.motosignature.xml \
+    $(LOCAL_PATH)/permissions/com.motorola.smartaction.xml:system/etc/permissions/com.motorola.smartaction.xml \
+    $(LOCAL_PATH)/permissions/com.motorola.software.bodyguard.xml:system/etc/permissions/com.motorola.software.bodyguard.xml \
+    $(LOCAL_PATH)/permissions/com.motorola.software.fmradioservice.xml:system/etc/permissions/com.motorola.software.fmradioservice.xml \
+    $(LOCAL_PATH)/permissions/com.motorola.software.fmrecording.xml:system/etc/permissions/com.motorola.software.fmrecording.xml \
+    $(LOCAL_PATH)/permissions/com.motorola.software.guideme.xml:system/etc/permissions/com.motorola.software.guideme.xml \
+    $(LOCAL_PATH)/permissions/com.motorola.software.storageoptimizer.xml:system/etc/permissions/com.motorola.software.storageoptimizer.xml \
+    $(LOCAL_PATH)/permissions/com.motorola.software.x_line.xml:system/etc/permissions/com.motorola.software.x_line.xml
 
 # System Properties
 -include $(LOCAL_PATH)/system_prop.mk
