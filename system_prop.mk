@@ -114,6 +114,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.usb.bpteth=0x2e2a \
     ro.usb.bpteth_adb=0x2e2b
 
+# Play store
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.com.google.clientidbase.gmm=android-motorola
+
 # Wifi
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.sys.qc.sub.rdump.on=1 \
