@@ -33,6 +33,9 @@
 
 #define MAX_PATH_SIZE 80
 
+#define LED_LIGHT_ON 255
+#define LED_LIGHT_OFF 0
+
 static pthread_once_t g_init = PTHREAD_ONCE_INIT;
 static pthread_mutex_t g_lock = PTHREAD_MUTEX_INITIALIZER;
 static struct light_state_t g_notification;
@@ -135,11 +138,12 @@ set_speaker_light_locked(struct light_device_t* dev,
     int len;
     int blink;
     int onMS, offMS, ramp;
-    unsigned int colorRGB;
+    int level;
     char blink_pattern[PAGE_SIZE];
 
     switch (state->flashMode) {
         case LIGHT_FLASH_TIMED:
+        case LIGHT_FLASH_HARDWARE:
             onMS = state->flashOnMS;
             offMS = state->flashOffMS;
             break;
@@ -150,10 +154,7 @@ set_speaker_light_locked(struct light_device_t* dev,
             break;
     }
 
-    colorRGB = state->color;
-
     if (onMS > 0 && offMS > 0) {
-
         blink = 1;
         ramp = 1;
     } else {
@@ -161,15 +162,17 @@ set_speaker_light_locked(struct light_device_t* dev,
         ramp = 0;
     }
 
-    // See hardware/libhardware/include/hardware/lights.h
-    int brightness = ((77 * ((colorRGB >> 16) & 0xFF)) +
-                      (150 * ((colorRGB >> 8) & 0xFF)) +
-                      (29 * (colorRGB & 0xFF))) >> 8;
-    write_int(WHITE_LED_FILE, (int) brightness);
+    if (state->color & 0xffffff)
+        level = LED_LIGHT_ON;
+    else
+        level = LED_LIGHT_OFF;
 
     if (blink) {
-        sprintf(blink_pattern,"%6x %d %d %d %d",colorRGB,onMS,offMS,ramp,ramp);
+        /* The red component determines the brightness of the LED */
+        sprintf(blink_pattern,"%x0000 %d %d %d %d",level,onMS,offMS,ramp,ramp);
         write_str(RGB_CONTROL_FILE, blink_pattern);
+    } else {
+        write_int(WHITE_LED_FILE, level);
     }
 
     return 0;
