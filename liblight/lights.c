@@ -33,14 +33,11 @@
 
 #define MAX_PATH_SIZE 80
 
+#define LED_LIGHT_OFF 0
+#define LED_LIGHT_ON 255
+
 static pthread_once_t g_init = PTHREAD_ONCE_INIT;
 static pthread_mutex_t g_lock = PTHREAD_MUTEX_INITIALIZER;
-static struct light_state_t g_notification;
-static struct light_state_t g_battery;
-static int g_attention = 0;
-
-char const*const WHITE_LED_FILE
-        = "/sys/class/leds/white/brightness";
 
 char const*const LCD_FILE
         = "/sys/class/leds/lcd-backlight/brightness";
@@ -129,17 +126,15 @@ set_light_backlight(struct light_device_t* dev,
 }
 
 static int
-set_speaker_light_locked(struct light_device_t* dev,
-        struct light_state_t const* state)
+set_light_locked(struct light_state_t const* state)
 {
-    int len;
-    int blink;
-    int onMS, offMS, ramp;
-    unsigned int colorRGB;
+    int onMS, offMS;
+    int brightness_level;
     char blink_pattern[PAGE_SIZE];
 
     switch (state->flashMode) {
         case LIGHT_FLASH_TIMED:
+        case LIGHT_FLASH_HARDWARE:
             onMS = state->flashOnMS;
             offMS = state->flashOffMS;
             break;
@@ -150,67 +145,31 @@ set_speaker_light_locked(struct light_device_t* dev,
             break;
     }
 
-    colorRGB = state->color;
+    if (is_lit(state))
+        brightness_level = LED_LIGHT_ON;
+    else
+        brightness_level = LED_LIGHT_OFF;
 
-    if (onMS > 0 && offMS > 0) {
+    /*
+     * The red component of what should be the color of the LED
+     * is actually the brightness level (0 <-> 255).
+     * Ramp up/down are hard-coded in the kernel driver.
+     */
+    sprintf(blink_pattern, "%x0000 %d %d 1 1", brightness_level, onMS, offMS);
 
-        blink = 1;
-        ramp = 1;
-    } else {
-        blink = 0;
-        ramp = 0;
-    }
-
-    // See hardware/libhardware/include/hardware/lights.h
-    int brightness = ((77 * ((colorRGB >> 16) & 0xFF)) +
-                      (150 * ((colorRGB >> 8) & 0xFF)) +
-                      (29 * (colorRGB & 0xFF))) >> 8;
-    write_int(WHITE_LED_FILE, (int) brightness);
-
-    if (blink) {
-        sprintf(blink_pattern,"%6x %d %d %d %d",colorRGB,onMS,offMS,ramp,ramp);
-        write_str(RGB_CONTROL_FILE, blink_pattern);
-    }
-
-    return 0;
-}
-
-static void
-handle_speaker_battery_locked(struct light_device_t* dev)
-{
-    if (is_lit(&g_battery)) {
-        set_speaker_light_locked(dev, &g_battery);
-    } else {
-        set_speaker_light_locked(dev, &g_notification);
-    }
+    return write_str(RGB_CONTROL_FILE, blink_pattern);
 }
 
 static int
 set_light_notifications(struct light_device_t* dev,
         struct light_state_t const* state)
 {
+    int err = 0;
     pthread_mutex_lock(&g_lock);
-    g_notification = *state;
-    handle_speaker_battery_locked(dev);
+    err = set_light_locked(state);
     pthread_mutex_unlock(&g_lock);
-    return 0;
+    return err;
 }
-
-static int
-set_light_attention(struct light_device_t* dev,
-        struct light_state_t const* state)
-{
-    pthread_mutex_lock(&g_lock);
-    if (state->flashMode == LIGHT_FLASH_HARDWARE) {
-        g_attention = state->flashOnMS;
-    } else if (state->flashMode == LIGHT_FLASH_NONE) {
-        g_attention = 0;
-    }
-    handle_speaker_battery_locked(dev);
-    pthread_mutex_unlock(&g_lock);
-    return 0;
-}
-
 
 /** Close the lights device */
 static int
@@ -241,7 +200,7 @@ static int open_lights(const struct hw_module_t* module, char const* name,
     else if (0 == strcmp(LIGHT_ID_NOTIFICATIONS, name))
         set_light = set_light_notifications;
     else if (0 == strcmp(LIGHT_ID_ATTENTION, name))
-        set_light = set_light_attention;
+        set_light = set_light_notifications;
     else
         return -EINVAL;
 
