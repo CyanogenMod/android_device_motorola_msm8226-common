@@ -195,10 +195,6 @@
 /dev/wcnss_wlan           0660   system     system
 /dev/wcnss_ctrl           0660   system     system
 
-#nfc permissions
-/dev/nfc-nci              0660    nfc         nfc
-/dev/bcm2079x-i2c         0660  nfc          nfc
-
 # UIO devices
 /dev/uio0                 0660   system     system
 /dev/uio1                 0660   system     system
@@ -241,9 +237,6 @@
 
 # L3G4200D Gyro
 /dev/l3g4200d             0660   compass    compass
-
-#PN544 NFC
-/dev/pn544                0660   nfc        nfc
 
 # kernel logs
 /dev/log/kernel           0600   root       log
