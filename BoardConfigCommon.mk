@@ -95,6 +95,9 @@ TARGET_POWERHAL_VARIANT := qcom
 # Partitions
 BOARD_FLASH_BLOCK_SIZE := 131072
 
+# Properties
+TARGET_SYSTEM_PROP := $(LOCAL_PATH)/system.prop
+
 # Qualcomm support
 BOARD_USES_QCOM_HARDWARE := true
 
