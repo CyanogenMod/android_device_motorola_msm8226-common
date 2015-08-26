@@ -304,6 +304,19 @@ on boot
     chown system system /sys/kernel/ipv4/tcp_delack_seg
     chown system system /sys/kernel/ipv4/tcp_use_userconfig
 
+#   Define TCP buffer sizes for various networks
+#   ReadMin, ReadInitial, ReadMax, WriteMin, WriteInitial, WriteMax,
+    setprop net.tcp.buffersize.default 4096,87380,110208,4096,16384,110208
+    setprop net.tcp.buffersize.lte     524288,1048576,2097152,262144,524288,1048576
+    setprop net.tcp.buffersize.umts    4094,87380,110208,4096,16384,110208
+    setprop net.tcp.buffersize.hspa    4094,87380,1220608,4096,16384,1220608
+    setprop net.tcp.buffersize.hsupa   4094,87380,1220608,4096,16384,1220608
+    setprop net.tcp.buffersize.hsdpa   4094,87380,1220608,4096,16384,1220608
+    setprop net.tcp.buffersize.hspap   4094,87380,1220608,4096,16384,1220608
+    setprop net.tcp.buffersize.edge    4093,26280,35040,4096,16384,35040
+    setprop net.tcp.buffersize.gprs    4092,8760,11680,4096,8760,11680
+    setprop net.tcp.buffersize.evdo    4094,87380,262144,4096,16384,262144
+
 # Define TCP delayed ack settings for WiFi & LTE
     setprop net.tcp.delack.default     1
     setprop net.tcp.delack.wifi        20
@@ -312,35 +325,10 @@ on boot
     setprop net.tcp.usercfg.wifi       1
     setprop net.tcp.usercfg.lte        1
 
-    # Optimize TCP parameters for QCOM-8x26 products with LTE support
-    # This init file will override the values defined in init.rc file.
-    # Carrier specific init.<carrier>.rc file will override this file.
-    # ReadMin, ReadInitial, ReadMax, WriteMin, WriteInitial, WriteMax,
-    setprop net.tcp.buffersize.default 131072,262144,1048576,4096,16384,262144
-    setprop net.tcp.buffersize.wifi 131072,262144,3145728,4096,221184,3145728
-    setprop net.tcp.buffersize.umts 131072,262144,1452032,4096,16384,399360
-    setprop net.tcp.buffersize.edge 16384,32768,131072,4096,16384,65536
-    setprop net.tcp.buffersize.gprs 4096,8192,24576,4096,8192,24576
-    setprop net.tcp.buffersize.hspa 131072,262144,2441216,4096,16384,399360
-    setprop net.tcp.buffersize.hsdpa 131072,262144,2441216,4096,16384,399360
-    setprop net.tcp.buffersize.hsupa 131072,262144,2441216,4096,16384,399360
-    setprop net.tcp.buffersize.hspap 131072,262144,2441216,4096,16384,399360
-    setprop net.tcp.buffersize.cdma  4096,12288,49152,4096,12288,49152
-    setprop net.tcp.buffersize.1xrtt 16384,32768,131072,4096,16384,102400
-    setprop net.tcp.buffersize.evdo  16384,32768,131072,4096,16384,102400
-    setprop net.tcp.buffersize.evdo_b 131072,262144,1048576,4096,16384,524288
-    setprop net.tcp.buffersize.ehrpd  131072,262144,1048576,4096,16384,524288
-    setprop net.tcp.buffersize.lte 524288,1048576,8388608,262144,524288,4194304
-    setprop net.tcp.buffersize.2ghotspot 4096,16384,65536,16384,32768,131072
-    setprop net.tcp.buffersize.2ghotspot2 4096,16384,102400,16384,32768,131072
-    setprop net.tcp.buffersize.3ghotspot 4096,16384,399360,131072,262144,2441216
-    setprop net.tcp.buffersize.3ghotspot2 4096,16384,524288,131072,262144,1048576
-    setprop net.tcp.buffersize.4ghotspot 262144,524288,4194304,524288,1048576,8388608
-
-    # Assign TCP buffer thresholds to be ceiling value of technology maximums
-    # Increased technology maximums should be reflected here.
-    write /proc/sys/net/core/rmem_max  8388608
-    write /proc/sys/net/core/wmem_max  8388608
+#   Assign TCP buffer thresholds to be ceiling value of technology maximums
+#   Increased technology maximums should be reflected here.
+    write /proc/sys/net/core/rmem_max  2097152
+    write /proc/sys/net/core/wmem_max  2097152
 
     #To allow interfaces to get v6 address when tethering is enabled
     write /proc/sys/net/ipv6/conf/rmnet0/accept_ra 2
