@@ -147,7 +147,8 @@ set_light_locked(struct light_state_t const* state)
     }
 
     if (is_lit(state))
-        brightness_level = LED_LIGHT_ON;
+        brightness_level = (state->color & 0xff000000) ?
+                           (state->color & 0xff000000) >> 24 : LED_LIGHT_ON;
     else
         brightness_level = LED_LIGHT_OFF;
 
