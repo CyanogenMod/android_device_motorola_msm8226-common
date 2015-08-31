@@ -707,6 +707,7 @@ service xtwifi_inet /system/bin/xtwifi-inet-agent
 
 # Charger
 on charger
+    setprop sys.usb.config mass_storage
     wait /dev/block/platform/msm_sdcc.1/by-name/system
     mount ext4 /dev/block/platform/msm_sdcc.1/by-name/system /system ro barrier=1
 
