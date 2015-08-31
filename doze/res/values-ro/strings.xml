@@ -19,5 +19,7 @@
   <string name="ambient_display_enable_title">Afișare ambientală</string>
   <string name="ambient_display_enable_summary">Trezește ecran când primiți notificări</string>
   <string name="hand_wave_gesture_title">Unduire mână</string>
+  <string name="hand_wave_gesture_summary">Pulsează notificările la unduirea mâinii</string>
   <string name="pocket_gesture_title">Buzunar</string>
+  <string name="pocket_gesture_summary">Pulsează notificările la scoaterea din buzunar</string>
 </resources>
