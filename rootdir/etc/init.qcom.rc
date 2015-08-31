@@ -806,6 +806,8 @@ on property:sys.perf.profile=0
     write /sys/devices/system/cpu/cpu3/cpufreq/scaling_governor powersave
     write /sys/class/devfreq/fdb00000.qcom,kgsl-3d0/governor powersave
     write /sys/class/devfreq/qcom,cpubw.63/governor powersave
+
+    exec /system/bin/rm /data/system/default_values
     start mpdecision
 
 # Balanced
@@ -829,6 +831,8 @@ on property:sys.perf.profile=1
 
     write /sys/class/devfreq/fdb00000.qcom,kgsl-3d0/governor msm-adreno-tz
     write /sys/class/devfreq/qcom,cpubw.63/governor msm_cpufreq
+
+    exec /system/bin/rm /data/system/default_values
     start mpdecision
 
 # High performance
