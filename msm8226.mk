@@ -92,8 +92,8 @@ PRODUCT_PACKAGES += \
     memtrack.msm8226
 
 # Doze
-PRODUCT_PACKAGES += \
-    MotoDoze
+#PRODUCT_PACKAGES += \
+#    MotoDoze
 
 # Ebtables
 PRODUCT_PACKAGES += \
