@@ -1,4 +1,4 @@
-/* Copyright (c) 2013, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -61,6 +61,8 @@ extern "C" {
 
 #define ULP_MIN_INTERVAL_INVALID 0xffffffff
 
+/*Emergency SUPL*/
+#define GPS_NI_TYPE_EMERGENCY_SUPL    4
 
 typedef struct {
     /** set to sizeof(UlpLocation) */
@@ -71,6 +73,10 @@ typedef struct {
     /*allows HAL to pass additional information related to the location */
     int             rawDataSize;         /* in # of bytes */
     void            * rawData;
+    bool            is_indoor;
+    float           floor_number;
+    char            map_url[GPS_LOCATION_MAP_URL_SIZE];
+    unsigned char   map_index[GPS_LOCATION_MAP_INDEX_SIZE];
 } UlpLocation;
 
 /** AGPS type */
@@ -85,6 +91,12 @@ typedef int16_t AGpsExtType;
 
 /** SSID length */
 #define SSID_BUF_SIZE (32+1)
+
+typedef int16_t AGpsBearerType;
+#define AGPS_APN_BEARER_INVALID    -1
+#define AGPS_APN_BEARER_IPV4        0
+#define AGPS_APN_BEARER_IPV6        1
+#define AGPS_APN_BEARER_IPV4V6      2
 
 /** GPS extended callback structure. */
 typedef struct {
@@ -117,8 +129,8 @@ typedef struct {
 
     AGpsExtType type;
     AGpsStatusValue status;
-    uint32_t        ipaddr;
-    struct sockaddr_storage addr;
+    uint32_t        ipv4_addr;
+    char            ipv6_addr[16];
     char            ssid[SSID_BUF_SIZE];
     char            password[SSID_BUF_SIZE];
 } AGpsExtStatus;
@@ -166,6 +178,22 @@ typedef enum loc_position_mode_type {
 } LocPositionMode;
 
 #define MIN_POSSIBLE_FIX_INTERVAL 1000 /* msec */
+
+/** GpsLocationExtended has valid latitude and longitude. */
+#define GPS_LOCATION_EXTENDED_HAS_LAT_LONG   (1U<<0)
+/** GpsLocationExtended has valid altitude. */
+#define GPS_LOCATION_EXTENDED_HAS_ALTITUDE   (1U<<1)
+/** GpsLocationExtended has valid speed. */
+#define GPS_LOCATION_EXTENDED_HAS_SPEED      (1U<<2)
+/** GpsLocationExtended has valid bearing. */
+#define GPS_LOCATION_EXTENDED_HAS_BEARING    (1U<<4)
+/** GpsLocationExtended has valid accuracy. */
+#define GPS_LOCATION_EXTENDED_HAS_ACCURACY   (1U<<8)
+
+/** GPS extended supports geofencing */
+#define GPS_EXTENDED_CAPABILITY_GEOFENCE     0x0000001
+/** GPS extended supports batching */
+#define GPS_EXTENDED_CAPABILITY_BATCHING     0x0000002
 
 /** Flags to indicate which values are valid in a GpsLocationExtended. */
 typedef uint16_t GpsLocationExtendedFlags;
