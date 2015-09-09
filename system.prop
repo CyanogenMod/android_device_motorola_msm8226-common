@@ -85,6 +85,9 @@ rild.libpath=/system/vendor/lib/libril-qc-qmi-1.so
 
 ro.use_data_netmgrd=true
 
+# Scheduler
+sys.io.scheduler=fiops
+
 # Storage
 persist.sys.isUsbOtgEnabled=true
 
