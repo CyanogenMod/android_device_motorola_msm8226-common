@@ -63,14 +63,14 @@ persist.gps.qc_nlp_in_use=1
 persist.loc.nlp_name=com.qualcomm.services.location
 
 # NITZ
-persist.rild.nitz_long_ons_0=""
-persist.rild.nitz_long_ons_1=""
-persist.rild.nitz_long_ons_2=""
-persist.rild.nitz_long_ons_3=""
-persist.rild.nitz_short_ons_0=""
-persist.rild.nitz_short_ons_1=""
-persist.rild.nitz_short_ons_2=""
-persist.rild.nitz_short_ons_3=""
+persist.rild.nitz_long_ons_0=
+persist.rild.nitz_long_ons_1=
+persist.rild.nitz_long_ons_2=
+persist.rild.nitz_long_ons_3=
+persist.rild.nitz_short_ons_0=
+persist.rild.nitz_short_ons_1=
+persist.rild.nitz_short_ons_2=
+persist.rild.nitz_short_ons_3=
 
 # Qualcomm
 persist.timed.enable=true
