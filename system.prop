@@ -4,8 +4,8 @@ audio.offload.24bit.enable=false
 audio.offload.buffer.size.kb=32
 audio.offload.gapless.enabled=false
 audio.offload.multiple.enabled=false
+audio.offload.video=false
 
-av.offload.enable=false
 av.streaming.offload.enable=false
 
 mm.enable.smoothstreaming=true
