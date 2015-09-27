@@ -701,7 +701,14 @@ service xtwifi_inet /system/bin/xtwifi-inet-agent
 
 # Charger
 on charger
-    setprop sys.usb.config mass_storage
+    write /sys/class/android_usb/android0/iSerial ${ro.serialno}
+    write /sys/class/android_usb/android0/iManufacturer ${ro.product.manufacturer}
+    write /sys/class/android_usb/android0/iProduct ${ro.product.model}
+    write /sys/class/android_usb/android0/f_mass_storage/vendor ${ro.product.manufacturer}
+    write /sys/class/android_usb/android0/f_mass_storage/product ${ro.product.model}
+    # persist.sys.usb.config is defined in default.prop, override it
+    setprop persist.sys.usb.config charging
+
     wait /dev/block/platform/msm_sdcc.1/by-name/system
     mount ext4 /dev/block/platform/msm_sdcc.1/by-name/system /system ro barrier=1
 
