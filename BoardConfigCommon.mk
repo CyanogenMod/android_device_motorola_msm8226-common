@@ -88,9 +88,6 @@ MALLOC_IMPL := dlmalloc
 # Motorola
 TARGET_USES_MOTOROLA_LOG := true
 
-# Power
-TARGET_POWERHAL_VARIANT := qcom
-
 # Partitions
 BOARD_FLASH_BLOCK_SIZE := 131072
 
