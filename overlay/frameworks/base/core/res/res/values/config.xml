@@ -179,7 +179,7 @@
 
     <!-- Is the notification LED brightness adjustable ?
          Used to decide if the user can set LED brightness -->
-    <bool name="config_adjustableNotificationLedBrightness">true</bool>
+    <!-- <bool name="config_adjustableNotificationLedBrightness">true</bool> -->
 
     <!-- Is the notification LED intrusive? Used to decide if there should be a disable option -->
     <bool name="config_intrusiveNotificationLed">true</bool>
@@ -193,7 +193,7 @@
     <bool name="config_lidControlsSleep">true</bool>
 
     <!-- Boolean indicating whether Softap requires reloading AP firmware -->
-    <bool name="config_wifiApFirmwareReload">false</bool>
+    <!-- <bool name="config_wifiApFirmwareReload">false</bool> -->
 
     <!-- When true use the linux /dev/input/event subsystem to detect the switch changes
         on the headphone/microphone jack. When false use the older uevent framework. -->
@@ -229,7 +229,7 @@
             64 - Volume rocker
          For example, a device with Home, Back and Menu keys would set this
          config to 7. -->
-    <integer name="config_deviceHardwareWakeKeys">64</integer>
+    <!-- <integer name="config_deviceHardwareWakeKeys">64</integer> -->
 
     <!-- Minimum screen brightness setting allowed by the power manager.
          The user is forbidden from setting the brightness below this level. -->
@@ -237,13 +237,13 @@
 
     <!-- Defines the system property to set for performance profile xe: sys.cpu.modes. Leave it
          blank if the device do not support performance profiles -->
-    <string name="config_perf_profile_prop" translatable="false">sys.perf.profile</string>
+    <!-- <string name="config_perf_profile_prop" translatable="false">sys.perf.profile</string> -->
 
     <!-- When config_perf_profile_prop is defined, this value MUST be the index of
          one of the listes values in frameworks/base/core/res/res/values/cm_arrays.xml
          for "perf_profile_values" array. Leave it blank if the device do not support
          performance profiles  -->
-    <string name="config_perf_profile_default_entry" translatable="false">1</string>
+    <!-- <string name="config_perf_profile_default_entry" translatable="false">1</string> -->
 
     <!-- Component name of the geofence services provider. -->
     <string name="config_geofenceServicesProvider" translatable="false">com.motorola.motgeofencesvc</string>
