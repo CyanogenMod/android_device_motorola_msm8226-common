@@ -99,11 +99,11 @@ PRODUCT_PACKAGES += \
     setup_fs
 
 # FM
-PRODUCT_PACKAGES += \
-    FM2 \
-    FMRecord \
-    libqcomfm_jni \
-    qcom.fmradio
+#PRODUCT_PACKAGES += \
+#    FM2 \
+#    FMRecord \
+#    libqcomfm_jni \
+#    qcom.fmradio
 
 # GPS
 PRODUCT_PACKAGES += \
@@ -114,8 +114,8 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/sec_config:system/etc/sec_config
 
 # Keystore
-PRODUCT_PACKAGES += \
-    keystore.msm8226
+#PRODUCT_PACKAGES += \
+#    keystore.msm8226
 
 # Lights
 PRODUCT_PACKAGES += \
@@ -142,8 +142,8 @@ PRODUCT_BOOT_JARS += \
     qcmediaplayer
 
 # Power
-PRODUCT_PACKAGES += \
-    power.msm8226
+#PRODUCT_PACKAGES += \
+#    power.msm8226
 
 # Ramdisk
 PRODUCT_PACKAGES += \
