@@ -99,15 +99,15 @@ PRODUCT_PACKAGES += \
     setup_fs
 
 # FM
-PRODUCT_PACKAGES += \
-    FM2 \
-    FMRecord \
-    libqcomfm_jni \
-    qcom.fmradio
+#PRODUCT_PACKAGES += \
+#    FM2 \
+#    FMRecord \
+#    libqcomfm_jni \
+#    qcom.fmradio
 
 # GPS
-PRODUCT_PACKAGES += \
-    gps.msm8226
+#PRODUCT_PACKAGES += \
+#    gps.msm8226
 
 # IRSC
 PRODUCT_COPY_FILES += \
@@ -142,8 +142,8 @@ PRODUCT_BOOT_JARS += \
     qcmediaplayer
 
 # Power
-PRODUCT_PACKAGES += \
-    power.msm8226
+#PRODUCT_PACKAGES += \
+#    power.msm8226
 
 # Ramdisk
 PRODUCT_PACKAGES += \
