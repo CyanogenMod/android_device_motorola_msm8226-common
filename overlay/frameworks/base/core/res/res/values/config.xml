@@ -286,4 +286,8 @@
          proportionally to the smaller buckets. -1 keeps the default. -->
     <integer name="config_lowMemoryKillerMinFreeKbytesAbsolute">81920</integer>
 
+    <!-- If true, the screen can be rotated via the accelerometer in all 4
+        rotations as the default behavior. -->
+    <bool name="config_allowAllRotations">true</bool>
+
 </resources>
