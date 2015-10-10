@@ -245,8 +245,18 @@
          performance profiles  -->
     <string name="config_perf_profile_default_entry" translatable="false">1</string>
 
-    <!-- Component name of the geofence services provider. -->
-    <string name="config_geofenceServicesProvider" translatable="false">com.motorola.motgeofencesvc</string>
+    <!-- Whether to enable geofence overlay which allows geofence to be replaced
+         by an app at run-time. When disabled, only the
+         config_geofenceProviderPackageName package will be searched for
+         geofence implementation, otherwise packages whose signature matches the
+         signatures of config_locationProviderPackageNames will be searched, and
+         the service with the highest version number will be picked. Anyone who
+         wants to disable the overlay mechanism can set it to false.
+         -->
+    <bool name="config_enableGeofenceOverlay" translatable="false">false</bool>
+    <!-- Package name providing geofence API support. Used only when
+         config_enableGeofenceOverlay is false. -->
+    <string name="config_geofenceProviderPackageName" translatable="false">com.motorola.motgeofencesvc</string>
 
     <!-- Is the device capable of hot swapping an UICC Card -->
     <bool name="config_hotswapCapable">true</bool>
@@ -285,5 +295,9 @@
          on screen size and total memory for the largest lowmemorykiller bucket, and scaled
          proportionally to the smaller buckets. -1 keeps the default. -->
     <integer name="config_lowMemoryKillerMinFreeKbytesAbsolute">81920</integer>
+
+    <!-- If true, the screen can be rotated via the accelerometer in all 4
+        rotations as the default behavior. -->
+    <bool name="config_allowAllRotations">false</bool>
 
 </resources>
