@@ -79,7 +79,8 @@ PRODUCT_COPY_FILES += \
 
 # Camera
 PRODUCT_PACKAGES += \
-    libxml2
+    libxml2 \
+    libdmitry
 
 # Display
 PRODUCT_PACKAGES += \
