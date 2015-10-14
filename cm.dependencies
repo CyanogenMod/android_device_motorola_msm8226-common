@@ -10,5 +10,10 @@
   {
     "repository": "android_hardware_qcom_fm",
     "target_path": "hardware/qcom/fm"
+  },
+  {
+    "repository": "android_hardware_qcom_wlan",
+    "target_path": "hardware/qcom/wlan",
+    "revision": "cm-13.0-caf"
   }
 ]
