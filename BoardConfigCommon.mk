@@ -85,9 +85,6 @@ TARGET_PROVIDES_LIBLIGHT := true
 # Memory
 MALLOC_IMPL := dlmalloc
 
-# Motorola
-TARGET_USES_MOTOROLA_LOG := true
-
 # Power
 TARGET_POWERHAL_VARIANT := qcom
 
