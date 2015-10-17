@@ -8,6 +8,9 @@
     "target_path": "kernel/motorola/msm8226"
   },
   {
+    "repository": "android_external_stlport",
+    "target_path": "external/stlport"
+  },
     "repository": "android_hardware_qcom_fm",
     "target_path": "hardware/qcom/fm"
   }
