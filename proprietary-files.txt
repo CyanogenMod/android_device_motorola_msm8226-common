@@ -165,7 +165,6 @@ bin/netmgrd
 bin/qmuxd
 bin/radish
 bin/rfs_access
-bin/rild
 bin/rmt_storage
 bin/qmi_motext_hook
 etc/permissions/qcnvitems.xml
@@ -178,12 +177,12 @@ lib/libmdmcutback.so
 lib/libmdmdetect.so
 lib/libmotext_inf.so
 lib/libqmimotext.so
-lib/libril.so
 vendor/lib/libconfigdb.so
 vendor/lib/libnetmgr.so
 vendor/lib/libril-qc-qmi-1.so
 vendor/lib/libril-qcril-hook-oem.so
 vendor/lib/libsystem_health_mon.so
+vendor/lib/libsysutils_local.so
 vendor/lib/libxml.so
 
 # Thermal
