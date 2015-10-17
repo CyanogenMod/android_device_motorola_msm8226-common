@@ -77,10 +77,6 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/audio_platform_info.xml:system/etc/audio_platform_info.xml \
     $(LOCAL_PATH)/configs/audio_policy.conf:system/etc/audio_policy.conf
 
-# Camera
-PRODUCT_PACKAGES += \
-    libxml2
-
 # Display
 PRODUCT_PACKAGES += \
     copybit.msm8226 \
