@@ -25,7 +25,7 @@ vendor/lib/libbtnv.so
 
 # Camera
 bin/mm-qcamera-daemon
-lib/hw/camera.msm8226.so
+lib/hw/camera.msm8226.so:lib/hw/camera.vendor.msm8226.so
 lib/libmot_sensorlistener.so
 lib/libmm-qcamera.so
 lib/libmmcamera_ar0543.so
