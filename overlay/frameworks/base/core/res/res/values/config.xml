@@ -245,8 +245,8 @@
          performance profiles  -->
     <!-- <string name="config_perf_profile_default_entry" translatable="false">1</string> -->
 
-    <!-- Component name of the service providing geofence API support. -->
-    <string name="config_geofenceProvider" translatable="false">com.motorola.motgeofencesvc</string>
+    <!-- Component name of the service providing geofence API support.
+    <string name="config_geofenceProvider" translatable="false">com.motorola.motgeofencesvc</string> -->
 
     <!-- Is the device capable of hot swapping an UICC Card -->
     <bool name="config_hotswapCapable">true</bool>
