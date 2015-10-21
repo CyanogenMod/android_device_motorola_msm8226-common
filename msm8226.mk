@@ -79,6 +79,7 @@ PRODUCT_COPY_FILES += \
 
 # Camera
 PRODUCT_PACKAGES += \
+    libboringssl-compat \
     libxml2
 
 # Display
