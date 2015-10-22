@@ -112,7 +112,7 @@ TARGET_RELEASETOOLS_EXTENSIONS := $(VENDOR_PATH)
 # SELinux
 -include device/qcom/sepolicy/sepolicy.mk
 
-#BOARD_SEPOLICY_DIRS += $(VENDOR_PATH)/sepolicy
+BOARD_SEPOLICY_DIRS += $(VENDOR_PATH)/sepolicy
 
 # Vold
 BOARD_VOLD_DISC_HAS_MULTIPLE_MAJORS := true

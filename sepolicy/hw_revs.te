@@ -1,0 +1,9 @@
+type hw_revs, domain;
+type hw_revs_exec, exec_type, file_type;
+init_daemon_domain(hw_revs)
+
+allow hw_revs shell_exec:file read;
+
+allow hw_revs hardware_revisions_data_file:dir { open read write setattr remove_name search getattr add_name };
+allow hw_revs hardware_revisions_data_file:file { write append setattr getattr open unlink create };
+allow hw_revs system_file:file execute_no_trans;

@@ -1,0 +1,2 @@
+allow fsck block_device:blk_file getattr;
+allow fsck modem_efs_partition_device:blk_file getattr;
