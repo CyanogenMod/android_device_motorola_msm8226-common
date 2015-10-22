@@ -1,0 +1,11 @@
+# for init_falcon to read filesystem type
+allow qti_init_shell userdata_block_device:blk_file r_file_perms;
+allow qti_init_shell utags_block_device:blk_file r_file_perms;
+
+# Required for FM
+allow qti_init_shell apk_data_file:dir rw_dir_perms;
+allow qti_init_shell apk_data_file:file create_file_perms;
+
+allow qti_init_shell block_device:blk_file r_file_perms;
+allow qti_init_shell block_device:dir search;
+allow qti_init_shell default_prop:property_service set;
