@@ -1,2 +1,6 @@
+type thermal-engine, domain;
+type thermal-engine_exec, exec_type, file_type;
+init_daemon_domain(thermal-engine)
+
 allow thermal-engine sysfs_battery_supply:dir search;
 allow thermal-engine sysfs_battery_supply:file { open read write };

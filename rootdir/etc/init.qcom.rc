@@ -68,7 +68,7 @@ on fs
 
     # Mount PDS
     wait /dev/block/platform/msm_sdcc.1/by-name/pds
-    exec /system/bin/mount_pds.sh
+    start mount_pds
 
     # Set correct permissions for HOB, DHOB
     exec /system/bin/chmod -L 660 /dev/block/platform/msm_sdcc.1/by-name/hob
@@ -416,12 +416,6 @@ service adsprpcd /system/bin/adsprpcd
     user media
     group media
 
-service atvc_core /system/bin/dbvc_atvc_property_set
-    class core
-    user mot_atvc
-    group mot_tpapi
-    oneshot
-
 service atvc /system/bin/dbvc_atvc_property_set
     class late_start
     user mot_atvc
@@ -472,6 +466,13 @@ service mmi-boot-sh /system/bin/sh /init.mmi.boot.sh
     class core
     user root
     oneshot
+
+service mount_pds /system/bin/sh /system/bin/mount_pds.sh
+    class main
+    user root
+    group root
+    oneshot
+    disabled
 
 service_redefine ril-daemon /system/bin/rild
     class main
