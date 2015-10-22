@@ -68,7 +68,7 @@ on fs
 
     # Mount PDS
     wait /dev/block/platform/msm_sdcc.1/by-name/pds
-    exec /system/bin/mount_pds.sh
+    start mount_pds
 
     # Set correct permissions for HOB, DHOB
     exec /system/bin/chmod -L 660 /dev/block/platform/msm_sdcc.1/by-name/hob
@@ -122,6 +122,9 @@ on post-fs-data
     chmod 0770 /pds/public/atvc
     mkdir /data/local/dbvc 0750 mot_tcmd shell
     mkdir /data/local/atvc 0775 mot_tcmd shell
+
+    # Hardware revisions
+    mkdir /data/hardware_revisions 0755 system system
 
     # Wifi
     restorecon /data/hostapd
@@ -472,6 +475,13 @@ service mmi-boot-sh /system/bin/sh /init.mmi.boot.sh
     class core
     user root
     oneshot
+
+service mount_pds /system/bin/sh /system/bin/mount_pds.sh
+    class main
+    user root
+    group root
+    oneshot
+    disabled
 
 service_redefine ril-daemon /system/bin/rild
     class main
