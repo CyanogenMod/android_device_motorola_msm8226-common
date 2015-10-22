@@ -1,0 +1,8 @@
+allow toolbox sensors_data_file:dir create_file_perms;
+allow toolbox sensors_data_file:fifo_file { getattr setattr };
+allow toolbox sensors_data_file:file { getattr setattr };
+
+allow toolbox block_device:blk_file { getattr setattr };
+allow toolbox mpctl_data_file:file { write getattr unlink };
+allow toolbox system_data_file:dir { write remove_name };
+allow toolbox self:capability { chown dac_override };
