@@ -1,0 +1,3 @@
+allow toolbox sensors_data_file:dir { read getattr open search setattr };
+allow toolbox sensors_data_file:fifo_file { getattr setattr };
+allow toolbox sensors_data_file:file { getattr setattr };
