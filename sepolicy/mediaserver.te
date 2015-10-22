@@ -1,1 +1,3 @@
+allow mediaserver system_file:file execmod;
 allow mediaserver shell_data_file:dir search;
+allow mediaserver socket_device:sock_file write;
