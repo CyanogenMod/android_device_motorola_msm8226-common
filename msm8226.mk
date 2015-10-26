@@ -91,6 +91,10 @@ PRODUCT_PACKAGES += \
     hwcomposer.msm8226 \
     memtrack.msm8226
 
+# Doze
+PRODUCT_PACKAGES += \
+    MotoDoze
+
 # Ebtables
 PRODUCT_PACKAGES += \
     ebtables \
