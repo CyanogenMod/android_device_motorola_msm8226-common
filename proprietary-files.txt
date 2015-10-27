@@ -62,7 +62,6 @@ vendor/lib/mediadrm/libwvdrmengine.so
 # GPS
 -app/com.qualcomm.location/com.qualcomm.location.apk
 -app/com.qualcomm.services.location/com.qualcomm.services.location.apk
--app/MotGeoFenceSvc/MotGeoFenceSvc.apk
 bin/location-mq
 bin/xtwifi-client
 bin/xtwifi-inet-agent
