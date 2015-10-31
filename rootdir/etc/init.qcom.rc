@@ -114,6 +114,9 @@ on post-fs-data
     restorecon /data/hostapd
     restorecon /data/misc/wifi/hostapd/wlan0
 
+    # Hardware revisions
+    mkdir /data/hardware_revisions 0755 system system
+
     #Create directories for gpsone_daemon services
     mkdir /data/misc/gpsone_d 0770 system gps
 
@@ -764,5 +767,5 @@ on property:sys.boot_completed=1
     chmod 0664 /sys/devices/system/cpu/cpu2/online
     chmod 0664 /sys/devices/system/cpu/cpu3/online
 
-    exec /system/bin/rm /data/system/default_values
+    rm /data/system/default_values
     start mpdecision
