@@ -68,7 +68,7 @@ on fs
 
     # Mount PDS
     wait /dev/block/platform/msm_sdcc.1/by-name/pds
-    exec /system/bin/mount_pds.sh
+    start mount_pds
 
     # Set correct permissions for HOB, DHOB
     exec /system/bin/chmod -L 660 /dev/block/platform/msm_sdcc.1/by-name/hob
@@ -126,6 +126,9 @@ on post-fs-data
     # Wifi
     restorecon /data/hostapd
     restorecon /data/misc/wifi/hostapd/wlan0
+
+    # Hardware revisions
+    mkdir /data/hardware_revisions 0755 system system
 
     #Create directories for gpsone_daemon services
     mkdir /data/misc/gpsone_d 0770 system gps
@@ -474,6 +477,13 @@ service mmi-boot-sh /system/bin/sh /init.mmi.boot.sh
     class core
     user root
     oneshot
+
+service mount_pds /system/bin/sh /system/bin/mount_pds.sh
+    class main
+    user root
+    group root
+    oneshot
+    disabled
 
 service_redefine ril-daemon /system/bin/rild
     class main
