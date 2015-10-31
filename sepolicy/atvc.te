@@ -4,4 +4,5 @@ init_daemon_domain(atvc)
 
 allow atvc atvc_prop:property_service set;
 allow atvc pds_file:dir search;
+allow atvc pds_public_file:dir search;
 unix_socket_connect(atvc, property, init)
