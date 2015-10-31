@@ -68,7 +68,7 @@ on fs
 
     # Mount PDS
     wait /dev/block/platform/msm_sdcc.1/by-name/pds
-    exec /system/bin/mount_pds.sh
+    start mount_pds
 
     # Set correct permissions for HOB, DHOB
     exec /system/bin/chmod -L 660 /dev/block/platform/msm_sdcc.1/by-name/hob
@@ -126,6 +126,9 @@ on post-fs-data
     # Wifi
     restorecon /data/hostapd
     restorecon /data/misc/wifi/hostapd/wlan0
+
+    # Hardware revisions
+    mkdir /data/hardware_revisions 0755 system system
 
     #Create directories for gpsone_daemon services
     mkdir /data/misc/gpsone_d 0770 system gps
@@ -475,6 +478,13 @@ service mmi-boot-sh /system/bin/sh /init.mmi.boot.sh
     user root
     oneshot
 
+service mount_pds /system/bin/sh /system/bin/mount_pds.sh
+    class main
+    user root
+    group root
+    oneshot
+    disabled
+
 service_redefine ril-daemon /system/bin/rild
     class main
     socket rild stream 660 root radio
@@ -779,7 +789,6 @@ on property:sys.perf.profile=0
     write /sys/class/devfreq/fdb00000.qcom,kgsl-3d0/governor powersave
     write /sys/class/devfreq/qcom,cpubw.63/governor powersave
 
-    exec /system/bin/rm /data/system/default_values
     start mpdecision
 
 # Balanced
@@ -804,7 +813,6 @@ on property:sys.perf.profile=1
     write /sys/class/devfreq/fdb00000.qcom,kgsl-3d0/governor msm-adreno-tz
     write /sys/class/devfreq/qcom,cpubw.63/governor msm_cpufreq
 
-    exec /system/bin/rm /data/system/default_values
     start mpdecision
 
 # High performance
