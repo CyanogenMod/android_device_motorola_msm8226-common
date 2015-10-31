@@ -70,22 +70,6 @@ on fs
     wait /dev/block/platform/msm_sdcc.1/by-name/pds
     exec /system/bin/mount_pds.sh
 
-    # Set correct permissions for HOB, DHOB
-    exec /system/bin/chmod -L 660 /dev/block/platform/msm_sdcc.1/by-name/hob
-    exec /system/bin/chmod -L 660 /dev/block/platform/msm_sdcc.1/by-name/dhob
-    exec /system/bin/chmod -L 660 /dev/block/platform/msm_sdcc.1/by-name/clogo
-    exec /system/bin/chown -L root:radio /dev/block/platform/msm_sdcc.1/by-name/hob
-    exec /system/bin/chown -L root:radio /dev/block/platform/msm_sdcc.1/by-name/dhob
-    exec /system/bin/chown -L root:mot_tcmd /dev/block/platform/msm_sdcc.1/by-name/clogo
-
-    # Set correct permissions for CID
-    exec /system/bin/chmod -L 660 /dev/block/platform/msm_sdcc.1/by-name/cid
-    exec /system/bin/chown -L root:mot_dbvc /dev/block/platform/msm_sdcc.1/by-name/cid
-
-    # Set permissions for BL logs
-    exec /system/bin/chmod -L 640 /dev/block/platform/msm_sdcc.1/by-name/logs
-    exec /system/bin/chown -L root:system /dev/block/platform/msm_sdcc.1/by-name/logs
-
     # activate zram
     swapon_all fstab.qcom
     write /proc/sys/vm/page-cluster 0
@@ -126,6 +110,9 @@ on post-fs-data
     # Wifi
     restorecon /data/hostapd
     restorecon /data/misc/wifi/hostapd/wlan0
+
+    # Hardware revisions
+    mkdir /data/hardware_revisions 0755 system system
 
     #Create directories for gpsone_daemon services
     mkdir /data/misc/gpsone_d 0770 system gps
@@ -174,12 +161,6 @@ on post-fs-data
 
     # Setup folder for native to transfer data to NativeDropBoxAgent
     mkdir /data/system/dropbox-add 0730 system diag
-
-    # Set correct permissions for UTAGS
-    exec /system/bin/chown -L mot_tcmd:system /dev/block/platform/msm_sdcc.1/by-name/utags
-    exec /system/bin/chown -L mot_tcmd:system /dev/block/platform/msm_sdcc.1/by-name/utagsBackup
-    exec /system/bin/chmod -L 0660 /dev/block/platform/msm_sdcc.1/by-name/utags
-    exec /system/bin/chmod -L 0660 /dev/block/platform/msm_sdcc.1/by-name/utagsBackup
 
     # backup directory for omadm
     mkdir /pds/public/omadm 0700 radio radio
@@ -779,7 +760,7 @@ on property:sys.perf.profile=0
     write /sys/class/devfreq/fdb00000.qcom,kgsl-3d0/governor powersave
     write /sys/class/devfreq/qcom,cpubw.63/governor powersave
 
-    exec /system/bin/rm /data/system/default_values
+    rm /data/system/default_values
     start mpdecision
 
 # Balanced
@@ -804,7 +785,7 @@ on property:sys.perf.profile=1
     write /sys/class/devfreq/fdb00000.qcom,kgsl-3d0/governor msm-adreno-tz
     write /sys/class/devfreq/qcom,cpubw.63/governor msm_cpufreq
 
-    exec /system/bin/rm /data/system/default_values
+    rm /data/system/default_values
     start mpdecision
 
 # High performance

@@ -1,0 +1,8 @@
+# for init_falcon to read filesystem type
+# we can't do that for now due to Android M neverallow rules
+# allow qti_init_shell userdata_block_device:blk_file { getattr open read ioctl };
+# allow qti_init_shell utags_block_device:blk_file { open read };
+
+# Required for FM
+allow qti_init_shell apk_data_file:dir rw_dir_perms;
+allow qti_init_shell apk_data_file:file create_file_perms;
