@@ -5,3 +5,12 @@ allow init clogo_block_device:blk_file setattr;
 allow init hob_block_device:blk_file setattr;
 allow init logs_block_device:blk_file setattr;
 allow init utags_block_device:blk_file setattr;
+
+# Allow init to create cutback socket
+allow init socket_device:sock_file { create setattr };
+
+# Allow init to read battery sysfs
+allow init sysfs_battery_supply:lnk_file read;
+
+# Allow LD_PRELOAD-ing
+allow init { mm-qcamerad rild rmt_storage }:process noatsecure;
