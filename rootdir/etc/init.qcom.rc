@@ -66,10 +66,6 @@ on fs
     mount_all fstab.qcom
     write /sys/kernel/boot_adsp/boot 1
 
-    # Mount PDS
-    wait /dev/block/platform/msm_sdcc.1/by-name/pds
-    exec /system/bin/mount_pds.sh
-
     # Set correct permissions for HOB, DHOB
     exec /system/bin/chmod -L 660 /dev/block/platform/msm_sdcc.1/by-name/hob
     exec /system/bin/chmod -L 660 /dev/block/platform/msm_sdcc.1/by-name/dhob
