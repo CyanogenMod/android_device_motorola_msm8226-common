@@ -1,5 +1,10 @@
 allow mm-qcamerad qdsp_device:chr_file { open read ioctl };
 allow mm-qcamerad system_server:unix_stream_socket { read write };
+
+# Face detection cache in the old location
+type_transition mm-qcamerad system_data_file:file camera_data_file "fdAlbum";
+allow mm-qcamerad camera_data_file:file create_file_perms;
+
 allow servicemanager mm-qcamerad:dir search;
 allow servicemanager mm-qcamerad:file { open read };
 allow servicemanager mm-qcamerad:process { getattr };
