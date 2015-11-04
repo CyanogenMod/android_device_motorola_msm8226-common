@@ -8,3 +8,6 @@ allow init utags_block_device:blk_file setattr;
 
 # Allow init to mount PDS
 allow init loop_device:blk_file write;
+
+allow init sysfs_light:file setattr;
+allow init sysfs_power:file setattr;

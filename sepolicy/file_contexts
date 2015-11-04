@@ -1,6 +1,7 @@
 # Binaries
 /system/bin/akmd8963                                        u:object_r:akmd8963_exec:s0
 /system/bin/batt_health                                     u:object_r:batt_health_exec:s0
+/system/bin/charge_only_mode                                u:object_r:charge_only_mode_exec:s0
 /system/bin/dbvc_atvc_property_set                          u:object_r:atvc_exec:s0
 /system/bin/sensord                                         u:object_r:sensord_exec:s0
 /system/bin/dump_pds.sh                                     u:object_r:dump_pds_exec:s0
@@ -54,3 +55,9 @@
 /sys/devices/f9925000.i2c/i2c-3/3-0048/temp1_input          u:object_r:sysfs_thermal:s0
 /sys/devices/f9925000.i2c/i2c-3/3-0048/temp1_max            u:object_r:sysfs_thermal:s0
 /sys/devices/f9925000.i2c/i2c-3/3-0048/temp1_max_hyst       u:object_r:sysfs_thermal:s0
+
+# Power
+/sys/power/autosleep                                        u:object_r:sysfs_power:s0
+
+# Light
+/sys/devices/fd900000\.qcom,mdss_mdp/qcom,mdss_fb_primary\..*/leds/lcd-backlight/brightness    u:object_r:sysfs_light:s0
