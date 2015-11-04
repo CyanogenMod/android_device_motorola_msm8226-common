@@ -5,3 +5,5 @@ allow init clogo_block_device:blk_file setattr;
 allow init hob_block_device:blk_file setattr;
 allow init logs_block_device:blk_file setattr;
 allow init utags_block_device:blk_file setattr;
+allow init sysfs_light:file setattr;
+allow init sysfs_power:file setattr;
