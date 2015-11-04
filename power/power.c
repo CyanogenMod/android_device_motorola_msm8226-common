@@ -38,12 +38,6 @@
 #define TARGET_LOADS "80 998400:90 1190400:99"
 #define TARGET_LOADS_LPM "95 1190400:99"
 
-enum {
-    PROFILE_POWER_SAVE = 0,
-    PROFILE_BALANCED,
-    PROFILE_HIGH_PERFORMANCE
-};
-
 static pthread_mutex_t lock;
 static int boostpulse_fd = -1;
 static int current_power_profile = -1;
@@ -199,6 +193,14 @@ static struct hw_module_methods_t power_module_methods = {
     .open = NULL,
 };
 
+int get_feature(struct power_module *module __unused, feature_t feature)
+{
+    if (feature == POWER_FEATURE_SUPPORTED_PROFILES) {
+        return 3;
+    }
+    return -1;
+}
+
 struct power_module HAL_MODULE_INFO_SYM = {
     .common = {
         .tag = HARDWARE_MODULE_TAG,
@@ -213,4 +215,5 @@ struct power_module HAL_MODULE_INFO_SYM = {
     .init = power_init,
     .setInteractive = power_set_interactive,
     .powerHint = power_hint,
+    .getFeature = get_feature
 };
