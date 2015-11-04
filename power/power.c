@@ -182,10 +182,10 @@ static void power_hint( __attribute__((unused)) struct power_module *module,
         }
         break;
     case POWER_HINT_SET_PROFILE:
-        set_power_profile((int)data);
+        set_power_profile(*(int32_t *)data);
         break;
     case POWER_HINT_LOW_POWER:
-        if ((int)data == 1)
+        if (*(int32_t *)data == 1)
             set_power_profile(PROFILE_POWER_SAVE);
         else
             set_power_profile(PROFILE_BALANCED);
@@ -198,6 +198,14 @@ static void power_hint( __attribute__((unused)) struct power_module *module,
 static struct hw_module_methods_t power_module_methods = {
     .open = NULL,
 };
+
+int get_feature(struct power_module *module __unused, feature_t feature)
+{
+    if (feature == POWER_FEATURE_SUPPORTED_PROFILES) {
+        return 3;
+    }
+    return -1;
+}
 
 struct power_module HAL_MODULE_INFO_SYM = {
     .common = {
@@ -213,4 +221,5 @@ struct power_module HAL_MODULE_INFO_SYM = {
     .init = power_init,
     .setInteractive = power_set_interactive,
     .powerHint = power_hint,
+    .getFeature = get_feature
 };
