@@ -1,0 +1,16 @@
+type charge_only_mode, domain;
+type charge_only_mode_exec, exec_type, file_type;
+init_daemon_domain(charge_only_mode)
+
+allow charge_only_mode self:capability sys_boot;
+
+allow charge_only_mode graphics_device:dir search;
+allow charge_only_mode graphics_device:chr_file rw_file_perms;
+allow charge_only_mode input_device:dir search;
+allow charge_only_mode input_device:chr_file { read open };
+allow charge_only_mode tty_device:chr_file { read write };
+
+allow charge_only_mode sysfs_battery_supply:dir search;
+allow charge_only_mode sysfs_battery_supply:file { read open };
+allow charge_only_mode sysfs_usb_supply:dir search;
+allow charge_only_mode sysfs_usb_supply:file { read open };
