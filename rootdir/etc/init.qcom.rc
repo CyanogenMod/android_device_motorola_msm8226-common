@@ -719,6 +719,7 @@ on charger
     write /sys/devices/system/cpu/cpu1/online 1
     write /sys/devices/system/cpu/cpu2/online 1
     write /sys/devices/system/cpu/cpu3/online 1
+    restorecon /sys/class/leds/lcd-backlight/brightness
     start charge_only_mode
 
 on property:sys.boot_completed=1
