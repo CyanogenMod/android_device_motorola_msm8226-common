@@ -1,0 +1,4 @@
+type mount_pds, domain;
+type mount_pds_exec, exec_type, file_type;
+permissive mount_pds;
+init_daemon_domain(mount_pds)
