@@ -199,6 +199,14 @@ static struct hw_module_methods_t power_module_methods = {
     .open = NULL,
 };
 
+int get_feature(struct power_module *module __unused, feature_t feature)
+{
+    if (feature == POWER_FEATURE_SUPPORTED_PROFILES) {
+        return 3;
+    }
+    return -1;
+}
+
 struct power_module HAL_MODULE_INFO_SYM = {
     .common = {
         .tag = HARDWARE_MODULE_TAG,
@@ -213,4 +221,5 @@ struct power_module HAL_MODULE_INFO_SYM = {
     .init = power_init,
     .setInteractive = power_set_interactive,
     .powerHint = power_hint,
+    .getFeature = get_feature
 };
