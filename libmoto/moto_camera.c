@@ -86,6 +86,10 @@
     //android::SensorManager::createEventQueue(void)
     void _ZN7android13SensorManager16createEventQueueEv(void **retVal, void *sensorMgr);
 
+//library on-load and on-unload handlers (to help us set things up and tear them down)
+    void libEvtLoading(void) __attribute__((constructor));
+    void libEvtUnloading(void) __attribute__((destructor));
+
 /*
  * FUNCTION: android::SensorManager::SensorManager(void)
  * USE:      INTERPOSE: construct a sensor manager object
@@ -98,8 +102,6 @@
 void _ZN7android13SensorManagerC1Ev(void *sensorMgr)
 {
     void *string;
-
-    ALOGI("msm8226 camera interposition library: your camera should work in M now.");
 
     _ZN7android8String16C1EPKc(&string, "camera.msm8226");
     _ZN7android13SensorManagerC1ERKNS_8String16E(sensorMgr, &string);
@@ -121,4 +123,30 @@ void _ZN7android13SensorManager16createEventQueueEv(void **retVal, void *sensorM
     _ZN7android7String8C1EPKc(&string, "");
     _ZN7android13SensorManager16createEventQueueENS_7String8Ei(retVal, sensorMgr, &string, 0);
     _ZN7android7String8D1Ev(&string);
+}
+
+/*
+ * FUNCTION: libEvtLoading()
+ * USE:      Handle library loading
+ * NOTES:    This is a good time to log the fact that we were loaded and plan to
+ *           do our thing.
+ */
+void libEvtLoading(void)
+{
+    ALOGI("msm8226 camera interposition library loaded. Your camera should work in M now.");
+}
+
+/*
+ * FUNCTION: libEvtUnloading()
+ * USE:      Handle library unloading
+ * NOTES:    This is a good time to free whatever is unfreed and say goodbye
+ */
+void libEvtUnloading(void)
+{
+    ALOGI("msm8226 camera interposition library unloading. Goodbye...");
+    if (_ZN7android9SingletonINS_13SensorManagerEE9sInstanceE) {
+        //if an instance stil exists, free it by calling the destructor, just to be throrough
+        _ZN7android13SensorManagerD1Ev(_ZN7android9SingletonINS_13SensorManagerEE9sInstanceE);
+        _ZN7android9SingletonINS_13SensorManagerEE9sInstanceE = NULL;
+    }
 }
