@@ -13,14 +13,27 @@
 # limitations under the License.
 
 LOCAL_PATH := $(call my-dir)
+
+# Log
+
 include $(CLEAR_VARS)
 
-LOCAL_SRC_FILES := \
-    moto_log.c \
-    moto_camera.c
+LOCAL_SRC_FILES := moto_log.c
+
+LOCAL_SHARED_LIBRARIES := liblog
+LOCAL_MODULE := libmoto_log
+LOCAL_MODULE_TAGS := optional
+
+include $(BUILD_SHARED_LIBRARY)
+
+# Camera
+
+include $(CLEAR_VARS)
+
+LOCAL_SRC_FILES := moto_camera.c
 
 LOCAL_SHARED_LIBRARIES := libutils libgui liblog
-LOCAL_MODULE := libmoto
+LOCAL_MODULE := libmoto_camera
 LOCAL_MODULE_TAGS := optional
 
 include $(BUILD_SHARED_LIBRARY)
