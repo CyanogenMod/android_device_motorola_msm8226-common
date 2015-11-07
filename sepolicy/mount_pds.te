@@ -1,0 +1,5 @@
+type mount_pds, domain;
+type mount_pds_exec, exec_type, file_type;
+init_daemon_domain(mount_pds)
+
+allow mount_pds block_device:dir search;
