@@ -5,3 +5,7 @@ allow init clogo_block_device:blk_file setattr;
 allow init hob_block_device:blk_file setattr;
 allow init logs_block_device:blk_file setattr;
 allow init utags_block_device:blk_file setattr;
+
+# Allow init to dump PDS and mount it as rw
+allow init block_device:blk_file read;
+allow init loop_device:blk_file write;
