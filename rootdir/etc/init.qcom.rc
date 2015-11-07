@@ -66,13 +66,16 @@ on fs
     mount_all fstab.qcom
     write /sys/kernel/boot_adsp/boot 1
 
-    # Mount PDS
-    wait /dev/block/platform/msm_sdcc.1/by-name/pds
-    exec /system/bin/mount_pds.sh
-
     # activate zram
     swapon_all fstab.qcom
     write /proc/sys/vm/page-cluster 0
+
+    # Create a dump of PDS and mount it
+    wait /dev/block/platform/msm_sdcc.1/by-name/pds
+    start dump_pds
+    wait /cache/pds-dump.img
+    mount ext3 loop@/cache/pds-dump.img /pds
+    restorecon /pds
 
 on post-fs-data
     mkdir /data/tombstones 0771 system system
@@ -484,6 +487,11 @@ service location_mq /system/bin/location-mq
 service mmi-boot-sh /system/bin/sh /init.mmi.boot.sh
     class core
     user root
+    oneshot
+
+service dump_pds /system/bin/dump_pds.sh
+    user root
+    disabled
     oneshot
 
 service_redefine ril-daemon /system/bin/rild
