@@ -16,8 +16,9 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := \
+    moto_camera.c \
     moto_log.c \
-    moto_camera.c
+    moto_ril.c
 
 LOCAL_SHARED_LIBRARIES := libutils libgui liblog
 LOCAL_MODULE := libmoto

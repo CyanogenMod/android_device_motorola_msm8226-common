@@ -182,7 +182,6 @@ vendor/lib/libnetmgr.so
 vendor/lib/libril-qc-qmi-1.so
 vendor/lib/libril-qcril-hook-oem.so
 vendor/lib/libsystem_health_mon.so
-vendor/lib/libsysutils_local.so
 vendor/lib/libxml.so
 
 # Thermal
