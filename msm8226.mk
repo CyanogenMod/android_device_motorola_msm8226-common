@@ -158,7 +158,7 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     init.qcom.bt.sh \
     init.qcom.ril.sh \
-    mount_pds.sh
+    dump_pds.sh
 
 PRODUCT_PACKAGES += \
     init.mmi.boot.sh \
