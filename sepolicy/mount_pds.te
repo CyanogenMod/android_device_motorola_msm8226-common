@@ -1,0 +1,11 @@
+type mount_pds, domain;
+type mount_pds_exec, exec_type, file_type;
+init_daemon_domain(mount_pds)
+
+allow mount_pds block_device:dir search;
+allow mount_pds cache_file:dir { write add_name remove_name };
+allow mount_pds cache_file:file create_file_perms;
+allow mount_pds pds_block_device:blk_file { read open };
+allow mount_pds self:capability { dac_read_search dac_override };
+allow mount_pds shell_exec:file read;
+allow mount_pds system_file:file execute_no_trans;

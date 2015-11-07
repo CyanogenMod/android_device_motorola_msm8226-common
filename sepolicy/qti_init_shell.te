@@ -1,0 +1,2 @@
+# Allow init to "wait" for partitions
+allow qti_init_shell block_device:dir search;
