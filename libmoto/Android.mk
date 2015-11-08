@@ -20,6 +20,8 @@ include $(CLEAR_VARS)
 LOCAL_SRC_FILES := moto_camera.c
 
 LOCAL_SHARED_LIBRARIES := libgui liblog libutils
+
+LOCAL_CLANG := true
 LOCAL_MODULE := libmoto_camera
 LOCAL_MODULE_TAGS := optional
 
@@ -30,6 +32,7 @@ include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := moto_log.c
 
+LOCAL_CLANG := true
 LOCAL_MODULE := libmoto_log
 LOCAL_MODULE_TAGS := optional
 
@@ -40,6 +43,7 @@ include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := moto_ril.c
 
+LOCAL_CLANG := true
 LOCAL_MODULE := libmoto_ril
 LOCAL_MODULE_TAGS := optional
 
