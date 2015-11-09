@@ -150,6 +150,10 @@ PRODUCT_BOOT_JARS += \
 PRODUCT_PACKAGES += \
     power.msm8226
 
+# Radio
+PRODUCT_PACKAGES += \
+    libcnefeatureconfig
+
 # Ramdisk
 PRODUCT_PACKAGES += \
     init.qcom.bt.sh \
