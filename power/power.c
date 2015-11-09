@@ -47,6 +47,8 @@ enum {
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 static int boostpulse_fd = -1;
 static int current_power_profile = -1;
+static int requested_power_profile = -1;
+static int is_low_power_mode = 0;
 
 static int sysfs_write(char *path, char *s)
 {
@@ -108,6 +110,13 @@ static void power_set_interactive(__attribute__((unused)) struct power_module *m
 
 static void set_power_profile(int profile)
 {
+    if (is_low_power_mode) {
+        /* Let's assume we get a valid profile */
+        requested_power_profile = profile;
+        ALOGD("%s: low power mode enabled, ignoring profile change request", __func__);
+        return;
+    }
+
     if (profile == current_power_profile)
         return;
 
@@ -150,9 +159,27 @@ static void set_power_profile(int profile)
         break;
     default:
         ALOGE("%s: unknown profile: %d", __func__, profile);
+        return;
     }
 
     current_power_profile = profile;
+}
+
+static void set_low_power_mode(int on)
+{
+    if (on == is_low_power_mode)
+        return;
+
+    ALOGD("%s: state=%d", __func__, on);
+
+    if (on) {
+        requested_power_profile = current_power_profile;
+        set_power_profile(PROFILE_POWER_SAVE);
+        is_low_power_mode = 1;
+    } else {
+        is_low_power_mode = 0;
+        set_power_profile(requested_power_profile);
+    }
 }
 
 static void power_hint( __attribute__((unused)) struct power_module *module,
@@ -182,13 +209,14 @@ static void power_hint( __attribute__((unused)) struct power_module *module,
         }
         break;
     case POWER_HINT_SET_PROFILE:
+        pthread_mutex_lock(&lock);
         set_power_profile((int)data);
+        pthread_mutex_unlock(&lock);
         break;
     case POWER_HINT_LOW_POWER:
-        if ((int)data == 1)
-            set_power_profile(PROFILE_POWER_SAVE);
-        else
-            set_power_profile(PROFILE_BALANCED);
+        pthread_mutex_lock(&lock);
+        set_low_power_mode(data ? 1 : 0);
+        pthread_mutex_unlock(&lock);
         break;
     default:
         break;
