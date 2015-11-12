@@ -2,7 +2,7 @@
 # Audio
 audio.offload.24bit.enable=false
 audio.offload.buffer.size.kb=32
-audio.offload.gapless.enabled=false
+audio.offload.gapless.enabled=true
 audio.offload.multiple.enabled=false
 audio.offload.video=false
 
