@@ -44,7 +44,7 @@ enum {
     PROFILE_HIGH_PERFORMANCE
 };
 
-static pthread_mutex_t lock;
+static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 static int boostpulse_fd = -1;
 static int current_power_profile = -1;
 
