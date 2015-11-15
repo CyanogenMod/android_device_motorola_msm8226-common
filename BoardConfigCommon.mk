@@ -67,7 +67,9 @@ USE_DEVICE_SPECIFIC_CAMERA := true
 BOARD_CHARGING_MODE_BOOTING_LPM := /sys/mmi_lpm/lpm_mode
 
 # CMHW
-BOARD_HARDWARE_CLASS := $(VENDOR_PATH)/cmhw/
+BOARD_HARDWARE_CLASS := \
+    $(VENDOR_PATH)/cmhw/ \
+    hardware/cyanogen/cmhw
 
 # Display
 NUM_FRAMEBUFFER_SURFACE_BUFFERS := 3
