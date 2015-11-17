@@ -6,6 +6,10 @@ allow qti_init_shell init:fifo_file { getattr write };
 allow qti_init_shell blkid_exec:file { getattr execute read open execute_no_trans };
 allow qti_init_shell userdata_block_device:blk_file { getattr read open ioctl };
 
+# Required for FM
+allow qti_init_shell apk_data_file:dir rw_dir_perms;
+allow qti_init_shell apk_data_file:file create_file_perms;
+
 # Needed by init.mmi.boot.sh
 allow qti_init_shell utags_block_device:blk_file { open read };
 
