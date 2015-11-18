@@ -195,6 +195,7 @@ on post-fs-data
     start batt_health
 
 on early-boot
+    start timekeep
     # set RLIMIT_MEMLOCK to 64MB
     setrlimit 8 67108864 67108864
     # Allow subsystem (modem etc) debugging
@@ -573,9 +574,9 @@ service thermal-engine /system/bin/thermal-engine -c /etc/thermal-engine-8226.co
     group root
 
 service timekeep /system/bin/timekeep restore
-    class late_start
     user root
     group root
+    disabled
     oneshot
     seclabel u:r:timekeep:s0
 
