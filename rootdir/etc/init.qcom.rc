@@ -139,6 +139,9 @@ on post-fs-data
     #Create directory for hostapd
     mkdir /data/hostapd 0770 system wifi
 
+    # Create /data/time folder for time-services
+    mkdir /data/time/ 0700 system system
+
     mkdir /data/audio/ 0770 media audio
     # Enable the setgid bit on the directory
     chmod 2770 /data/audio
@@ -195,7 +198,6 @@ on post-fs-data
     start batt_health
 
 on early-boot
-    start timekeep
     # set RLIMIT_MEMLOCK to 64MB
     setrlimit 8 67108864 67108864
     # Allow subsystem (modem etc) debugging
@@ -575,12 +577,10 @@ service thermal-engine /system/bin/thermal-engine -c /etc/thermal-engine-8226.co
     user root
     group root
 
-service timekeep /system/bin/timekeep restore
+service time_daemon /system/bin/time_daemon
+    class late_start
     user root
     group root
-    disabled
-    oneshot
-    seclabel u:r:timekeep:s0
 
 service wcnss-service /system/bin/wcnss_service
     class late_start
