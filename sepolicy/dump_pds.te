@@ -5,7 +5,7 @@ init_daemon_domain(dump_pds)
 allow dump_pds block_device:dir search;
 allow dump_pds cache_file:dir { write add_name remove_name };
 allow dump_pds cache_file:file create_file_perms;
-allow dump_pds pds_block_device:blk_file { read open };
+allow dump_pds pds_block_device:blk_file { read open getattr };
 allow dump_pds self:capability { dac_read_search dac_override };
 allow dump_pds shell_exec:file read;
 allow dump_pds system_file:file execute_no_trans;
