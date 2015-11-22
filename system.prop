@@ -73,7 +73,7 @@ persist.rild.nitz_short_ons_3=
 # Qualcomm
 persist.timed.enable=true
 ro.qualcomm.cabl=0
-ro.vendor.extension_library=/system/vendor/lib/libqc-opt.so
+ro.vendor.extension_library=/system/vendor/lib/libqti-perfd-client.so
 
 # Radio
 persist.data.qmi.adb_logmask=0
