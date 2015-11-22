@@ -34,13 +34,3 @@ LOCAL_MODULE := libmoto_log
 LOCAL_MODULE_TAGS := optional
 
 include $(BUILD_SHARED_LIBRARY)
-
-# RIL
-include $(CLEAR_VARS)
-
-LOCAL_SRC_FILES := moto_ril.c
-
-LOCAL_MODULE := libmoto_ril
-LOCAL_MODULE_TAGS := optional
-
-include $(BUILD_SHARED_LIBRARY)
