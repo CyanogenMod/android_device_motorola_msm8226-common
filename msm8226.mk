@@ -153,7 +153,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     fstab.qcom \
     init.qcom.bt.sh \
-    init.qcom.fm.sh \
     init.qcom.ril.sh \
     dump_pds.sh
 
