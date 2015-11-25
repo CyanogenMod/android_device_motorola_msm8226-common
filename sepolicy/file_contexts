@@ -45,6 +45,7 @@
 /pds/batt_health(/.*)?                                      u:object_r:pds_batt_file:s0
 
 # RIL
+/data/misc/cutback(/.*)?                                    u:object_r:cutback_data_file:s0
 /dev/socket/cutback                                         u:object_r:rild_socket:s0
 
 # Sensors
