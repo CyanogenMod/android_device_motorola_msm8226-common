@@ -2,6 +2,10 @@ allow mm-qcamerad system_data_file:dir w_dir_perms;
 allow mm-qcamerad system_data_file:file open;
 allow mm-qcamerad system_file:file execmod;
 allow mm-qcamerad system_server:unix_stream_socket { read write };
+
+# Face detection cache in the old location
+type_transition mm-qcamerad system_data_file:file camera_data_file "fdAlbum";
+
 allow servicemanager mm-qcamerad:dir search;
 allow servicemanager mm-qcamerad:file { open read };
 allow servicemanager mm-qcamerad:process { getattr };
