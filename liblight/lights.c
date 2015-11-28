@@ -15,17 +15,11 @@
  */
 
 #include <cutils/log.h>
-#include <cutils/properties.h>
-#include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <pthread.h>
-#include <math.h>
-
-#include <sys/ioctl.h>
-#include <sys/types.h>
 
 #include <hardware/lights.h>
 
@@ -115,7 +109,7 @@ rgb_to_brightness(struct light_state_t const* state)
 }
 
 static int
-set_light_backlight(struct light_device_t* dev,
+set_light_backlight(__attribute__((unused)) struct light_device_t* dev,
         struct light_state_t const* state)
 {
     int err = 0;
@@ -173,7 +167,7 @@ handle_led_prioritized_locked(struct light_state_t const* state)
 }
 
 static int
-set_light_notifications(struct light_device_t* dev,
+set_light_notifications(__attribute__((unused)) struct light_device_t* dev,
         struct light_state_t const* state)
 {
     int err = 0;
@@ -184,7 +178,7 @@ set_light_notifications(struct light_device_t* dev,
 }
 
 static int
-set_light_attention(struct light_device_t* dev,
+set_light_attention(__attribute__((unused)) struct light_device_t* dev,
         struct light_state_t const* state)
 {
     int err = 0;
