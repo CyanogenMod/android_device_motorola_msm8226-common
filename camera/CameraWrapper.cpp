@@ -150,6 +150,8 @@ static char *camera_fixup_getparams(int id, const char *settings)
             params.set(android::CameraParameters::KEY_MIN_EXPOSURE_COMPENSATION, 0);
             params.set(android::CameraParameters::KEY_SUPPORTED_ANTIBANDING,
                 android::CameraParameters::ANTIBANDING_AUTO);
+            params.set(android::CameraParameters::KEY_SUPPORTED_PREVIEW_FPS_RANGE,
+                "(15000,15000),(15000,30000)");
             params.set(android::CameraParameters::KEY_SUPPORTED_SCENE_MODES,
                 android::CameraParameters::SCENE_MODE_AUTO);
             params.set(android::CameraParameters::KEY_SUPPORTED_WHITE_BALANCE,
