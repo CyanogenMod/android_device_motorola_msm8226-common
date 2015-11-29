@@ -56,8 +56,8 @@ on init
     write /proc/self/coredump_filter "0x7f"
 
     # Setup kernel dropbox permissions so that dropboxd can utilize it
-    chown root qcom_diag /sys/kernel/dropbox/event
-    chown root qcom_diag /sys/kernel/dropbox/data
+    chown root diag /sys/kernel/dropbox/event
+    chown root diag /sys/kernel/dropbox/data
 
     # Symbols required for motorola blobs
     export LD_SHIM_LIBS /system/lib/liblog.so|libmoto_log.so
@@ -163,7 +163,7 @@ on post-fs-data
     mkdir /data/diag_mdlog/logs 0750 log log
 
     # Setup folder for native to transfer data to NativeDropBoxAgent
-    mkdir /data/system/dropbox-add 0730 system qcom_diag
+    mkdir /data/system/dropbox-add 0730 system diag
 
     # backup directory for omadm
     mkdir /pds/public/omadm 0700 radio radio
@@ -503,14 +503,14 @@ service_redefine ril-daemon /system/bin/rild
     socket rild-debug stream 660 radio system
     socket cutback stream 660 media radio
     user root
-    group radio cache inet misc audio sdcard_rw qcom_oncrpc qcom_diag log net_raw
+    group radio cache inet misc audio sdcard_rw qcom_oncrpc diag log net_raw
 
 service ril-daemon1 /system/bin/rild -c 2
     class main
     socket rild2 stream 660 root radio
     socket rild-debug2 stream 660 radio system
     user root
-    group radio cache inet misc audio sdcard_rw qcom_oncrpc qcom_diag log net_raw
+    group radio cache inet misc audio sdcard_rw qcom_oncrpc diag log net_raw
     disabled
 
 service rild1-wrapper /system/bin/sh /system/etc/init.qcom.ril.sh
@@ -547,7 +547,7 @@ service qcamerasvr /system/bin/mm-qcamera-daemon
 service qmuxd /system/bin/qmuxd
     class main
     user radio
-    group radio audio bluetooth gps qcom_diag
+    group radio audio bluetooth gps diag
 
 service qseecomd /system/bin/qseecomd
     class late_start
