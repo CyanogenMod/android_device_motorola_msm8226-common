@@ -19,10 +19,12 @@ TARGET_DIR = os.getenv('OUT')
 
 def FullOTA_Assertions(info):
   AddBootloaderAssertion(info, info.input_zip)
+  AddRadioAssertion(info, info.input_zip)
 
 
 def IncrementalOTA_Assertions(info):
   AddBootloaderAssertion(info, info.target_zip)
+  AddRadioAssertion(info, info.input_zip)
 
 
 def AddBootloaderAssertion(info, input_zip):
@@ -33,3 +35,18 @@ def AddBootloaderAssertion(info, input_zip):
     if "*" not in bootloaders:
       info.script.AssertSomeBootloader(*bootloaders)
     info.metadata["pre-bootloader"] = m.group(1)
+
+
+def AddRadioAssertion(info, input_zip):
+  android_info = input_zip.read("OTA/android-info.txt")
+  m = re.search(r"require\s+version-radio\s*=\s*(\S+)", android_info)
+  if m:
+    radios = m.group(1).split("|")
+    cmd = ("assert(" +
+           " || ".join(['getprop("ro.boot.radio") == "%s"' % (r,)
+                         for r in radios]) +
+           ' || abort("This package supports radio(s): ' +
+           ", ".join(["%s" % (r,) for r in radios]) +
+           '; this device has radio " + getprop("ro.boot.radio") + ".");' +
+           ");")
+    info.script.AppendExtra(info.script.WordWrap(cmd))
