@@ -89,8 +89,7 @@ PRODUCT_PACKAGES += \
 # Ebtables
 PRODUCT_PACKAGES += \
     ebtables \
-    ethertypes \
-    libebtc
+    ethertypes
 
 # FM
 PRODUCT_PACKAGES += \
@@ -128,15 +127,16 @@ PRODUCT_PACKAGES += \
 
 # OMX
 PRODUCT_PACKAGES += \
-    libdashplayer \
+    libc2dcolorconvert \
+    libdivxdrmdecrypt \
+    libOmxAacEnc \
+    libOmxAmrEnc \
     libOmxCore \
+    libOmxEvrcEnc \
+    libOmxQcelp13Enc \
     libOmxVdec \
     libOmxVenc \
-    libstagefrighthw \
-    qcmediaplayer
-
-PRODUCT_BOOT_JARS += \
-    qcmediaplayer
+    libstagefrighthw
 
 # Power
 PRODUCT_PACKAGES += \
@@ -166,27 +166,20 @@ PRODUCT_PACKAGES += \
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/thermal-engine-8226.conf:system/etc/thermal-engine-8226.conf
 
-# USB
-PRODUCT_PACKAGES += \
-    com.android.future.usb.accessory
-
 # Wifi
 PRODUCT_PACKAGES += \
     dhcpcd.conf \
-    hostapd_default.conf \
     hostapd \
     wpa_supplicant \
-    wpa_supplicant.conf
-
-PRODUCT_PACKAGES += \
+    wpa_supplicant.conf \
+    wpa_supplicant_overlay.conf \
     p2p_supplicant_overlay.conf \
-    wpa_supplicant_overlay.conf
+    hostapd_default.conf
 
 PRODUCT_PACKAGES += \
     WCNSS_qcom_wlan_factory_nv.bin
 
 PRODUCT_PACKAGES += \
-    libcurl \
     libqsap_sdk \
     libQWiFiSoftApCfg \
     wcnss_service
