@@ -150,6 +150,10 @@ static char *camera_fixup_getparams(int id, const char *settings)
             params.set(android::CameraParameters::KEY_MIN_EXPOSURE_COMPENSATION, 0);
             params.set(android::CameraParameters::KEY_SUPPORTED_ANTIBANDING,
                 android::CameraParameters::ANTIBANDING_AUTO);
+            params.set(android::CameraParameters::KEY_SUPPORTED_EFFECTS,
+                android::CameraParameters::EFFECT_NONE);
+            params.set(android::CameraParameters::KEY_SUPPORTED_PICTURE_SIZES,
+                "1280x960,1280x720,640x480,352x288");
             params.set(android::CameraParameters::KEY_SUPPORTED_PREVIEW_FPS_RANGE,
                 "(15000,15000),(15000,30000)");
             params.set(android::CameraParameters::KEY_SUPPORTED_SCENE_MODES,
@@ -160,6 +164,13 @@ static char *camera_fixup_getparams(int id, const char *settings)
 
             /* The HW detection causes a stream of errors, disable it. */
             params.set(android::CameraParameters::KEY_MAX_NUM_DETECTED_FACES_HW, 0);
+        }
+    } else if (id == BACK_CAMERA) {
+        if (device == FALCON || device == PEREGRINE) {
+            params.set(android::CameraParameters::KEY_SUPPORTED_PICTURE_SIZES,
+                "2592x1944,2592x1456,1920x1080,1440x1080,1280x960,1280x720,640x480,352x288");
+            params.set(android::CameraParameters::KEY_SUPPORTED_PREVIEW_FPS_RANGE,
+                "(15000,15000),(15000,30000)");
         }
     }
 
