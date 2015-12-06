@@ -161,6 +161,11 @@ static char *camera_fixup_getparams(int id, const char *settings)
             /* The HW detection causes a stream of errors, disable it. */
             params.set(android::CameraParameters::KEY_MAX_NUM_DETECTED_FACES_HW, 0);
         }
+    } else if (id == BACK_CAMERA) {
+        if (device == FALCON || device == PEREGRINE) {
+            params.set(android::CameraParameters::KEY_SUPPORTED_PREVIEW_FPS_RANGE,
+                "(15000,15000),(15000,30000)");
+        }
     }
 
 #if !LOG_NDEBUG
