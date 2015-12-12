@@ -197,8 +197,6 @@ on post-fs-data
 on early-boot
     # set RLIMIT_MEMLOCK to 64MB
     setrlimit 8 67108864 67108864
-    # Allow subsystem (modem etc) debugging
-    write /sys/module/subsystem_restart/parameters/enable_debug ${persist.sys.ssr.enable_debug}
 
 on boot
     # mount debugfs for systrace
@@ -559,13 +557,6 @@ service rfs_access /system/bin/rfs_access
 service rmt_storage /system/bin/rmt_storage
     class core
     user root
-
-# SSR
-on property:persist.sys.ssr.restart_level=*
-    exec /system/bin/sh /init.qcom.ssr.sh ${persist.sys.ssr.restart_level}
-
-on property:persist.sys.qc.sub.rdump.on=*
-   write /sys/module/subsystem_restart/parameters/enable_ramdumps ${persist.sys.qc.sub.rdump.on}
 
 service thermal-engine /system/bin/thermal-engine -c /etc/thermal-engine-8226.conf
     class main
