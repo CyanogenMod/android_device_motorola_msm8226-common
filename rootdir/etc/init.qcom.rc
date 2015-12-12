@@ -578,7 +578,7 @@ service time_daemon /system/bin/time_daemon
     group root
 
 service wcnss-service /system/bin/wcnss_service
-    class late_start
+    class main
     user root
     group system wifi
     oneshot
