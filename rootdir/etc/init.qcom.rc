@@ -581,7 +581,6 @@ service wcnss-service /system/bin/wcnss_service
     class late_start
     user root
     group system wifi
-    oneshot
 
 # WPA
 service p2p_supplicant /system/bin/wpa_supplicant \
