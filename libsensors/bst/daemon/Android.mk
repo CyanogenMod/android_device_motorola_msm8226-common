@@ -70,7 +70,7 @@ else
 LOCAL_MODULE = sensord
 endif
 
-include $(LOCAL_PATH)/../tools/l8150_config.mk
+include $(LOCAL_PATH)/../tools/moto_config.mk
 
 include $(LOCAL_PATH)/../tools/options.mk
 include $(LOCAL_PATH)/../tools/buildversion.mk
