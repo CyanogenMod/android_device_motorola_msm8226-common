@@ -71,7 +71,7 @@ static const char *input_sysfs_enable_list[] = {
 
 static const int input_report_type[] = {
     [GENERIC_LS] = TYPE_LUX,
-    [LIGHTSENSOR_LEVEL] = TYPE_ADC,
+    [LIGHTSENSOR_LEVEL] = TYPE_LUX,
     [CM36283_LS] = TYPE_LUX,
     [STK3x1x_LS] = TYPE_LUX,
     [LTR559_LS] = TYPE_LUX,
