@@ -160,6 +160,10 @@ PRODUCT_PACKAGES += \
     init.recovery.qcom.rc \
     ueventd.qcom.rc
 
+# Sensors
+PRODUCT_PACKAGES += \
+    sensors.msm8226
+
 # Thermal
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/thermal-engine-8226.conf:system/etc/thermal-engine-8226.conf
