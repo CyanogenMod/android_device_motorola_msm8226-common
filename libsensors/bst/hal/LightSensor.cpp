@@ -63,7 +63,7 @@ static const char *input_sysfs_path_list[] = {
 
 static const char *input_sysfs_enable_list[] = {
     [GENERIC_LS] = "enable",
-    [LIGHTSENSOR_LEVEL] = "enable",
+    [LIGHTSENSOR_LEVEL] = "driver/enable",
     [CM36283_LS] = "enable",
     [STK3x1x_LS] = "enable",
     [LTR559_LS] = "enable_als_sensor",
