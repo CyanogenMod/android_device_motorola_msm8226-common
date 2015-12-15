@@ -42,7 +42,7 @@ const struct sensor_t BstSensorExt::g_bstext_sensor_list[] =
         SENSOR_STRING_TYPE_SIGNIFICANT_MOTION,
         "",
         -1,
-        0,
+        SENSOR_FLAG_ONE_SHOT_MODE | SENSOR_FLAG_WAKE_UP,
 #endif
         {}
     },
@@ -60,7 +60,7 @@ const struct sensor_t BstSensorExt::g_bstext_sensor_list[] =
         "bosch.double.tap.sensor",
         "",
         -1,
-        0,
+        SENSOR_FLAG_WAKE_UP,
 #endif
         {}
     },
