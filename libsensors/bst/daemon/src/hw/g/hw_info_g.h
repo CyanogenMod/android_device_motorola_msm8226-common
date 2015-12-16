@@ -95,7 +95,7 @@
 #endif
 
 #ifdef __BMG160__ /* BMG160 */
-#define HW_INFO_DFT_PLACE_G 6
+#define HW_INFO_DFT_PLACE_G 3
 #else
 #define HW_INFO_DFT_PLACE_G 7
 #endif
