@@ -170,6 +170,7 @@ int BstSensorExt::readEvents(sensors_event_t *data, int count) {
                 mPendingEvent.sensor = ID_SMT;
                 mPendingEvent.type = SENSOR_TYPE_SIGNIFICANT_MOTION;
                 mPendingEvent.timestamp = timevalToNano(event->time);
+                mPendingEvent.data[0] = 1.0f;
                 break;
 #else
             case SLOP_INTERRUPT:
