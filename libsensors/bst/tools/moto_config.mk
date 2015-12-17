@@ -59,7 +59,7 @@ fast_fmc ?= on
 
 # fastest mode configuration
 # 100Hz or 200Hz
-fastest_mode ?= 100Hz
+fastest_mode ?= 200Hz
 
 # use calibrated timestamp as sensor scheduling timestamp
 scheduling_timestamp_calibrated ?= false
