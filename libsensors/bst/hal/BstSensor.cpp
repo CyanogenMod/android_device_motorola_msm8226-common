@@ -547,7 +547,7 @@ int BstSensor::readEvents(sensors_event_t *pdata, int count) {
             pdata_cur->data[0] = sensor_data.data.data[0];
             pdata_cur->data[1] = sensor_data.data.data[1];
             pdata_cur->data[2] = sensor_data.data.data[2];
-            pdata_cur->type = BST_SENSOR_TYPE_GEST_FLIP;
+            pdata_cur->type = SENSOR_TYPE_GLANCE_GESTURE;
             break;
 
 #ifdef __UNCALIBRATED_VIRTUAL_SENSOR_SUPPORT__

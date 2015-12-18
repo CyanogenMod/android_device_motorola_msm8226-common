@@ -282,31 +282,29 @@ const struct sensor_t BstSensorInfo::g_bst_sensor_list[] = {
         .reserved = {}
     },
 
+    {
+        .name = VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_GEST_FLIP SENSOR_STR,
+        .vendor = VENDOR_NAME_BST,
+        .version = SENSOR_VER_BST,
+        .handle = SENSORS_GEST_FLIP_HANDLE,
+        .type = SENSOR_TYPE_GLANCE_GESTURE,
+        .maxRange = 1.0f,
+        .resolution = 1.0f,
+        .power = 0.13f,
+        .minDelay = 0,
+#if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_1__
+        .fifoReservedEventCount = 0,
+        .fifoMaxEventCount = 0,
+#endif
+#if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_3__
+        .stringType = SENSOR_STRING_TYPE_GLANCE_GESTURE,
+        .requiredPermission = "",
+        .maxDelay = 200000,
+        .flags = SENSOR_FLAG_ONE_SHOT_MODE | SENSOR_FLAG_WAKE_UP,
+#endif
+        .reserved = {}
+    },
 
-//	{
-//		name: VENDOR_NAME_BST_SHORT
-//			      BST_SENSOR_NAME_GEST_FLIP SENSOR_STR,
-//		vendor: VENDOR_NAME_BST,
-//		version: SENSOR_VER_BST,
-//		handle: SENSORS_GEST_FLIP_HANDLE,
-//		type: BST_SENSOR_TYPE_GEST_FLIP,
-//		maxRange: 1.0f,
-//		resolution: 1.0f,
-//		power: 0.13f,
-//		minDelay: 0,
-//#if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_1__
-//                fifoReservedEventCount: 0,
-//                fifoMaxEventCount: 0,
-//#endif
-//#if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_3__
-//                stringType: "bosch.gest.flip.sensor",
-//                requiredPermission: "",
-//                maxDelay: 200000,
-//                flags: 0,
-//#endif
-//		reserved: {}
-//	},
-//
 //	{
 //		name: VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_SGM SENSOR_STR,
 //		vendor: VENDOR_NAME_BST,
