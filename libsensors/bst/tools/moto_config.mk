@@ -85,7 +85,7 @@ fast_calib_offset ?= false
 hybrid_hal = false
 
 # gyroscope only working mode support
-gyro_only ?= true
+gyro_only ?= false
 
 #======================================
 # debug configurations
