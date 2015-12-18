@@ -440,53 +440,52 @@ const struct sensor_t BstSensorInfo::g_bst_sensor_list[] = {
     },
 #endif
 
-//#if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_0__
-//	{
-//		name: VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_STC SENSOR_STR,
-//		vendor: VENDOR_NAME_BST,
-//		version: SENSOR_VER_BST,
-//		handle: SENSORS_STEP_COUNTER_HANDLE,
-//		type: SENSOR_TYPE_STEP_COUNTER,
-//		maxRange: 10000.0f,
-//		resolution: 1.0f,
-//		power: 5.63f,
-//		minDelay: 0,
-//#if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_1__
-//                fifoReservedEventCount: 0,
-//                fifoMaxEventCount: 0,
-//#endif
-//#if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_3__
-//                stringType: SENSOR_STRING_TYPE_STEP_COUNTER,
-//                requiredPermission: "",
-//                maxDelay: 1000000,
-//                flags: 0,
-//#endif
-//		reserved: {}
-//	},
-//	{
-//		name: VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_STD SENSOR_STR,
-//		vendor: VENDOR_NAME_BST,
-//		version: SENSOR_VER_BST,
-//		handle: SENSORS_STEP_DETECTOR_HANDLE,
-//		type: SENSOR_TYPE_STEP_DETECTOR,
-//		maxRange: 1.0f,
-//		resolution: 1.0f,
-//		power: 5.63f,
-//		minDelay: 0,
-//#if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_1__
-//                fifoReservedEventCount: 0,
-//                fifoMaxEventCount: 0,
-//#endif
-//#if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_3__
-//                stringType: SENSOR_STRING_TYPE_STEP_DETECTOR,
-//                requiredPermission: "",
-//                maxDelay: 1000000,
-//                flags: 0,
-//#endif
-//		reserved: {}
-//	},
-//
-//#endif
+#if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_0__
+    {
+        .name = VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_STC SENSOR_STR,
+        .vendor = VENDOR_NAME_BST,
+        .version = SENSOR_VER_BST,
+        .handle = SENSORS_STEP_COUNTER_HANDLE,
+        .type = SENSOR_TYPE_STEP_COUNTER,
+        .maxRange = 10000.0f,
+        .resolution = 1.0f,
+        .power = 5.63f,
+        .minDelay = 0,
+#if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_1__
+        .fifoReservedEventCount = 0,
+        .fifoMaxEventCount = 0,
+#endif
+#if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_3__
+        .stringType = SENSOR_STRING_TYPE_STEP_COUNTER,
+        .requiredPermission = "",
+        .maxDelay = 1000000,
+        .flags = 0,
+#endif
+        .reserved = {}
+    },
+    {
+        .name = VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_STD SENSOR_STR,
+        .vendor = VENDOR_NAME_BST,
+        .version = SENSOR_VER_BST,
+        .handle = SENSORS_STEP_DETECTOR_HANDLE,
+        .type = SENSOR_TYPE_STEP_DETECTOR,
+        .maxRange = 1.0f,
+        .resolution = 1.0f,
+        .power = 5.63f,
+        .minDelay = 0,
+#if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_1__
+        .fifoReservedEventCount = 0,
+        .fifoMaxEventCount = 0,
+#endif
+#if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_3__
+        .stringType = SENSOR_STRING_TYPE_STEP_DETECTOR,
+        .requiredPermission = "",
+        .maxDelay = 1000000,
+        .flags = 0,
+#endif
+        .reserved = {}
+    },
+#endif
 
 };
 
