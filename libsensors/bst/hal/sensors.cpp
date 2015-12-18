@@ -132,7 +132,7 @@ static struct sensor_t sSensorList[SENSOR_NUMBERS] = {
         0, 0,
 #endif
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_3__
-        SENSOR_STRING_TYPE_LIGHT, "", -1, 0,
+        SENSOR_STRING_TYPE_LIGHT, "", -1, SENSOR_FLAG_ON_CHANGE_MODE,
 #endif
         {}
     },
@@ -146,7 +146,7 @@ static struct sensor_t sSensorList[SENSOR_NUMBERS] = {
         0, 0,
 #endif
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_3__
-        SENSOR_STRING_TYPE_PROXIMITY, "", -1, SENSOR_FLAG_WAKE_UP,
+        SENSOR_STRING_TYPE_PROXIMITY, "", -1, SENSOR_FLAG_ON_CHANGE_MODE | SENSOR_FLAG_WAKE_UP,
 #endif
         {}
     },

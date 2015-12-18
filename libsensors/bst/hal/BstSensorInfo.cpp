@@ -119,7 +119,7 @@ const struct sensor_t BstSensorInfo::g_bst_sensor_list[] = {
         stringType : SENSOR_STRING_TYPE_ACCELEROMETER,
         requiredPermission : "",
         maxDelay : 200000,
-        flags : 0,
+        flags : SENSOR_FLAG_CONTINUOUS_MODE,
 #endif
         reserved : {}
     },
@@ -142,7 +142,7 @@ const struct sensor_t BstSensorInfo::g_bst_sensor_list[] = {
         stringType : SENSOR_STRING_TYPE_MAGNETIC_FIELD,
         requiredPermission : "",
         maxDelay : 200000,
-        flags : 0,
+        flags : SENSOR_FLAG_CONTINUOUS_MODE,
 #endif
         reserved : {}
     },
@@ -169,7 +169,7 @@ const struct sensor_t BstSensorInfo::g_bst_sensor_list[] = {
         stringType : SENSOR_STRING_TYPE_GYROSCOPE,
         requiredPermission : "",
         maxDelay : 200000,
-        flags : 0,
+        flags : SENSOR_FLAG_CONTINUOUS_MODE,
 #endif
         reserved : {}
     },
@@ -196,7 +196,7 @@ const struct sensor_t BstSensorInfo::g_bst_sensor_list[] = {
         stringType : SENSOR_STRING_TYPE_ORIENTATION,
         requiredPermission : "",
         maxDelay : 200000,
-        flags : 0,
+        flags : SENSOR_FLAG_CONTINUOUS_MODE,
 #endif
         reserved : {}
     },
@@ -223,7 +223,7 @@ const struct sensor_t BstSensorInfo::g_bst_sensor_list[] = {
         stringType : SENSOR_STRING_TYPE_GRAVITY,
         requiredPermission : "",
         maxDelay : 200000,
-        flags : 0,
+        flags : SENSOR_FLAG_CONTINUOUS_MODE,
 #endif
         reserved : {}
     },
@@ -250,7 +250,7 @@ const struct sensor_t BstSensorInfo::g_bst_sensor_list[] = {
         stringType : SENSOR_STRING_TYPE_LINEAR_ACCELERATION,
         requiredPermission : "",
         maxDelay : 200000,
-        flags : 0,
+        flags : SENSOR_FLAG_CONTINUOUS_MODE,
 #endif
         reserved : {}
     },
@@ -277,7 +277,7 @@ const struct sensor_t BstSensorInfo::g_bst_sensor_list[] = {
         stringType : SENSOR_STRING_TYPE_ROTATION_VECTOR,
         requiredPermission : "",
         maxDelay : 200000,
-        flags : 0,
+        flags : SENSOR_FLAG_CONTINUOUS_MODE,
 #endif
         reserved : {}
     },
@@ -357,7 +357,7 @@ const struct sensor_t BstSensorInfo::g_bst_sensor_list[] = {
         stringType : SENSOR_STRING_TYPE_GAME_ROTATION_VECTOR,
         requiredPermission : "",
         maxDelay : 200000,
-        flags : 0,
+        flags : SENSOR_FLAG_CONTINUOUS_MODE,
 #endif
         reserved : {}
     },
@@ -384,7 +384,7 @@ const struct sensor_t BstSensorInfo::g_bst_sensor_list[] = {
         stringType : SENSOR_STRING_TYPE_GYROSCOPE_UNCALIBRATED,
         requiredPermission : "",
         maxDelay : 200000,
-        flags : 0,
+        flags : SENSOR_FLAG_CONTINUOUS_MODE,
 #endif
         reserved : {}
     },
@@ -407,7 +407,7 @@ const struct sensor_t BstSensorInfo::g_bst_sensor_list[] = {
         stringType : SENSOR_STRING_TYPE_MAGNETIC_FIELD_UNCALIBRATED,
         requiredPermission : "",
         maxDelay : 200000,
-        flags : 0,
+        flags : SENSOR_FLAG_CONTINUOUS_MODE,
 #endif
         reserved : {}
     },
@@ -434,7 +434,7 @@ const struct sensor_t BstSensorInfo::g_bst_sensor_list[] = {
         stringType : SENSOR_STRING_TYPE_GEOMAGNETIC_ROTATION_VECTOR,
         requiredPermission : "",
         maxDelay : 200000,
-        flags : 0,
+        flags : SENSOR_FLAG_CONTINUOUS_MODE,
 #endif
         reserved : {}
     },
