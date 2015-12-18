@@ -244,7 +244,6 @@ void check_cmd_event() {
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_1__
 
 int fifo_write_flush_finish_event(int handle) {
-    int ret;
     struct exchange event;
     event.magic = CHANNEL_PKT_MAGIC_DAT;
     event.data.version = sizeof(struct exchange);

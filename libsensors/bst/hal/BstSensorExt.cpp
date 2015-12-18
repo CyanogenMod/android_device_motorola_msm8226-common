@@ -31,38 +31,52 @@
 const struct sensor_t BstSensorExt::g_bstext_sensor_list[] =
 {
 #ifdef __SIGNIFICANT_MOTION_SENSOR_SUPPORT__
-    {   "BOSCH Significant Motion Sensor",
-        "Bosch Sensortec, GmbH",
-        1, SENSORS_SIGNIFICANT_MOTION_HANDLE,
-        SENSOR_TYPE_SIGNIFICANT_MOTION, 1.0f, 1.0f, 0.0f, -1,
+    {
+        .name = "BOSCH Significant Motion Sensor",
+        .vendor = "Bosch Sensortec, GmbH",
+        .version = 1,
+        .handle = SENSORS_SIGNIFICANT_MOTION_HANDLE,
+        .type = SENSOR_TYPE_SIGNIFICANT_MOTION,
+        .maxRange = 1.0f,
+        .resolution = 1.0f,
+        .power = 0.0f,
+        .minDelay = -1,
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_1__
-        0,0,
+        .fifoReservedEventCount = 0,
+        .fifoMaxEventCount = 0,
 #endif
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_3__
-        SENSOR_STRING_TYPE_SIGNIFICANT_MOTION,
-        "",
-        -1,
-        SENSOR_FLAG_ONE_SHOT_MODE | SENSOR_FLAG_WAKE_UP,
+        .stringType = SENSOR_STRING_TYPE_SIGNIFICANT_MOTION,
+        .requiredPermission = "",
+        .maxDelay = -1,
+        .flags = SENSOR_FLAG_ONE_SHOT_MODE | SENSOR_FLAG_WAKE_UP,
 #endif
-        {}
+        .reserved = {}
     },
 #endif
 
 #ifdef __DOUBLE_TAP_SENSOR_SUPPORT__
-    {   "BOSCH Double Tap Sensor",
-        "Bosch Sensortec ,GmbH",
-        1, SENSORS_DOUBLE_TAP_HANDLE,
-        BSTEXT_SENSOR_TYPE_DOUBLE_TAP, 2.0f, 1.0f, 0.0f, 0,
+    {
+        .name = "BOSCH Double Tap Sensor",
+        .vendor = "Bosch Sensortec ,GmbH",
+        .version = 1,
+        .handle = SENSORS_DOUBLE_TAP_HANDLE,
+        .type = BSTEXT_SENSOR_TYPE_DOUBLE_TAP,
+        .maxRange = 2.0f,
+        .resolution = 1.0f,
+        .power = 0.0f,
+        .minDelay = 0,
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_1__
-        0,0,
+        .fifoReservedEventCount = 0,
+        .fifoMaxEventCount = 0,
 #endif
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_3__
-        "bosch.double.tap.sensor",
-        "",
-        -1,
-        SENSOR_FLAG_WAKE_UP,
+        .stringType = "bosch.double.tap.sensor",
+        .requiredPermission = "",
+        .maxDelay = -1,
+        .flags = SENSOR_FLAG_WAKE_UP,
 #endif
-        {}
+        .reserved = {}
     },
 #endif
 };

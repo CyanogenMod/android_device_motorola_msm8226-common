@@ -510,17 +510,17 @@ static int hw_restore_cfg_a(struct sensor_hw *hw) {
 
 
 struct sensor_hw_a g_hw_a = {
-    hw: {
-        name: DEV_NAME_A,
-        type: SENSOR_HW_TYPE_A,
-        init:hw_init_a,
-        enable:hw_enable_a,
-        restore_cfg:hw_restore_cfg_a,
-        set_delay:hw_acc_set_delay,
-        get_data_nb:hw_acc_read_xyzdata,
-        get_data:hw_acc_read_xyzdata_input_ev
+    .hw = {
+        .name = DEV_NAME_A,
+        .type = SENSOR_HW_TYPE_A,
+        .init = hw_init_a,
+        .enable = hw_enable_a,
+        .restore_cfg = hw_restore_cfg_a,
+        .set_delay = hw_acc_set_delay,
+        .get_data_nb = hw_acc_read_xyzdata,
+        .get_data = hw_acc_read_xyzdata_input_ev
     },
 
-    set_bw:hw_acc_set_bandwidth,
-    set_range:hw_acc_set_grange,
+    .set_bw = hw_acc_set_bandwidth,
+    .set_range = hw_acc_set_grange,
 };

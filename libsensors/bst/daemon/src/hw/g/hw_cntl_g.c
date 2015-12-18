@@ -422,17 +422,17 @@ static int hw_restore_cfg_g(struct sensor_hw *hw) {
 
 
 struct sensor_hw_g g_hw_g = {
-    hw: {
-        name: DEV_NAME_G,
-        type: SENSOR_HW_TYPE_G,
-        init:hw_init_g,
-        enable:hw_enable_g,
-        restore_cfg:hw_restore_cfg_g,
-        set_delay:hw_gyro_set_delay,
-        get_data_nb:hw_gyro_read_xyzdata,
-        get_data:hw_gyro_read_xyzdata_input_ev
+    .hw = {
+        .name = DEV_NAME_G,
+        .type = SENSOR_HW_TYPE_G,
+        .init = hw_init_g,
+        .enable = hw_enable_g,
+        .restore_cfg = hw_restore_cfg_g,
+        .set_delay = hw_gyro_set_delay,
+        .get_data_nb = hw_gyro_read_xyzdata,
+        .get_data = hw_gyro_read_xyzdata_input_ev
     },
 
-    set_bw:hw_gyro_set_bw,
-    set_range:hw_gyro_set_range,
+    .set_bw = hw_gyro_set_bw,
+    .set_range = hw_gyro_set_range,
 };

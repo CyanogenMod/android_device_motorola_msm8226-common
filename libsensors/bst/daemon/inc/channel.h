@@ -147,7 +147,7 @@ struct channel_cfg {
 
 
 struct channel {
-    const char const *name;
+    const char *name;
     /* NOTE: limitations */
     const int32_t type;
     /* id which identify a channel uniquely */

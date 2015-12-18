@@ -124,31 +124,49 @@ static struct sensor_t sSensorList[SENSOR_NUMBERS] = {
 #else
 static struct sensor_t sSensorList[SENSOR_NUMBERS] = {
     {
-        "STK Light sensor",
-        "Sensortek",
-        1, SENSORS_LIGHT_HANDLE,
-        SENSOR_TYPE_LIGHT, powf(10, (280.0f / 47.0f)) * 4, 1.0f, 0.75f, 0,
+        .name = "STK Light sensor",
+        .vendor = "Sensortek",
+        .version = 1,
+        .handle = SENSORS_LIGHT_HANDLE,
+        .type = SENSOR_TYPE_LIGHT,
+        .maxRange = powf(10, (280.0f / 47.0f)) * 4,
+        .resolution = 1.0f,
+        .power = 0.75f,
+        .minDelay = 0,
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_1__
-        0, 0,
+        .fifoReservedEventCount = 0,
+        .fifoMaxEventCount = 0,
 #endif
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_3__
-        SENSOR_STRING_TYPE_LIGHT, "", -1, SENSOR_FLAG_ON_CHANGE_MODE,
+        .stringType = SENSOR_STRING_TYPE_LIGHT,
+        .requiredPermission = "",
+        .maxDelay = -1,
+        .flags = SENSOR_FLAG_ON_CHANGE_MODE,
 #endif
-        {}
+        .reserved = {}
     },
 
     {
-        "STK Proximity sensor",
-        "Sensortek",
-        1, SENSORS_PROXIMITY_HANDLE,
-        SENSOR_TYPE_PROXIMITY, 5.0f, 5.0f, 0.75f, 0,
+        .name = "STK Proximity sensor",
+        .vendor = "Sensortek",
+        .version = 1,
+        .handle = SENSORS_PROXIMITY_HANDLE,
+        .type = SENSOR_TYPE_PROXIMITY,
+        .maxRange = 5.0f,
+        .resolution = 5.0f,
+        .power = 0.75f,
+        .minDelay = 0,
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_1__
-        0, 0,
+        .fifoReservedEventCount = 0,
+        .fifoMaxEventCount = 0,
 #endif
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_3__
-        SENSOR_STRING_TYPE_PROXIMITY, "", -1, SENSOR_FLAG_ON_CHANGE_MODE | SENSOR_FLAG_WAKE_UP,
+        .stringType = SENSOR_STRING_TYPE_PROXIMITY,
+        .requiredPermission = "",
+        .maxDelay = -1,
+        .flags = SENSOR_FLAG_ON_CHANGE_MODE | SENSOR_FLAG_WAKE_UP,
 #endif
-        {}
+        .reserved = {}
     },
 
 #ifdef __PRESSURE_SENSOR_SUPPORT__
@@ -182,22 +200,22 @@ static int sensors__get_sensors_list(struct sensors_module_t *module,
     }
 
 static struct hw_module_methods_t sensors_module_methods = {
-    open: open_sensors
+    .open = open_sensors
 };
 
 struct sensors_module_t HAL_MODULE_INFO_SYM = {
-    common: {
-        tag: HARDWARE_MODULE_TAG,
-        version_major : 1,
-        version_minor : 0,
-        id : SENSORS_HARDWARE_MODULE_ID,
-        name : "Bosch Sensor module",
-        author : "Bosch Sensortec,GmbH",
-        methods : &sensors_module_methods,
-        dso : NULL,
-        reserved : {0}
+    .common = {
+        .tag = HARDWARE_MODULE_TAG,
+        .version_major = 1,
+        .version_minor = 0,
+        .id = SENSORS_HARDWARE_MODULE_ID,
+        .name = "Bosch Sensor module",
+        .author = "Bosch Sensortec,GmbH",
+        .methods = &sensors_module_methods,
+        .dso = NULL,
+        .reserved = {0}
     },
-    get_sensors_list : sensors__get_sensors_list,
+    .get_sensors_list = sensors__get_sensors_list,
 };
 
 struct sensors_poll_context_t {

@@ -381,14 +381,14 @@ static int hw_restore_cfg_m(struct sensor_hw *hw) {
 
 
 struct sensor_hw_m g_hw_m = {
-    hw: {
-        name: DEV_NAME_M,
-        type: SENSOR_HW_TYPE_M,
-        init:hw_init_m,
-        enable:hw_enable_m,
-        restore_cfg:hw_restore_cfg_m,
-        set_delay:hw_mag_set_delay,
-        get_data_nb:hw_mag_read_xyzdata,
-        get_data:hw_mag_read_xyzdata_input_ev
+    .hw = {
+        .name = DEV_NAME_M,
+        .type = SENSOR_HW_TYPE_M,
+        .init = hw_init_m,
+        .enable = hw_enable_m,
+        .restore_cfg = hw_restore_cfg_m,
+        .set_delay = hw_mag_set_delay,
+        .get_data_nb = hw_mag_read_xyzdata,
+        .get_data = hw_mag_read_xyzdata_input_ev
     },
 };

@@ -105,7 +105,7 @@ typedef struct axis_remap {
 
 
 struct sensor_hw {
-    const char const *name;
+    const char *name;
 
     /* defined as SENSOR_HW_TYPE_X */
     const int32_t type;

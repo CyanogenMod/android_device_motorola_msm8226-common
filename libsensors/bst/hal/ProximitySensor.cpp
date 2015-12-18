@@ -269,7 +269,7 @@ float ProximitySensor::indexToValue(size_t index) const {
 
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_1__
 
-int ProximitySensor::flush(int id) {
+int ProximitySensor::flush(int id __unused) {
     int ret = 0;
     mPendingFlushFinishEvent++;
     PINFO("<BST> flush sensor id: %d for %d times", id, mPendingFlushFinishEvent);

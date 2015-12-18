@@ -154,56 +154,56 @@ static int g_fd_log_data_x = -1;
 
 static struct algo_work_mode g_algo_work_modes[] = {
     {
-        name:"WM_S",
-        mode:{opMode:BSX_WORKINGMODE_SLEEP},
-        cap:0,
-        available:1,
+        .name = "WM_S",
+        .mode = {.opMode = BSX_WORKINGMODE_SLEEP},
+        .cap = 0,
+        .available = 1,
     },
 
     {
-        name:"WM_A",
-        mode:{opMode:BSX_WORKINGMODE_ACCONLY},
-        cap:((1 << SENSOR_TYPE_A) | (1 << SENSOR_TYPE_GEST_FLIP)
+        .name = "WM_A",
+        .mode = {.opMode = BSX_WORKINGMODE_ACCONLY},
+        .cap = ((1 << SENSOR_TYPE_A) | (1 << SENSOR_TYPE_GEST_FLIP)
         | (1 << SENSOR_TYPE_SW_SIGNIFICANT_MOTION)
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_0__
         | (1 << SENSOR_TYPE_STC)
         | (1 << SENSOR_TYPE_STD)
 #endif
             ),
-        available:1,
-        min_dr_a:ALGO_DR_5HZ,
+        .available = 1,
+        .min_dr_a = ALGO_DR_5HZ,
 #ifdef __FASTEST_MODE_100HZ__
-        max_dr_a:ALGO_DR_100HZ,
+        .max_dr_a = ALGO_DR_100HZ,
 #else
-        max_dr_a:ALGO_DR_200HZ,
+        .max_dr_a = ALGO_DR_200HZ,
 #endif //endif of __FASTEST_MODE_100HZ__
-        min_dr_m:ALGO_DR_INVALID,
-        max_dr_m:ALGO_DR_INVALID,
-        min_dr_g:ALGO_DR_INVALID,
-        max_dr_g:ALGO_DR_INVALID,
+        .min_dr_m = ALGO_DR_INVALID,
+        .max_dr_m = ALGO_DR_INVALID,
+        .min_dr_g = ALGO_DR_INVALID,
+        .max_dr_g = ALGO_DR_INVALID,
     },
 
     {
-        name:"WM_M",
-        mode:{opMode:BSX_WORKINGMODE_MAGONLY},
-        cap:((1 << SENSOR_TYPE_M)
+        .name = "WM_M",
+        .mode = {.opMode = BSX_WORKINGMODE_MAGONLY},
+        .cap = ((1 << SENSOR_TYPE_M)
 #ifdef __UNCALIBRATED_VIRTUAL_SENSOR_SUPPORT__
         | (1<<SENSOR_TYPE_MU)
 #endif
             ),
-        available:1,
-        min_dr_a:ALGO_DR_INVALID,
-        max_dr_a:ALGO_DR_INVALID,
-        min_dr_m:ALGO_DR_5HZ,
-        max_dr_m:ALGO_DR_20HZ,
-        min_dr_g:ALGO_DR_INVALID,
-        max_dr_g:ALGO_DR_INVALID,
+        .available = 1,
+        .min_dr_a = ALGO_DR_INVALID,
+        .max_dr_a = ALGO_DR_INVALID,
+        .min_dr_m = ALGO_DR_5HZ,
+        .max_dr_m = ALGO_DR_20HZ,
+        .min_dr_g = ALGO_DR_INVALID,
+        .max_dr_g = ALGO_DR_INVALID,
     },
 
     {
-        name:"WM_AM",
-        mode:{opMode:BSX_WORKINGMODE_ACCMAG},
-        cap:((1 << SENSOR_TYPE_A) | (1 << SENSOR_TYPE_M)
+        .name = "WM_AM",
+        .mode = {.opMode = BSX_WORKINGMODE_ACCMAG},
+        .cap = ((1 << SENSOR_TYPE_A) | (1 << SENSOR_TYPE_M)
         | (1 << SENSOR_TYPE_GEST_FLIP)
         | (1 << SENSOR_TYPE_SW_SIGNIFICANT_MOTION)
 #ifdef __UNCALIBRATED_VIRTUAL_SENSOR_SUPPORT__
@@ -214,41 +214,41 @@ static struct algo_work_mode g_algo_work_modes[] = {
         | (1 << SENSOR_TYPE_STD)
 #endif
             ),
-        available:1,
-        min_dr_a:ALGO_DR_10HZ,
+        .available = 1,
+        .min_dr_a = ALGO_DR_10HZ,
 #ifdef __FASTEST_MODE_100HZ__
-        max_dr_a:ALGO_DR_100HZ,
+        .max_dr_a = ALGO_DR_100HZ,
 #else
-        max_dr_a:ALGO_DR_200HZ,
+        .max_dr_a = ALGO_DR_200HZ,
 #endif //endif of __FASTEST_MODE_100HZ__
-        min_dr_m:ALGO_DR_10HZ,
-        max_dr_m:ALGO_DR_20HZ,
-        min_dr_g:ALGO_DR_INVALID,
-        max_dr_g:ALGO_DR_INVALID,
+        .min_dr_m = ALGO_DR_10HZ,
+        .max_dr_m = ALGO_DR_20HZ,
+        .min_dr_g = ALGO_DR_INVALID,
+        .max_dr_g = ALGO_DR_INVALID,
     },
 
     {
-        name:"WM_G",
-        mode:{opMode:BSX_WORKINGMODE_GYROONLY},
-        cap:(1 << SENSOR_TYPE_G),
+        .name = "WM_G",
+        .mode = {.opMode = BSX_WORKINGMODE_GYROONLY},
+        .cap = (1 << SENSOR_TYPE_G),
         /* CHECK */
-        available:0,
-        min_dr_a:ALGO_DR_100HZ,
+        .available = 0,
+        .min_dr_a = ALGO_DR_100HZ,
 #ifdef __FASTEST_MODE_100HZ__
-        max_dr_a:ALGO_DR_100HZ,
+        .max_dr_a = ALGO_DR_100HZ,
 #else
-        max_dr_a:ALGO_DR_200HZ,
+        .max_dr_a = ALGO_DR_200HZ,
 #endif //endif of __FASTEST_MODE_100HZ__
-        min_dr_m:ALGO_DR_INVALID,
-        max_dr_m:ALGO_DR_INVALID,
-        min_dr_g:ALGO_DR_INVALID,
-        max_dr_g:ALGO_DR_INVALID,
+        .min_dr_m = ALGO_DR_INVALID,
+        .max_dr_m = ALGO_DR_INVALID,
+        .min_dr_g = ALGO_DR_INVALID,
+        .max_dr_g = ALGO_DR_INVALID,
     },
 
     {
-        name:"WM_AG",
-        mode:{opMode:BSX_WORKINGMODE_ACCGYRO},
-        cap:((1 << SENSOR_TYPE_A) | (1 << SENSOR_TYPE_G)
+        .name = "WM_AG",
+        .mode = {.opMode = BSX_WORKINGMODE_ACCGYRO},
+        .cap = ((1 << SENSOR_TYPE_A) | (1 << SENSOR_TYPE_G)
         | (1 << SENSOR_TYPE_GEST_FLIP)
         | (1 << SENSOR_TYPE_SW_SIGNIFICANT_MOTION)
 #ifdef __UNCALIBRATED_VIRTUAL_SENSOR_SUPPORT__
@@ -259,28 +259,28 @@ static struct algo_work_mode g_algo_work_modes[] = {
         | (1 << SENSOR_TYPE_STD)
 #endif
             ),
-        available:1,
+        .available = 1,
         /* CHECK */
-        min_dr_a:ALGO_DR_100HZ,
+        .min_dr_a = ALGO_DR_100HZ,
 #ifdef __FASTEST_MODE_100HZ__
-        max_dr_a:ALGO_DR_100HZ,
+        .max_dr_a = ALGO_DR_100HZ,
 #else
-        max_dr_a:ALGO_DR_200HZ,
+        .max_dr_a = ALGO_DR_200HZ,
 #endif //endif of __FASTEST_MODE_100HZ__
-        min_dr_m:ALGO_DR_INVALID,
-        max_dr_m:ALGO_DR_INVALID,
-        min_dr_g:ALGO_DR_100HZ,
+        .min_dr_m = ALGO_DR_INVALID,
+        .max_dr_m = ALGO_DR_INVALID,
+        .min_dr_g = ALGO_DR_100HZ,
 #ifdef __FASTEST_MODE_100HZ__
-        max_dr_g:ALGO_DR_100HZ,
+        .max_dr_g = ALGO_DR_100HZ,
 #else
-        max_dr_g:ALGO_DR_200HZ,
+        .max_dr_g = ALGO_DR_200HZ,
 #endif //endif of __FASTEST_MODE_100HZ__
     },
 
     {
-        name:"WM_AMG",
-        mode:{opMode:BSX_WORKINGMODE_AMG},
-        cap:((1 << SENSOR_TYPE_A) | (1 << SENSOR_TYPE_M)
+        .name = "WM_AMG",
+        .mode = {.opMode = BSX_WORKINGMODE_AMG},
+        .cap = ((1 << SENSOR_TYPE_A) | (1 << SENSOR_TYPE_M)
         | (1 << SENSOR_TYPE_G)
         | (1 << SENSOR_TYPE_GEST_FLIP)
         | (1 << SENSOR_TYPE_SW_SIGNIFICANT_MOTION)
@@ -293,28 +293,28 @@ static struct algo_work_mode g_algo_work_modes[] = {
 #endif
             ),
         /* CHECK */
-        available:1,
+        .available = 1,
         /* CHECK */
-        min_dr_a:ALGO_DR_100HZ,
+        .min_dr_a = ALGO_DR_100HZ,
 #ifdef __FASTEST_MODE_100HZ__
-        max_dr_a:ALGO_DR_100HZ,
+        .max_dr_a = ALGO_DR_100HZ,
 #else
-        max_dr_a:ALGO_DR_200HZ,
+        .max_dr_a = ALGO_DR_200HZ,
 #endif //endif of __FASTEST_MODE_100HZ__
-        min_dr_m:ALGO_DR_10HZ,
-        max_dr_m:ALGO_DR_20HZ,
-        min_dr_g:ALGO_DR_100HZ,
+        .min_dr_m = ALGO_DR_10HZ,
+        .max_dr_m = ALGO_DR_20HZ,
+        .min_dr_g = ALGO_DR_100HZ,
 #ifdef __FASTEST_MODE_100HZ__
-        max_dr_g:ALGO_DR_100HZ,
+        .max_dr_g = ALGO_DR_100HZ,
 #else
-        max_dr_g:ALGO_DR_200HZ,
+        .max_dr_g = ALGO_DR_200HZ,
 #endif //endif of __FASTEST_MODE_100HZ__
     },
 
     {
-        name:"WM_IMU+",
-        mode:{opMode:BSX_WORKINGMODE_IMUPLUS},
-        cap:((1 << SENSOR_TYPE_A) | (1 << SENSOR_TYPE_G)
+        .name = "WM_IMU+",
+        .mode = {.opMode = BSX_WORKINGMODE_IMUPLUS},
+        .cap = ((1 << SENSOR_TYPE_A) | (1 << SENSOR_TYPE_G)
         | (1 << SENSOR_TYPE_VG) | (1 << SENSOR_TYPE_VLA)
         | (1 << SENSOR_TYPE_VRV) | (1 << SENSOR_TYPE_O)
         | (1 << SENSOR_TYPE_GEST_FLIP)
@@ -327,27 +327,27 @@ static struct algo_work_mode g_algo_work_modes[] = {
         | (1 << SENSOR_TYPE_STD)
 #endif
             ),
-        available:0,
-        min_dr_a:ALGO_DR_100HZ,
+        .available = 0,
+        .min_dr_a = ALGO_DR_100HZ,
 #ifdef __FASTEST_MODE_100HZ__
-        max_dr_a:ALGO_DR_100HZ,
+        .max_dr_a = ALGO_DR_100HZ,
 #else
-        max_dr_a:ALGO_DR_200HZ,
+        .max_dr_a = ALGO_DR_200HZ,
 #endif //endif of __FASTEST_MODE_100HZ__
-        min_dr_m:ALGO_DR_INVALID,
-        max_dr_m:ALGO_DR_INVALID,
-        min_dr_g:ALGO_DR_100HZ,
+        .min_dr_m = ALGO_DR_INVALID,
+        .max_dr_m = ALGO_DR_INVALID,
+        .min_dr_g = ALGO_DR_100HZ,
 #ifdef __FASTEST_MODE_100HZ__
-        max_dr_g:ALGO_DR_100HZ,
+        .max_dr_g = ALGO_DR_100HZ,
 #else
-        max_dr_g:ALGO_DR_200HZ,
+        .max_dr_g = ALGO_DR_200HZ,
 #endif //endif of __FASTEST_MODE_100HZ__
     },
 
     {
-        name:"WM_COMPASS",
-        mode:{opMode:BSX_WORKINGMODE_COMPASS},
-        cap:((1 << SENSOR_TYPE_A) | (1 << SENSOR_TYPE_M)
+        .name = "WM_COMPASS",
+        .mode = {.opMode = BSX_WORKINGMODE_COMPASS},
+        .cap = ((1 << SENSOR_TYPE_A) | (1 << SENSOR_TYPE_M)
         | (1 << SENSOR_TYPE_VG) | (1 << SENSOR_TYPE_VLA)
         | (1 << SENSOR_TYPE_VRV)
         | (1 << SENSOR_TYPE_O)
@@ -364,23 +364,23 @@ static struct algo_work_mode g_algo_work_modes[] = {
         | (1 << SENSOR_TYPE_STD)
 #endif
             ),
-        available:0,
-        min_dr_a:ALGO_DR_20HZ,
+        .available = 0,
+        .min_dr_a = ALGO_DR_20HZ,
 #ifdef __FASTEST_MODE_100HZ__
-        max_dr_a:ALGO_DR_100HZ,
+        .max_dr_a = ALGO_DR_100HZ,
 #else
-        max_dr_a:ALGO_DR_200HZ,
+        .max_dr_a = ALGO_DR_200HZ,
 #endif //endif of __FASTEST_MODE_100HZ__
-        min_dr_m:ALGO_DR_20HZ,
-        max_dr_m:ALGO_DR_20HZ,
-        min_dr_g:ALGO_DR_INVALID,
-        max_dr_g:ALGO_DR_INVALID,
+        .min_dr_m = ALGO_DR_20HZ,
+        .max_dr_m = ALGO_DR_20HZ,
+        .min_dr_g = ALGO_DR_INVALID,
+        .max_dr_g = ALGO_DR_INVALID,
     },
 
     {
-        name:"WM_M4G",
-        mode:{opMode:BSX_WORKINGMODE_M4G},
-        cap:((1 << SENSOR_TYPE_A) | (1 << SENSOR_TYPE_M)
+        .name = "WM_M4G",
+        .mode = {.opMode = BSX_WORKINGMODE_M4G},
+        .cap = ((1 << SENSOR_TYPE_A) | (1 << SENSOR_TYPE_M)
         | (1 << SENSOR_TYPE_G) | (1 << SENSOR_TYPE_VG)
         | (1 << SENSOR_TYPE_VLA)
         | (1 << SENSOR_TYPE_VRV)
@@ -397,24 +397,24 @@ static struct algo_work_mode g_algo_work_modes[] = {
         | (1 << SENSOR_TYPE_STD)
 #endif
             ),
-        available:0,
-        min_dr_a:ALGO_DR_50HZ,
+        .available = 0,
+        .min_dr_a = ALGO_DR_50HZ,
 #ifdef __FASTEST_MODE_100HZ__
-        max_dr_a:ALGO_DR_100HZ,
+        .max_dr_a = ALGO_DR_100HZ,
 #else
-        max_dr_a:ALGO_DR_200HZ,
+        .max_dr_a = ALGO_DR_200HZ,
 #endif //endif of __FASTEST_MODE_100HZ__
-        min_dr_m:ALGO_DR_50HZ,
-        max_dr_m:ALGO_DR_50HZ,
-        min_dr_g:ALGO_DR_INVALID,
-        max_dr_g:ALGO_DR_INVALID,
+        .min_dr_m = ALGO_DR_50HZ,
+        .max_dr_m = ALGO_DR_50HZ,
+        .min_dr_g = ALGO_DR_INVALID,
+        .max_dr_g = ALGO_DR_INVALID,
     },
 
 #ifdef __FMC_OFF__
     {
-        name:"WM_9DOFF",
-        mode:{opMode:BSX_WORKINGMODE_NDOF_FMC_OFF},
-        cap:((1<<SENSOR_TYPE_A) | (1<<SENSOR_TYPE_M)
+        .name = "WM_9DOFF",
+        .mode = {.opMode = BSX_WORKINGMODE_NDOF_FMC_OFF},
+        .cap = ((1<<SENSOR_TYPE_A) | (1<<SENSOR_TYPE_M)
         | (1<<SENSOR_TYPE_G) | (1<<SENSOR_TYPE_O)
         | (1<<SENSOR_TYPE_VG) | (1<<SENSOR_TYPE_VLA)
         | (1<<SENSOR_TYPE_VRV)
@@ -432,27 +432,27 @@ static struct algo_work_mode g_algo_work_modes[] = {
 #endif
             ),
 
-        available:0,
-        min_dr_a:ALGO_DR_100HZ,
+        .available = 0,
+        .min_dr_a = ALGO_DR_100HZ,
 #ifdef __FASTEST_MODE_100HZ__
-        max_dr_a:ALGO_DR_100HZ,
+        .max_dr_a = ALGO_DR_100HZ,
 #else
-        max_dr_a:ALGO_DR_200HZ,
+        .max_dr_a = ALGO_DR_200HZ,
 #endif //endif of __FASTEST_MODE_100HZ__
-        min_dr_m:ALGO_DR_20HZ,
-        max_dr_m:ALGO_DR_20HZ,
-        min_dr_g:ALGO_DR_100HZ,
+        .min_dr_m = ALGO_DR_20HZ,
+        .max_dr_m = ALGO_DR_20HZ,
+        .min_dr_g = ALGO_DR_100HZ,
 #ifdef __FASTEST_MODE_100HZ__
-        max_dr_g:ALGO_DR_100HZ,
+        .max_dr_g = ALGO_DR_100HZ,
 #else
-        max_dr_g:ALGO_DR_200HZ,
+        .max_dr_g = ALGO_DR_200HZ,
 #endif //endif of __FASTEST_MODE_100HZ__
     },
 #else
     {
-        name:"WM_9DOFF",
-        mode:{opMode:BSX_WORKINGMODE_NDOF},
-        cap:((1 << SENSOR_TYPE_A) | (1 << SENSOR_TYPE_M)
+        .name = "WM_9DOFF",
+        .mode = {.opMode = BSX_WORKINGMODE_NDOF},
+        .cap = ((1 << SENSOR_TYPE_A) | (1 << SENSOR_TYPE_M)
         | (1 << SENSOR_TYPE_G) | (1 << SENSOR_TYPE_O)
         | (1 << SENSOR_TYPE_VG) | (1 << SENSOR_TYPE_VLA)
         | (1 << SENSOR_TYPE_VRV)
@@ -470,20 +470,20 @@ static struct algo_work_mode g_algo_work_modes[] = {
         | (1 << SENSOR_TYPE_STD)
 #endif
             ),
-        available:0,
-        min_dr_a:ALGO_DR_100HZ,
+        .available = 0,
+        .min_dr_a = ALGO_DR_100HZ,
 #ifdef __FASTEST_MODE_100HZ__
-        max_dr_a:ALGO_DR_100HZ,
+        .max_dr_a = ALGO_DR_100HZ,
 #else
-        max_dr_a:ALGO_DR_200HZ,
+        .max_dr_a = ALGO_DR_200HZ,
 #endif //endif of __FASTEST_MODE_100HZ__
-        min_dr_m:ALGO_DR_20HZ,
-        max_dr_m:ALGO_DR_20HZ,
-        min_dr_g:ALGO_DR_100HZ,
+        .min_dr_m = ALGO_DR_20HZ,
+        .max_dr_m = ALGO_DR_20HZ,
+        .min_dr_g = ALGO_DR_100HZ,
 #ifdef __FASTEST_MODE_100HZ__
-        max_dr_g:ALGO_DR_100HZ,
+        .max_dr_g = ALGO_DR_100HZ,
 #else
-        max_dr_g:ALGO_DR_200HZ,
+        .max_dr_g = ALGO_DR_200HZ,
 #endif //endif of __FASTEST_MODE_100HZ__
     },
 #endif

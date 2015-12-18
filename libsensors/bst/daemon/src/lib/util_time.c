@@ -146,10 +146,10 @@ static void cp_get_tick_ns_hr(struct clock_provider *cp, time_tick_ns_t *t) {
 
 
 struct clock_provider g_cp_hr = {
-    name: "CP_HR",
-    available:1,
-    init:cp_init_hr,
-    get_tick_ns:cp_get_tick_ns_hr
+    .name = "CP_HR",
+    .available = 1,
+    .init = cp_init_hr,
+    .get_tick_ns = cp_get_tick_ns_hr
 };
 
 
@@ -201,10 +201,10 @@ void cp_get_tick_ns_rt(struct clock_provider *cp, time_tick_ns_t *t) {
 
 
 struct clock_provider g_cp_rt = {
-    name: "CP_RT",
-    available:1,
-    init:cp_init_rt,
-    get_tick_ns:cp_get_tick_ns_rt
+    .name = "CP_RT",
+    .available = 1,
+    .init = cp_init_rt,
+    .get_tick_ns = cp_get_tick_ns_rt
 };
 
 

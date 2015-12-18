@@ -84,7 +84,6 @@ mInputReader(4),
 mHasPendingEvent(false),
 sensor_index(-1) {
     int i;
-    char *tok = NULL;
 
     mPendingEvent.version = sizeof(sensors_event_t);
     mPendingEvent.sensor = SENSORS_LIGHT_HANDLE;
@@ -160,7 +159,7 @@ LightSensor::~LightSensor() {
     }
 }
 
-int LightSensor::setDelay(int32_t handle, int64_t ns) {
+int LightSensor::setDelay(int32_t handle __unused, int64_t ns) {
     int fd;
     int delay_ms = ns / 1000000;
     strlcpy(&input_sysfs_path[input_sysfs_path_len],
@@ -176,7 +175,7 @@ int LightSensor::setDelay(int32_t handle, int64_t ns) {
     return -1;
 }
 
-int LightSensor::enable(int32_t handle, int en) {
+int LightSensor::enable(int32_t handle __unused, int en) {
     int flags = en ? 1 : 0;
     if (flags != mEnabled) {
         int fd;
@@ -298,7 +297,7 @@ float LightSensor::convertEvent(int value) {
 
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_1__
 
-int LightSensor::flush(int id) {
+int LightSensor::flush(int id __unused) {
     int ret = 0;
     mPendingFlushFinishEvent++;
     return ret;

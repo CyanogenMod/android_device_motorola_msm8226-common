@@ -98,188 +98,188 @@
 
 const struct sensor_t BstSensorInfo::g_bst_sensor_list[] = {
     {
-        name: VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_A SENSOR_STR,
-        vendor: VENDOR_NAME_BST,
-        version: SENSOR_VER_BST,
-        handle: SENSORS_ACCELERATION_HANDLE,
-        type: SENSOR_TYPE_ACCELEROMETER,
-        maxRange: 16.0f * 9.805,
-        resolution: 4.0f * 9.805 / (1 << HW_INFO_BITWIDTH_A),
-        power: 0.13f,
+        .name = VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_A SENSOR_STR,
+        .vendor = VENDOR_NAME_BST,
+        .version = SENSOR_VER_BST,
+        .handle = SENSORS_ACCELERATION_HANDLE,
+        .type = SENSOR_TYPE_ACCELEROMETER,
+        .maxRange = 16.0f * 9.805,
+        .resolution = 4.0f * 9.805 / (1 << HW_INFO_BITWIDTH_A),
+        .power = 0.13f,
 #ifdef __FASTEST_MODE_100HZ__
-        minDelay : 10000,
+        .minDelay = 10000,
 #else
-        minDelay : 5000,
+        .minDelay = 5000,
 #endif
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_1__
-        fifoReservedEventCount : 0,
-        fifoMaxEventCount : 0,
+        .fifoReservedEventCount = 0,
+        .fifoMaxEventCount = 0,
 #endif
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_3__
-        stringType : SENSOR_STRING_TYPE_ACCELEROMETER,
-        requiredPermission : "",
-        maxDelay : 200000,
-        flags : SENSOR_FLAG_CONTINUOUS_MODE,
+        .stringType = SENSOR_STRING_TYPE_ACCELEROMETER,
+        .requiredPermission = "",
+        .maxDelay = 200000,
+        .flags = SENSOR_FLAG_CONTINUOUS_MODE,
 #endif
-        reserved : {}
+        .reserved = {}
     },
 
     {
-        name : VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_M SENSOR_STR,
-        vendor : VENDOR_NAME_BST,
-        version : SENSOR_VER_BST,
-        handle : SENSORS_MAGNETIC_FIELD_HANDLE,
-        type : SENSOR_TYPE_MAGNETIC_FIELD,
-        maxRange : 1600.0f,
-        resolution : 0.3f,
-        power : 0.5f,
-        minDelay : 20000,
+        .name = VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_M SENSOR_STR,
+        .vendor = VENDOR_NAME_BST,
+        .version = SENSOR_VER_BST,
+        .handle = SENSORS_MAGNETIC_FIELD_HANDLE,
+        .type = SENSOR_TYPE_MAGNETIC_FIELD,
+        .maxRange = 1600.0f,
+        .resolution = 0.3f,
+        .power = 0.5f,
+        .minDelay = 20000,
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_1__
-        fifoReservedEventCount : 0,
-        fifoMaxEventCount : 0,
+        .fifoReservedEventCount = 0,
+        .fifoMaxEventCount = 0,
 #endif
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_3__
-        stringType : SENSOR_STRING_TYPE_MAGNETIC_FIELD,
-        requiredPermission : "",
-        maxDelay : 200000,
-        flags : SENSOR_FLAG_CONTINUOUS_MODE,
+        .stringType = SENSOR_STRING_TYPE_MAGNETIC_FIELD,
+        .requiredPermission = "",
+        .maxDelay = 200000,
+        .flags = SENSOR_FLAG_CONTINUOUS_MODE,
 #endif
-        reserved : {}
+        .reserved = {}
     },
 
     {
-        name : VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_G SENSOR_STR,
-        vendor : VENDOR_NAME_BST,
-        version : SENSOR_VER_BST,
-        handle : SENSORS_GYROSCOPE_HANDLE,
-        type : SENSOR_TYPE_GYROSCOPE,
-        maxRange : 2500.0f,
-        resolution : 250.0f / (1 << 16),
-        power : 5.0f,
+        .name = VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_G SENSOR_STR,
+        .vendor = VENDOR_NAME_BST,
+        .version = SENSOR_VER_BST,
+        .handle = SENSORS_GYROSCOPE_HANDLE,
+        .type = SENSOR_TYPE_GYROSCOPE,
+        .maxRange = 2500.0f,
+        .resolution = 250.0f / (1 << 16),
+        .power = 5.0f,
 #ifdef __FASTEST_MODE_100HZ__
-        minDelay : 10000,
+        .minDelay = 10000,
 #else
-        minDelay : 5000,
+        .minDelay = 5000,
 #endif
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_1__
-        fifoReservedEventCount : 0,
-        fifoMaxEventCount : 0,
+        .fifoReservedEventCount = 0,
+        .fifoMaxEventCount = 0,
 #endif
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_3__
-        stringType : SENSOR_STRING_TYPE_GYROSCOPE,
-        requiredPermission : "",
-        maxDelay : 200000,
-        flags : SENSOR_FLAG_CONTINUOUS_MODE,
+        .stringType = SENSOR_STRING_TYPE_GYROSCOPE,
+        .requiredPermission = "",
+        .maxDelay = 200000,
+        .flags = SENSOR_FLAG_CONTINUOUS_MODE,
 #endif
-        reserved : {}
+        .reserved = {}
     },
 
     {
-        name : VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_O SENSOR_STR,
-        vendor : VENDOR_NAME_BST,
-        version : SENSOR_VER_BST,
-        handle : SENSORS_ORIENTATION_HANDLE,
-        type : SENSOR_TYPE_ORIENTATION,
-        maxRange : 360.0f,
-        resolution : 1.0f,
-        power : 0.63f,
+        .name = VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_O SENSOR_STR,
+        .vendor = VENDOR_NAME_BST,
+        .version = SENSOR_VER_BST,
+        .handle = SENSORS_ORIENTATION_HANDLE,
+        .type = SENSOR_TYPE_ORIENTATION,
+        .maxRange = 360.0f,
+        .resolution = 1.0f,
+        .power = 0.63f,
 #ifdef __FASTEST_MODE_100HZ__
-        minDelay : 10000,
+        .minDelay = 10000,
 #else
-        minDelay : 5000,
+        .minDelay = 5000,
 #endif
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_1__
-        fifoReservedEventCount : 0,
-        fifoMaxEventCount : 0,
+        .fifoReservedEventCount = 0,
+        .fifoMaxEventCount = 0,
 #endif
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_3__
-        stringType : SENSOR_STRING_TYPE_ORIENTATION,
-        requiredPermission : "",
-        maxDelay : 200000,
-        flags : SENSOR_FLAG_CONTINUOUS_MODE,
+        .stringType = SENSOR_STRING_TYPE_ORIENTATION,
+        .requiredPermission = "",
+        .maxDelay = 200000,
+        .flags = SENSOR_FLAG_CONTINUOUS_MODE,
 #endif
-        reserved : {}
+        .reserved = {}
     },
 
     {
-        name : VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_VG SENSOR_STR,
-        vendor : VENDOR_NAME_BST,
-        version : SENSOR_VER_BST,
-        handle : SENSORS_GRAVITY_HANDLE,
-        type : SENSOR_TYPE_GRAVITY,
-        maxRange : 9.805f * 2,
-        resolution : 4.0f * 9.805 / (1 << HW_INFO_BITWIDTH_A),
-        power : 5.63f,
+        .name = VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_VG SENSOR_STR,
+        .vendor = VENDOR_NAME_BST,
+        .version = SENSOR_VER_BST,
+        .handle = SENSORS_GRAVITY_HANDLE,
+        .type = SENSOR_TYPE_GRAVITY,
+        .maxRange = 9.805f * 2,
+        .resolution = 4.0f * 9.805 / (1 << HW_INFO_BITWIDTH_A),
+        .power = 5.63f,
 #ifdef __FASTEST_MODE_100HZ__
-        minDelay : 10000,
+        .minDelay = 10000,
 #else
-        minDelay : 5000,
+        .minDelay = 5000,
 #endif
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_1__
-        fifoReservedEventCount : 0,
-        fifoMaxEventCount : 0,
+        .fifoReservedEventCount = 0,
+        .fifoMaxEventCount = 0,
 #endif
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_3__
-        stringType : SENSOR_STRING_TYPE_GRAVITY,
-        requiredPermission : "",
-        maxDelay : 200000,
-        flags : SENSOR_FLAG_CONTINUOUS_MODE,
+        .stringType = SENSOR_STRING_TYPE_GRAVITY,
+        .requiredPermission = "",
+        .maxDelay = 200000,
+        .flags = SENSOR_FLAG_CONTINUOUS_MODE,
 #endif
-        reserved : {}
+        .reserved = {}
     },
 
     {
-        name : VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_VLA SENSOR_STR,
-        vendor : VENDOR_NAME_BST,
-        version : SENSOR_VER_BST,
-        handle : SENSORS_LINEAR_ACCEL_HANDLE,
-        type : SENSOR_TYPE_LINEAR_ACCELERATION,
-        maxRange : 9.805f * 2,
-        resolution : 4.0f * 9.805 / (1 << HW_INFO_BITWIDTH_A),
-        power : 5.63f,
+        .name = VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_VLA SENSOR_STR,
+        .vendor = VENDOR_NAME_BST,
+        .version = SENSOR_VER_BST,
+        .handle = SENSORS_LINEAR_ACCEL_HANDLE,
+        .type = SENSOR_TYPE_LINEAR_ACCELERATION,
+        .maxRange = 9.805f * 2,
+        .resolution = 4.0f * 9.805 / (1 << HW_INFO_BITWIDTH_A),
+        .power = 5.63f,
 #ifdef __FASTEST_MODE_100HZ__
-        minDelay : 10000,
+        .minDelay = 10000,
 #else
-        minDelay : 5000,
+        .minDelay = 5000,
 #endif
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_1__
-        fifoReservedEventCount : 0,
-        fifoMaxEventCount : 0,
+        .fifoReservedEventCount = 0,
+        .fifoMaxEventCount = 0,
 #endif
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_3__
-        stringType : SENSOR_STRING_TYPE_LINEAR_ACCELERATION,
-        requiredPermission : "",
-        maxDelay : 200000,
-        flags : SENSOR_FLAG_CONTINUOUS_MODE,
+        .stringType = SENSOR_STRING_TYPE_LINEAR_ACCELERATION,
+        .requiredPermission = "",
+        .maxDelay = 200000,
+        .flags = SENSOR_FLAG_CONTINUOUS_MODE,
 #endif
-        reserved : {}
+        .reserved = {}
     },
 
     {
-        name : VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_VRV SENSOR_STR,
-        vendor : VENDOR_NAME_BST,
-        version : SENSOR_VER_BST,
-        handle : SENSORS_ROTATION_VECTOR_HANDLE,
-        type : SENSOR_TYPE_ROTATION_VECTOR,
-        maxRange : 1.0f,
-        resolution : 1.0f / (1 << 24),
-        power : 5.63f,
+        .name = VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_VRV SENSOR_STR,
+        .vendor = VENDOR_NAME_BST,
+        .version = SENSOR_VER_BST,
+        .handle = SENSORS_ROTATION_VECTOR_HANDLE,
+        .type = SENSOR_TYPE_ROTATION_VECTOR,
+        .maxRange = 1.0f,
+        .resolution = 1.0f / (1 << 24),
+        .power = 5.63f,
 #ifdef __FASTEST_MODE_100HZ__
-        minDelay : 10000,
+        .minDelay = 10000,
 #else
-        minDelay : 5000,
+        .minDelay = 5000,
 #endif
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_1__
-        fifoReservedEventCount : 0,
-        fifoMaxEventCount : 0,
+        .fifoReservedEventCount = 0,
+        .fifoMaxEventCount = 0,
 #endif
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_3__
-        stringType : SENSOR_STRING_TYPE_ROTATION_VECTOR,
-        requiredPermission : "",
-        maxDelay : 200000,
-        flags : SENSOR_FLAG_CONTINUOUS_MODE,
+        .stringType = SENSOR_STRING_TYPE_ROTATION_VECTOR,
+        .requiredPermission = "",
+        .maxDelay = 200000,
+        .flags = SENSOR_FLAG_CONTINUOUS_MODE,
 #endif
-        reserved : {}
+        .reserved = {}
     },
 
 
@@ -336,107 +336,107 @@ const struct sensor_t BstSensorInfo::g_bst_sensor_list[] = {
 
 #ifdef __UNCALIBRATED_VIRTUAL_SENSOR_SUPPORT__
     {
-        name : VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_GRV SENSOR_STR,
-        vendor : VENDOR_NAME_BST,
-        version : SENSOR_VER_BST,
-        handle : SENSORS_GAME_ROTATION_VECTOR_HANDLE,
-        type : SENSOR_TYPE_GAME_ROTATION_VECTOR,
-        maxRange : 1.0f,
-        resolution : 1.0f / (1 << 24),
-        power : 5.63f,
+        .name = VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_GRV SENSOR_STR,
+        .vendor = VENDOR_NAME_BST,
+        .version = SENSOR_VER_BST,
+        .handle = SENSORS_GAME_ROTATION_VECTOR_HANDLE,
+        .type = SENSOR_TYPE_GAME_ROTATION_VECTOR,
+        .maxRange = 1.0f,
+        .resolution = 1.0f / (1 << 24),
+        .power = 5.63f,
 #ifdef __FASTEST_MODE_100HZ__
-        minDelay : 10000,
+        .minDelay = 10000,
 #else
-        minDelay : 5000,
+        .minDelay = 5000,
 #endif
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_1__
-        fifoReservedEventCount : 0,
-        fifoMaxEventCount : 0,
+        .fifoReservedEventCount = 0,
+        .fifoMaxEventCount = 0,
 #endif
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_3__
-        stringType : SENSOR_STRING_TYPE_GAME_ROTATION_VECTOR,
-        requiredPermission : "",
-        maxDelay : 200000,
-        flags : SENSOR_FLAG_CONTINUOUS_MODE,
+        .stringType = SENSOR_STRING_TYPE_GAME_ROTATION_VECTOR,
+        .requiredPermission = "",
+        .maxDelay = 200000,
+        .flags = SENSOR_FLAG_CONTINUOUS_MODE,
 #endif
-        reserved : {}
+        .reserved = {}
     },
 
     {
-        name : VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_GYU SENSOR_STR,
-        vendor : VENDOR_NAME_BST,
-        version : SENSOR_VER_BST,
-        handle : SENSORS_GYROSCOPE_UNCALIBRATED_HANDLE,
-        type : SENSOR_TYPE_GYROSCOPE_UNCALIBRATED,
-        maxRange : 2500.0f,
-        resolution : 250.0f / (1 << 16),
-        power : 5.0f,
+        .name = VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_GYU SENSOR_STR,
+        .vendor = VENDOR_NAME_BST,
+        .version = SENSOR_VER_BST,
+        .handle = SENSORS_GYROSCOPE_UNCALIBRATED_HANDLE,
+        .type = SENSOR_TYPE_GYROSCOPE_UNCALIBRATED,
+        .maxRange = 2500.0f,
+        .resolution = 250.0f / (1 << 16),
+        .power = 5.0f,
 #ifdef __FASTEST_MODE_100HZ__
-        minDelay : 10000,
+        .minDelay = 10000,
 #else
-        minDelay : 5000,
+        .minDelay = 5000,
 #endif
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_1__
-        fifoReservedEventCount : 0,
-        fifoMaxEventCount : 0,
+        .fifoReservedEventCount = 0,
+        .fifoMaxEventCount = 0,
 #endif
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_3__
-        stringType : SENSOR_STRING_TYPE_GYROSCOPE_UNCALIBRATED,
-        requiredPermission : "",
-        maxDelay : 200000,
-        flags : SENSOR_FLAG_CONTINUOUS_MODE,
+        .stringType = SENSOR_STRING_TYPE_GYROSCOPE_UNCALIBRATED,
+        .requiredPermission = "",
+        .maxDelay = 200000,
+        .flags = SENSOR_FLAG_CONTINUOUS_MODE,
 #endif
-        reserved : {}
+        .reserved = {}
     },
 
     {
-        name : VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_MU SENSOR_STR,
-        vendor : VENDOR_NAME_BST,
-        version : SENSOR_VER_BST,
-        handle : SENSORS_MAGNETIC_UNCALIBRATED_HANDLE,
-        type : SENSOR_TYPE_MAGNETIC_FIELD_UNCALIBRATED,
-        maxRange : 1600.0f,
-        resolution : 0.3f,
-        power : 0.5f,
-        minDelay : 20000,
+        .name = VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_MU SENSOR_STR,
+        .vendor = VENDOR_NAME_BST,
+        .version = SENSOR_VER_BST,
+        .handle = SENSORS_MAGNETIC_UNCALIBRATED_HANDLE,
+        .type = SENSOR_TYPE_MAGNETIC_FIELD_UNCALIBRATED,
+        .maxRange = 1600.0f,
+        .resolution = 0.3f,
+        .power = 0.5f,
+        .minDelay = 20000,
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_1__
-        fifoReservedEventCount : 0,
-        fifoMaxEventCount : 0,
+        .fifoReservedEventCount = 0,
+        .fifoMaxEventCount = 0,
 #endif
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_3__
-        stringType : SENSOR_STRING_TYPE_MAGNETIC_FIELD_UNCALIBRATED,
-        requiredPermission : "",
-        maxDelay : 200000,
-        flags : SENSOR_FLAG_CONTINUOUS_MODE,
+        .stringType = SENSOR_STRING_TYPE_MAGNETIC_FIELD_UNCALIBRATED,
+        .requiredPermission = "",
+        .maxDelay = 200000,
+        .flags = SENSOR_FLAG_CONTINUOUS_MODE,
 #endif
-        reserved : {}
+        .reserved = {}
     },
 #endif
 
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_1__
     {
-        name : VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_GEOM_RY SENSOR_STR,
-        vendor : VENDOR_NAME_BST,
-        version : SENSOR_VER_BST,
-        handle : SENSORS_GEOMAGNETIC_ROTATION_VECTOR_HANDLE,
-        type : SENSOR_TYPE_GEOMAGNETIC_ROTATION_VECTOR,
-        maxRange : 1.0f,
-        resolution : 1.0f / (1 << 24),
-        power : 5.63f,
+        .name = VENDOR_NAME_BST_SHORT BST_SENSOR_NAME_GEOM_RY SENSOR_STR,
+        .vendor = VENDOR_NAME_BST,
+        .version = SENSOR_VER_BST,
+        .handle = SENSORS_GEOMAGNETIC_ROTATION_VECTOR_HANDLE,
+        .type = SENSOR_TYPE_GEOMAGNETIC_ROTATION_VECTOR,
+        .maxRange = 1.0f,
+        .resolution = 1.0f / (1 << 24),
+        .power = 5.63f,
 #ifdef __FASTEST_MODE_100HZ__
-        minDelay : 10000,
+        .minDelay = 10000,
 #else
-        minDelay : 5000,
+        .minDelay = 5000,
 #endif
-        fifoReservedEventCount : 0,
-        fifoMaxEventCount : 0,
+        .fifoReservedEventCount = 0,
+        .fifoMaxEventCount = 0,
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_3__
-        stringType : SENSOR_STRING_TYPE_GEOMAGNETIC_ROTATION_VECTOR,
-        requiredPermission : "",
-        maxDelay : 200000,
-        flags : SENSOR_FLAG_CONTINUOUS_MODE,
+        .stringType = SENSOR_STRING_TYPE_GEOMAGNETIC_ROTATION_VECTOR,
+        .requiredPermission = "",
+        .maxDelay = 200000,
+        .flags = SENSOR_FLAG_CONTINUOUS_MODE,
 #endif
-        reserved : {}
+        .reserved = {}
     },
 #endif
 

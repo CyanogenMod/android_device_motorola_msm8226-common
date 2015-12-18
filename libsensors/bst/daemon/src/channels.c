@@ -107,255 +107,255 @@
 
 struct channel g_list_ch[] = {
     {
-        name: "ACCELERATION",
-        type: SENSOR_TYPE_A,
-        handle: SENSOR_HANDLE_ACCELERATION,
+        .name = "ACCELERATION",
+        .type = SENSOR_TYPE_A,
+        .handle = SENSOR_HANDLE_ACCELERATION,
 
-        cfg:
+        .cfg =
         {
-            availability: CFG_CHANNEL_A,
-            calib_bg: 0,
-            sp_name: "SP_FUSION",
+            .availability = CFG_CHANNEL_A,
+            .calib_bg = 0,
+            .sp_name = "SP_FUSION",
 #ifdef CFG_BYPASS_PROC_CHANNEL_A
             bypass_proc:1
 #endif
         },
 
-        init: channel_init_a,
-        get_data: get_data_a,
+        .init = channel_init_a,
+        .get_data = get_data_a,
     },
 
     {
-        name: "GYROSCOPE",
-        type: SENSOR_TYPE_G,
-        handle: SENSOR_HANDLE_GYROSCOPE,
+        .name = "GYROSCOPE",
+        .type = SENSOR_TYPE_G,
+        .handle = SENSOR_HANDLE_GYROSCOPE,
 
-        cfg:
+        .cfg =
         {
-            availability: CFG_CHANNEL_G,
-            calib_bg: 0,
-            sp_name: "SP_FUSION"
+            .availability = CFG_CHANNEL_G,
+            .calib_bg = 0,
+            .sp_name = "SP_FUSION"
         },
 
-        init: channel_init_g,
-        get_data: get_data_g,
+        .init = channel_init_g,
+        .get_data = get_data_g,
     },
 
     {
-        name: "MAGNETIC",
-        type: SENSOR_TYPE_M,
-        handle: SENSOR_HANDLE_MAGNETIC_FIELD,
+        .name = "MAGNETIC",
+        .type = SENSOR_TYPE_M,
+        .handle = SENSOR_HANDLE_MAGNETIC_FIELD,
 
-        cfg:
+        .cfg =
         {
-            availability: CFG_CHANNEL_M,
-            calib_bg: 0,
-            sp_name: "SP_FUSION"
+            .availability = CFG_CHANNEL_M,
+            .calib_bg = 0,
+            .sp_name = "SP_FUSION"
         },
 
-        init: channel_init_m,
-        get_data: get_data_m,
+        .init = channel_init_m,
+        .get_data = get_data_m,
     },
 
     {
-        name: "ORIENTATION",
-        type: SENSOR_TYPE_O,
-        handle: SENSOR_HANDLE_ORIENTATION,
+        .name = "ORIENTATION",
+        .type = SENSOR_TYPE_O,
+        .handle = SENSOR_HANDLE_ORIENTATION,
 
-        cfg:
+        .cfg =
         {
-            availability: CFG_CHANNEL_O,
-            calib_bg: 0,
-            sp_name: "SP_FUSION"
+            .availability = CFG_CHANNEL_O,
+            .calib_bg = 0,
+            .sp_name = "SP_FUSION"
         },
 
-        init: channel_init_o,
-        get_data: get_data_o,
+        .init = channel_init_o,
+        .get_data = get_data_o,
     },
 
     {
-        name: "GRAVITY",
-        type: SENSOR_TYPE_VG,
-        handle: SENSOR_HANDLE_GRAVITY,
+        .name = "GRAVITY",
+        .type = SENSOR_TYPE_VG,
+        .handle = SENSOR_HANDLE_GRAVITY,
 
-        cfg:
+        .cfg =
         {
-            availability: CFG_CHANNEL_VG,
-            calib_bg: 0,
-            sp_name: "SP_FUSION"
+            .availability = CFG_CHANNEL_VG,
+            .calib_bg = 0,
+            .sp_name = "SP_FUSION"
         },
 
-        init: channel_init_vg,
-        get_data: get_data_vg,
+        .init = channel_init_vg,
+        .get_data = get_data_vg,
     },
 
     {
-        name: "LINEAR_ACCELERATION",
-        type: SENSOR_TYPE_VLA,
-        handle: SENSOR_HANDLE_LINEAR_ACCELERATION,
+        .name = "LINEAR_ACCELERATION",
+        .type = SENSOR_TYPE_VLA,
+        .handle = SENSOR_HANDLE_LINEAR_ACCELERATION,
 
-        cfg:
+        .cfg =
         {
-            availability: CFG_CHANNEL_VLA,
-            calib_bg: 0,
-            sp_name: "SP_FUSION"
+            .availability = CFG_CHANNEL_VLA,
+            .calib_bg = 0,
+            .sp_name = "SP_FUSION"
         },
 
-        init: channel_init_vla,
-        get_data: get_data_vla,
+        .init = channel_init_vla,
+        .get_data = get_data_vla,
     },
 
     {
-        name: "ROTATION_VECOTR",
-        type: SENSOR_TYPE_VRV,
-        handle: SENSOR_HANDLE_ROTATION_VECTOR,
+        .name = "ROTATION_VECOTR",
+        .type = SENSOR_TYPE_VRV,
+        .handle = SENSOR_HANDLE_ROTATION_VECTOR,
 
-        cfg:
+        .cfg =
         {
-            availability: CFG_CHANNEL_VRV,
-            calib_bg: 0,
-            sp_name: "SP_FUSION"
+            .availability = CFG_CHANNEL_VRV,
+            .calib_bg = 0,
+            .sp_name = "SP_FUSION"
         },
 
-        init: channel_init_vrv,
-        get_data: get_data_vrv,
+        .init = channel_init_vrv,
+        .get_data = get_data_vrv,
     },
 
 #ifdef __FLIP_GESTURE__
     {
-        name: "GEST_FLIP",
-        type: SENSOR_TYPE_GEST_FLIP,
-        handle: SENSOR_HANDLE_GEST_FLIP,
+        .name = "GEST_FLIP",
+        .type = SENSOR_TYPE_GEST_FLIP,
+        .handle = SENSOR_HANDLE_GEST_FLIP,
 
-        cfg:
+        .cfg =
         {
-            availability: VIRTUAL,
-            calib_bg: 0,
-            sp_name: "SP_FUSION"
+            .availability = VIRTUAL,
+            .calib_bg = 0,
+            .sp_name = "SP_FUSION"
         },
 
-        init: channel_gest_flip_init,
-        get_data: channel_gest_flip_get_data,
-        enable: channel_gest_flip_enable,
+        .init = channel_gest_flip_init,
+        .get_data = channel_gest_flip_get_data,
+        .enable = channel_gest_flip_enable,
     },
 #endif
     {
-        name: "SW SIGNIFICANT SENSOR",
-        type: SENSOR_TYPE_SW_SIGNIFICANT_MOTION,
-        handle: SENSOR_HANDLE_SW_SIGNIFCANT_MOITON,
+        .name = "SW SIGNIFICANT SENSOR",
+        .type = SENSOR_TYPE_SW_SIGNIFICANT_MOTION,
+        .handle = SENSOR_HANDLE_SW_SIGNIFCANT_MOITON,
 
-        cfg:
+        .cfg =
         {
-            availability: VIRTUAL,
-            calib_bg: 0,
-            sp_name: "SP_FUSION"
+            .availability = VIRTUAL,
+            .calib_bg = 0,
+            .sp_name = "SP_FUSION"
         },
 
-        init: channel_sgm_init,
-        get_data: channel_sgm_get_data,
-        enable: channel_sgm_enable,
+        .init = channel_sgm_init,
+        .get_data = channel_sgm_get_data,
+        .enable = channel_sgm_enable,
     },
 
 #ifdef __UNCALIBRATED_VIRTUAL_SENSOR_SUPPORT__
     {
-        name: "GAME_ROTATION_VECOTR",
-        type: SENSOR_TYPE_GRV,
-        handle: SENSOR_HANDLE_GAME_ROTATION_VECTOR,
+        .name = "GAME_ROTATION_VECOTR",
+        .type = SENSOR_TYPE_GRV,
+        .handle = SENSOR_HANDLE_GAME_ROTATION_VECTOR,
 
-        cfg:
+        .cfg =
         {
-            availability: CFG_CHANNEL_GRV,
-            calib_bg: 0,
-            sp_name: "SP_FUSION"
+            .availability = CFG_CHANNEL_GRV,
+            .calib_bg = 0,
+            .sp_name = "SP_FUSION"
         },
 
-        init: channel_init_grv,
-        get_data: get_data_grv,
+        .init = channel_init_grv,
+        .get_data = get_data_grv,
     },
 
     {
-        name: "GYROSCOPE_UNCALIBRATED",
-        type: SENSOR_TYPE_GYU,
-        handle: SENSOR_HANDLE_GYROSCOPE_UNCALIBRATED,
+        .name = "GYROSCOPE_UNCALIBRATED",
+        .type = SENSOR_TYPE_GYU,
+        .handle = SENSOR_HANDLE_GYROSCOPE_UNCALIBRATED,
 
-        cfg:
+        .cfg =
         {
-            availability: CFG_CHANNEL_GYU,
-            calib_bg: 0,
-            sp_name: "SP_FUSION"
+            .availability = CFG_CHANNEL_GYU,
+            .calib_bg = 0,
+            .sp_name = "SP_FUSION"
         },
 
-        init: channel_init_gu,
-        get_data: get_data_gu,
+        .init = channel_init_gu,
+        .get_data = get_data_gu,
     },
 
     {
-        name: "MAGNETIC_UNCALIBRATED",
-        type: SENSOR_TYPE_MU,
-        handle: SENSOR_HANDLE_MAGNETIC_FIELD_UNCALIBRATED,
+        .name = "MAGNETIC_UNCALIBRATED",
+        .type = SENSOR_TYPE_MU,
+        .handle = SENSOR_HANDLE_MAGNETIC_FIELD_UNCALIBRATED,
 
-        cfg:
+        .cfg =
         {
-            availability: CFG_CHANNEL_MU,
-            calib_bg: 0,
-            sp_name: "SP_FUSION"
+            .availability = CFG_CHANNEL_MU,
+            .calib_bg = 0,
+            .sp_name = "SP_FUSION"
         },
 
-        init: channel_init_mu,
-        get_data: get_data_mu,
+        .init = channel_init_mu,
+        .get_data = get_data_mu,
     },
 #endif
 
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_1__
     {
-        name: "GEOMAGNETIC_ROTATION_VECTOR",
-        type: SENSOR_TYPE_GEOM_RV,
-        handle: SENSOR_HANDLE_GEOMAGNETIC_ROTATION_VECTOR,
+        .name = "GEOMAGNETIC_ROTATION_VECTOR",
+        .type = SENSOR_TYPE_GEOM_RV,
+        .handle = SENSOR_HANDLE_GEOMAGNETIC_ROTATION_VECTOR,
 
-        cfg:
+        .cfg =
         {
-            availability: CFG_CHANNEL_GEOM_RV,
-            calib_bg: 0,
-            sp_name: "SP_FUSION"
+            .availability = CFG_CHANNEL_GEOM_RV,
+            .calib_bg = 0,
+            .sp_name = "SP_FUSION"
         },
 
-        init: channel_init_geom_rv,
-        get_data: get_data_geom_rv,
+        .init = channel_init_geom_rv,
+        .get_data = get_data_geom_rv,
     },
 #endif
 
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_0__
     {
-        name: "STEP_COUNTER",
-        type: SENSOR_TYPE_STC,
-        handle: SENSOR_HANDLE_STEP_COUNTER,
+        .name = "STEP_COUNTER",
+        .type = SENSOR_TYPE_STC,
+        .handle = SENSOR_HANDLE_STEP_COUNTER,
 
-        cfg:
+        .cfg =
         {
-            availability: CFG_CHANNEL_STC,
-            calib_bg: 0,
-            sp_name: "SP_FUSION"
+            .availability = CFG_CHANNEL_STC,
+            .calib_bg = 0,
+            .sp_name = "SP_FUSION"
         },
 
-        init: channel_init_stc,
-        get_data: get_data_stc,
-        enable: channel_stc_enable,
+        .init = channel_init_stc,
+        .get_data = get_data_stc,
+        .enable = channel_stc_enable,
     },
     {
-        name: "STEP_DETECTOR",
-        type: SENSOR_TYPE_STD,
-        handle: SENSOR_HANDLE_STEP_DETECTOR,
+        .name = "STEP_DETECTOR",
+        .type = SENSOR_TYPE_STD,
+        .handle = SENSOR_HANDLE_STEP_DETECTOR,
 
-        cfg:
+        .cfg =
         {
-            availability: CFG_CHANNEL_STD,
-            calib_bg: 0,
-            sp_name: "SP_FUSION"
+            .availability = CFG_CHANNEL_STD,
+            .calib_bg = 0,
+            .sp_name = "SP_FUSION"
         },
 
-        init: channel_init_std,
-        get_data: get_data_std,
-        enable: channel_std_enable,
+        .init = channel_init_std,
+        .get_data = get_data_std,
+        .enable = channel_std_enable,
     },
 #endif
 

@@ -109,55 +109,55 @@ BS_U8 g_dr_g = 0;
 
 struct algo_product g_products_fusion[] = {
     {
-        type: SENSOR_TYPE_A,
+        .type = SENSOR_TYPE_A,
     },
     {
-        type: SENSOR_TYPE_G,
+        .type = SENSOR_TYPE_G,
     },
     {
-        type: SENSOR_TYPE_M,
+        .type = SENSOR_TYPE_M,
     },
     {
-        type: SENSOR_TYPE_O,
+        .type = SENSOR_TYPE_O,
     },
     {
-        type: SENSOR_TYPE_VG,
+        .type = SENSOR_TYPE_VG,
     },
     {
-        type: SENSOR_TYPE_VLA,
+        .type = SENSOR_TYPE_VLA,
     },
     {
-        type: SENSOR_TYPE_VRV,
+        .type = SENSOR_TYPE_VRV,
     },
     {
-        type: SENSOR_TYPE_GEST_FLIP,
+        .type = SENSOR_TYPE_GEST_FLIP,
     },
     {
-        type: SENSOR_TYPE_SW_SIGNIFICANT_MOTION,
+        .type = SENSOR_TYPE_SW_SIGNIFICANT_MOTION,
     },
 #ifdef __UNCALIBRATED_VIRTUAL_SENSOR_SUPPORT__
     {
-        type: SENSOR_TYPE_GRV,
+        .type = SENSOR_TYPE_GRV,
     },
     {
-        type: SENSOR_TYPE_GYU,
+        .type = SENSOR_TYPE_GYU,
     },
     {
-        type: SENSOR_TYPE_MU,
+        .type = SENSOR_TYPE_MU,
     },
 #endif
 
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_1__
     {
-        type: SENSOR_TYPE_GEOM_RV,
+        .type = SENSOR_TYPE_GEOM_RV,
     },
 #endif
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_0__
     {
-        type: SENSOR_TYPE_STC,
+        .type = SENSOR_TYPE_STC,
     },
     {
-        type: SENSOR_TYPE_STD,
+        .type = SENSOR_TYPE_STD,
     },
 #endif
 
@@ -300,10 +300,10 @@ int fusion_on_hw_dep_checked(const hw_dep_set_t *dep) {
 
 
 struct algo g_sp_algo_fusion = {
-    sp:
+    .sp =
     {
-        name: "SP_FUSION",
-        sensors: ((1 << SENSOR_TYPE_A)
+        .name = "SP_FUSION",
+        .sensors = ((1 << SENSOR_TYPE_A)
         | (1 << SENSOR_TYPE_G)
         | (1 << SENSOR_TYPE_M)
         | (1 << SENSOR_TYPE_O)
@@ -325,18 +325,18 @@ struct algo g_sp_algo_fusion = {
         | (1 << SENSOR_TYPE_STD)
 #endif
                  ),
-        ref:0,
-        init:fusion_init,
-        proc_data:fusion_proc_data,
-        on_ch_enabled:fusion_on_ch_enabled,
-        on_ch_interval_changed:fusion_on_ch_interval_changed,
-        get_hint_proc_interval:fusion_get_hint_proc_interval,
-        get_curr_hw_dep: fusion_get_curr_hw_dep,
-        on_hw_dep_checked:fusion_on_hw_dep_checked,
-        exit:NULL,
-        re:
+        .ref = 0,
+        .init = fusion_init,
+        .proc_data = fusion_proc_data,
+        .on_ch_enabled = fusion_on_ch_enabled,
+        .on_ch_interval_changed = fusion_on_ch_interval_changed,
+        .get_hint_proc_interval = fusion_get_hint_proc_interval,
+        .get_curr_hw_dep = fusion_get_curr_hw_dep,
+        .on_hw_dep_checked = fusion_on_hw_dep_checked,
+        .exit = NULL,
+        .re =
         {
-            func:re_proc
+            .func = re_proc
         }
     }
 };
