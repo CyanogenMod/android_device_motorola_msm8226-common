@@ -53,9 +53,6 @@
 /dev/akm8963_dev                                            u:object_r:sensors_device:s0
 /dev/l3g4200d                                               u:object_r:sensors_device:s0
 /dev/lis3dh                                                 u:object_r:sensors_device:s0
-/dev/input/event0                                           u:object_r:sensors_device:s0
-/dev/input/event2                                           u:object_r:sensors_device:s0
-/dev/input/event3                                           u:object_r:sensors_device:s0
 /data/misc/akmd_set.txt                                     u:object_r:sensors_data_file:s0
 /data/misc/sensor(/.*)?                                     u:object_r:sensors_data_file:s0
 /sys/devices/virtual/input/input0(/.*)?                     u:object_r:sysfs_devices_sensors:s0

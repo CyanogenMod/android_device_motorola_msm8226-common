@@ -4,7 +4,7 @@ init_daemon_domain(sensord)
 
 allow sensord self:capability { dac_override fowner fsetid };
 
-allow sensord sensors_device:chr_file { open read };
+allow sensord input_device:chr_file { open read };
 
 allow sensord sensors_data_file:dir create_dir_perms;
 allow sensord sensors_data_file:fifo_file create_file_perms;
