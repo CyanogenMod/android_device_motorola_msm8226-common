@@ -109,7 +109,7 @@
         <item>600</item>
     </integer-array>
 
-    <!-- Vibrator pattern for feedback about booting with safe mode disabled -->
+    <!-- Vibrator pattern for feedback about hitting a scroll barrier -->
     <integer-array name="config_scrollBarrierVibePattern">
         <item>0</item>
         <item>20</item>
@@ -348,5 +348,49 @@
          correctly use them when installed on your device.  Otherwise, keep this disabled
          so that applications can still use their own mechanisms. -->
     <bool name="config_enableAutoPowerModes">true</bool>
+
+    <!-- Indicate whether to allow the device to suspend when the screen is off
+         due to the proximity sensor.  This resource should only be set to true
+         if the sensor HAL correctly handles the proximity sensor as a wake-up source.
+         Otherwise, the device may fail to wake out of suspend reliably.
+         The default is false. -->
+    <bool name="config_suspendWhenScreenOffDueToProximity">true</bool>
+
+    <!-- Boolean indicating if current platform supports BLE peripheral mode -->
+    <bool name="config_bluetooth_le_peripheral_mode_supported">true</bool>
+
+    <!-- If supported, are dreams enabled? (by default) -->
+    <bool name="config_dreamsEnabledByDefault">false</bool>
+
+    <!-- If this is true, the screen will fade off. -->
+    <bool name="config_animateScreenLights">true</bool>
+
+    <!-- Config determines whether to update phone object when voice registration
+         state changes. Voice radio tech change will always trigger an update of
+         phone object irrespective of this config -->
+    <bool name="config_switch_phone_on_voice_reg_state_change">false</bool>
+
+    <!-- If this value is true, duplicate Source/Destination port fields
+         in WDP header of some carriers OMADM wap push are supported.
+         ex: MSGTYPE-TotalSegments-CurrentSegment
+             -SourcePortDestPort-SourcePortDestPort-OMADM PDU
+         If false, not supported. -->
+    <bool name="config_duplicate_port_omadm_wappush">true</bool>
+
+    <!-- If EMS is not supported, framework breaks down EMS into single segment SMS
+         and adds page info " x/y". This config is used to set which carrier doesn't
+         support EMS and whether page info should be added at the beginning or the end.
+         We use tag 'prefix' for position beginning and 'suffix' for position end.
+         And use gid to distinguish different carriers which using same mcc and mnc.
+         Examples: <item>simOperatorNumber;position;gid(optional)</item>>
+    -->
+    <string-array name="no_ems_support_sim_operators">
+        <item>20404;suffix;BAE0000000000000</item>
+        <item>316010;prefix</item>
+        <item>31122;prefix</item>
+        <item>31158;prefix</item>
+        <item>310120;prefix</item>
+        <item>311870;prefix</item>
+    </string-array>
 
 </resources>
