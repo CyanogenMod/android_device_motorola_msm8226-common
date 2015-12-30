@@ -94,4 +94,5 @@ persist.sys.ssr.enable_debug=0
 # Wifi
 persist.sys.ssr.restart_level=3
 persist.sys.qc.sub.rdump.on=1
+ro.disableWifiApFirmwareReload=true
 
