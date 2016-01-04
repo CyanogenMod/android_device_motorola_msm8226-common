@@ -22,7 +22,7 @@ bmg ?= bmg160
 # bmc055 contains bma255+bmm050
 # bmc056 contains bma255+bmm050
 # bmc150 contains bma255+bmm150
-bmc ?= bmc150
+bmc ?= bmc055
 
 # bmi055 contains bma255+bmg160
 # bmi058 contains bma280+bmg160
