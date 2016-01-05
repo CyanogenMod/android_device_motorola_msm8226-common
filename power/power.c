@@ -143,6 +143,8 @@ static void set_power_profile(int profile)
                     profiles[profile].target_loads);
     sysfs_write_int(CPUFREQ_PATH "scaling_max_freq",
                     profiles[profile].scaling_max_freq);
+    sysfs_write_int(CPUFREQ_PATH "scaling_min_freq",
+                    profiles[profile].scaling_min_freq);
 
     current_power_profile = profile;
 }
