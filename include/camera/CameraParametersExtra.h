@@ -15,9 +15,11 @@
  */
 
 #define CAMERA_PARAMETERS_EXTRA_C \
+const char CameraParameters::KEY_SUPPORTED_TOUCH_AF_AEC[] = "touch-af-aec-values"; \
 const char CameraParameters::KEY_ZSL[] = "zsl"; \
 \
 
 #define CAMERA_PARAMETERS_EXTRA_H \
+    static const char KEY_SUPPORTED_TOUCH_AF_AEC[]; \
     static const char KEY_ZSL[]; \
     \
