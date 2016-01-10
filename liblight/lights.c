@@ -30,9 +30,16 @@
 #define LED_LIGHT_OFF 0
 #define LED_LIGHT_ON 255
 
+enum {
+    ATTENTION = 0,
+    NOTIFICATION,
+    BATTERY,
+    LIGHT_MAX,
+};
+
 static pthread_once_t g_init = PTHREAD_ONCE_INIT;
 static pthread_mutex_t g_lock = PTHREAD_MUTEX_INITIALIZER;
-static struct light_state_t g_attention;
+static struct light_state_t g_lights[LIGHT_MAX];
 
 char const*const LCD_FILE
         = "/sys/class/leds/lcd-backlight/brightness";
@@ -159,8 +166,12 @@ set_light_locked(struct light_state_t const* state)
 static int
 handle_led_prioritized_locked(struct light_state_t const* state)
 {
-    if (is_lit(&g_attention)) {
-        return set_light_locked(&g_attention);
+    if (is_lit(&g_lights[ATTENTION])) {
+        return set_light_locked(&g_lights[ATTENTION]);
+    } else if (is_lit(&g_lights[NOTIFICATION])) {
+        return set_light_locked(&g_lights[NOTIFICATION]);
+    } else if (is_lit(&g_lights[NOTIFICATION])) {
+        return set_light_locked(&g_lights[BATTERY]);
     } else {
         return set_light_locked(state);
     }
@@ -172,6 +183,7 @@ set_light_notifications(__attribute__((unused)) struct light_device_t* dev,
 {
     int err = 0;
     pthread_mutex_lock(&g_lock);
+    g_lights[NOTIFICATION] = *state;
     err = handle_led_prioritized_locked(state);
     pthread_mutex_unlock(&g_lock);
     return err;
@@ -183,7 +195,19 @@ set_light_attention(__attribute__((unused)) struct light_device_t* dev,
 {
     int err = 0;
     pthread_mutex_lock(&g_lock);
-    g_attention = *state;
+    g_lights[ATTENTION] = *state;
+    err = handle_led_prioritized_locked(state);
+    pthread_mutex_unlock(&g_lock);
+    return err;
+}
+
+static int
+set_light_battery(__attribute__((unused)) struct light_device_t* dev,
+        struct light_state_t const* state)
+{
+    int err = 0;
+    pthread_mutex_lock(&g_lock);
+    g_lights[BATTERY] = *state;
     err = handle_led_prioritized_locked(state);
     pthread_mutex_unlock(&g_lock);
     return err;
@@ -220,6 +244,8 @@ static int open_lights(const struct hw_module_t* module, char const* name,
         set_light = set_light_notifications;
     else if (0 == strcmp(LIGHT_ID_ATTENTION, name))
         set_light = set_light_attention;
+    else if (0 == strcmp(LIGHT_ID_BATTERY, name))
+        set_light = set_light_battery;
     else
         return -EINVAL;
 
