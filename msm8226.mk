@@ -85,7 +85,8 @@ PRODUCT_COPY_FILES += \
 # Camera
 PRODUCT_PACKAGES += \
     libxml2 \
-    camera.msm8226
+    camera.msm8226 \
+    Snap
 
 # Display
 PRODUCT_PACKAGES += \
