@@ -15,11 +15,19 @@
  */
 
 #define CAMERA_PARAMETERS_EXTRA_C \
-const char CameraParameters::KEY_SUPPORTED_TOUCH_AF_AEC[] = "touch-af-aec-values"; \
-const char CameraParameters::KEY_ZSL[] = "zsl"; \
+const char CameraParameters::KEY_QC_SUPPORTED_FACE_DETECTION[] = "face-detection-values"; \
+const char CameraParameters::KEY_QC_SUPPORTED_HFR_SIZES[] = "hfr-size-values"; \
+const char CameraParameters::KEY_QC_SUPPORTED_ISO_MODES[] = "iso-values"; \
+const char CameraParameters::KEY_QC_SUPPORTED_TOUCH_AF_AEC[] = "touch-af-aec-values"; \
+const char CameraParameters::KEY_QC_SUPPORTED_VIDEO_HIGH_FRAME_RATE_MODES[] = "video-hfr-values"; \
+const char CameraParameters::KEY_QC_ZSL[] = "zsl"; \
 \
 
 #define CAMERA_PARAMETERS_EXTRA_H \
-    static const char KEY_SUPPORTED_TOUCH_AF_AEC[]; \
-    static const char KEY_ZSL[]; \
+    static const char KEY_QC_SUPPORTED_FACE_DETECTION[]; \
+    static const char KEY_QC_SUPPORTED_HFR_SIZES[]; \
+    static const char KEY_QC_SUPPORTED_ISO_MODES[]; \
+    static const char KEY_QC_SUPPORTED_TOUCH_AF_AEC[]; \
+    static const char KEY_QC_SUPPORTED_VIDEO_HIGH_FRAME_RATE_MODES[]; \
+    static const char KEY_QC_ZSL[]; \
     \
