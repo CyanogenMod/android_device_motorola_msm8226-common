@@ -149,6 +149,8 @@ static char *camera_fixup_getparams(int id, const char *settings)
     }
 
     params.set(CameraParameters::KEY_QC_SUPPORTED_FACE_DETECTION, "on,off");
+    params.set(CameraParameters::KEY_QC_SUPPORTED_HFR_SIZES, "1296x728");
+    params.set(CameraParameters::KEY_QC_SUPPORTED_VIDEO_HIGH_FRAME_RATE_MODES, "60,Off");
 
     if (get_product_device() == FALCON || get_product_device() == PEREGRINE) {
         if (id == BACK_CAMERA) {
