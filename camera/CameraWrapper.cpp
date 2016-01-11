@@ -178,7 +178,7 @@ static char *camera_fixup_setparams(int id, const char *settings)
             const char *fps = params.get(CameraParameters::KEY_PREVIEW_FPS_RANGE);
             const char *fpsValues = params.get(CameraParameters::KEY_SUPPORTED_PREVIEW_FPS_RANGE);
             if (fps != NULL && fpsValues != NULL) {
-                if (!strstr(fpsValues, fps, strlen(fps))) {
+                if (!strstr(fpsValues, fps)) {
                     params.set(CameraParameters::KEY_PREVIEW_FPS_RANGE, "15000,30000");
                 }
             }
