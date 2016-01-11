@@ -152,6 +152,13 @@ static char *camera_fixup_getparams(int id, const char *settings)
     params.set(CameraParameters::KEY_QC_SUPPORTED_HFR_SIZES, "864x480,720x480,640x480");
     params.set(CameraParameters::KEY_QC_SUPPORTED_VIDEO_HIGH_FRAME_RATE_MODES, "Off,60");
 
+    if (get_product_device() == FALCON || get_product_device() == PEREGRINE) {
+        if (id == BACK_CAMERA) {
+            params.set(CameraParameters::KEY_QC_SUPPORTED_ISO_MODES,
+                    "auto,ISO_HJR,ISO100,ISO200,ISO400,ISO800,ISO1600");
+        }
+    }
+
     if (!(get_product_device() == FALCON || get_product_device() == PEREGRINE) ||
             id == BACK_CAMERA) {
         /* The FFC of falcon and peregrine doesn't support scenes */
