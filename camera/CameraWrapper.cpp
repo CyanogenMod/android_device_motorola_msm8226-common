@@ -150,6 +150,13 @@ static char *camera_fixup_getparams(int id, const char *settings)
 
     params.set(CameraParameters::KEY_QC_SUPPORTED_FACE_DETECTION, "on,off");
 
+    if (get_product_device() == FALCON || get_product_device() == PEREGRINE) {
+        if (id == BACK_CAMERA) {
+            params.set(CameraParameters::KEY_QC_SUPPORTED_ISO_MODES,
+                    "auto,ISO_HJR,ISO100,ISO200,ISO400,ISO800,ISO1600");
+        }
+    }
+
     if (!(get_product_device() == FALCON || get_product_device() == PEREGRINE) ||
             id == BACK_CAMERA) {
         /* The FFC of falcon and peregrine doesn't support scene modes */
