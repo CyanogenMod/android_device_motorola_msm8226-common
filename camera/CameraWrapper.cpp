@@ -149,6 +149,7 @@ static char *camera_fixup_getparams(int id, const char *settings)
     }
 
     params.set(CameraParameters::KEY_SUPPORTED_FACE_DETECTION, "on,off");
+    params.set(CameraParameters::KEY_SUPPORTED_SCENE_MODES, "auto,hdr,auto_hdr,action,portrait,landscape,night,night-portrait,theatre,beach,snow,sunset,steadyphoto,fireworks,sports,party,candlelight,flowers,AR");
 
 #if !LOG_NDEBUG
     ALOGV("%s: fixed parameters:", __FUNCTION__);
