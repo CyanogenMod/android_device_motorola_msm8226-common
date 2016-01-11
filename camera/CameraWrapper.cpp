@@ -148,6 +148,9 @@ static char *camera_fixup_getparams(int id, const char *settings)
         params.set(CameraParameters::KEY_SUPPORTED_TOUCH_AF_AEC, "touch-on,touch-off");
     }
 
+    params.set(CameraParameters::KEY_SUPPORTED_FACE_DETECTION, "on,off");
+    params.set(CameraParameters::KEY_SUPPORTED_ISO_MODES, "auto,ISO_HJR,ISO100,ISO200,ISO400,ISO800,ISO1600");
+
 #if !LOG_NDEBUG
     ALOGV("%s: fixed parameters:", __FUNCTION__);
     params.dump();
