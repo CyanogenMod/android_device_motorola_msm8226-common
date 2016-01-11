@@ -150,6 +150,15 @@ static char *camera_fixup_getparams(int id, const char *settings)
 
     params.set(CameraParameters::KEY_QC_SUPPORTED_FACE_DETECTION, "on,off");
 
+    if (!(get_product_device() == FALCON || get_product_device() == PEREGRINE) ||
+            id == BACK_CAMERA) {
+        /* The FFC of falcon and peregrine doesn't support scene modes */
+        params.set(CameraParameters::KEY_SUPPORTED_SCENE_MODES,
+                "auto,action,portrait,landscape,night,night-portrait,theatre"
+                "candlelight,beach,snow,sunset,steadyphoto,fireworks,sports,party,"
+                "auto_hdr,hdr,asd,backlight,flowers,AR");
+    }
+
 #if !LOG_NDEBUG
     ALOGV("%s: fixed parameters:", __FUNCTION__);
     params.dump();
