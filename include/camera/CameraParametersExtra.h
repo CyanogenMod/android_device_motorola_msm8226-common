@@ -19,7 +19,10 @@ const char CameraParameters::KEY_MOT_AUTO_DC_OFFSET[] = "auto-dc-offset-mode"; \
 const char CameraParameters::KEY_MOT_DENOISE[] = "mot-denoise-features"; \
 const char CameraParameters::KEY_MOT_LUMA_ADAPTATION[] = "luma_adaptation"; \
 const char CameraParameters::KEY_MOT_MANUAL_DC_OFFSET[] = "manual-dc-offset"; \
+const char CameraParameters::KEY_MOT_MANUAL_DC_OFFSET_MAX[] = "manual-dc-offset-max"; \
+const char CameraParameters::KEY_MOT_MANUAL_DC_OFFSET_MIN[] = "manual-dc-offset-min"; \
 const char CameraParameters::KEY_MOT_TINTLESS[] = "tintless"; \
+const char CameraParameters::KEY_MOT_RECOMMENDED_MULTISHOT[] = "recommended-multishot-mode"; \
 const char CameraParameters::KEY_MOT_SUPPORTED_AUTO_DC_OFFSET[] = "auto-dc-offset-mode-values"; \
 const char CameraParameters::KEY_MOT_SUPPORTED_DENOISE[] = "mot-denoise-features-values"; \
 const char CameraParameters::KEY_MOT_SUPPORTED_LUMA_ADAPTATION[] = "luma_adaptation-values"; \
@@ -29,15 +32,23 @@ const char CameraParameters::KEY_QC_AUTO_EXPOSURE[] = "auto-exposure"; \
 const char CameraParameters::KEY_QC_CAMERA_MODE[] = "camera-mode"; \
 const char CameraParameters::KEY_QC_CONTRAST[] = "contrast"; \
 const char CameraParameters::KEY_QC_DENOISE[] = "denoise"; \
+const char CameraParameters::KEY_QC_SUPPORTED_DIS_MODES[] = "dis-values"; \
 const char CameraParameters::KEY_QC_FACE_DETECTION[] = "face-detection"; \
 const char CameraParameters::KEY_QC_HIGH_DYNAMIC_RANGE_IMAGING[] = "hdr"; \
 const char CameraParameters::KEY_QC_ISO_MODE[] = "iso"; \
 const char CameraParameters::KEY_QC_LENSSHADE[] = "lensshade"; \
+const char CameraParameters::KEY_QC_MAX_BRIGHTNESS[] = "max-brightness"; \
 const char CameraParameters::KEY_QC_MAX_CONTRAST[] = "max-contrast"; \
 const char CameraParameters::KEY_QC_MAX_NUM_REQUESTED_FACES[] = "qc-max-num-requested-faces"; \
 const char CameraParameters::KEY_QC_MAX_SATURATION[] = "max-saturation"; \
+const char CameraParameters::KEY_QC_MAX_SCE_FACTOR[] = "max-sce-factor"; \
 const char CameraParameters::KEY_QC_MAX_SHARPNESS[] = "max-sharpness"; \
 const char CameraParameters::KEY_QC_MEMORY_COLOR_ENHANCEMENT[] = "mce"; \
+const char CameraParameters::KEY_QC_MIN_BRIGHTNESS[] = "min-brightness"; \
+const char CameraParameters::KEY_QC_MIN_CONTRAST[] = "min-contrast"; \
+const char CameraParameters::KEY_QC_MIN_SATURATION[] = "min-saturation"; \
+const char CameraParameters::KEY_QC_MIN_SCE_FACTOR[] = "min-sce-factor"; \
+const char CameraParameters::KEY_QC_MIN_SHARPNESS[] = "min-sharpness"; \
 const char CameraParameters::KEY_QC_PREVIEW_FRAME_RATE_AUTO_MODE[] = "frame-rate-auto"; \
 const char CameraParameters::KEY_QC_PREVIEW_FRAME_RATE_FIXED_MODE[] = "frame-rate-fixed"; \
 const char CameraParameters::KEY_QC_PREVIEW_FRAME_RATE_MODE[] = "preview-frame-rate-mode"; \
@@ -47,14 +58,18 @@ const char CameraParameters::KEY_QC_SCENE_DETECT[] = "scene-detect"; \
 const char CameraParameters::KEY_QC_SELECTABLE_ZONE_AF[] = "selectable-zone-af"; \
 const char CameraParameters::KEY_QC_SHARPNESS[] = "sharpness"; \
 const char CameraParameters::KEY_QC_SKIN_TONE_ENHANCEMENT[] = "skinToneEnhancement"; \
+const char CameraParameters::KEY_QC_SUPPORTED_AE_BRACKET_MODES[] = "ae-bracket-hdr-values"; \
 const char CameraParameters::KEY_QC_SUPPORTED_AUTO_EXPOSURE[] = "auto-exposure-values"; \
 const char CameraParameters::KEY_QC_SUPPORTED_CAMERA_FEATURES[] = "qc-camera-features"; \
 const char CameraParameters::KEY_QC_SUPPORTED_DENOISE[] = "denoise-values"; \
 const char CameraParameters::KEY_QC_SUPPORTED_FACE_DETECTION[] = "face-detection-values"; \
+const char CameraParameters::KEY_QC_SUPPORTED_FLIP_MODES[] = "flip-mode-values"; \
 const char CameraParameters::KEY_QC_SUPPORTED_HDR_IMAGING_MODES[] = "hdr-values"; \
 const char CameraParameters::KEY_QC_SUPPORTED_HFR_SIZES[] = "hfr-size-values"; \
+const char CameraParameters::KEY_QC_SUPPORTED_HISTOGRAM_MODES[] = "histogram-values"; \
 const char CameraParameters::KEY_QC_SUPPORTED_ISO_MODES[] = "iso-values"; \
 const char CameraParameters::KEY_QC_SUPPORTED_LENSSHADE_MODES[] = "lensshade-values"; \
+const char CameraParameters::KEY_QC_SUPPORTED_LIVESNAPSHOT_SIZES[] = "supported-live-snapshot-sizes"; \
 const char CameraParameters::KEY_QC_SUPPORTED_MEM_COLOR_ENHANCE_MODES[] = "mce-values"; \
 const char CameraParameters::KEY_QC_SUPPORTED_PREVIEW_FRAME_RATE_MODES[] = "preview-frame-rate-modes"; \
 const char CameraParameters::KEY_QC_SUPPORTED_REDEYE_REDUCTION[] = "redeye-reduction-values"; \
@@ -76,7 +91,10 @@ const char CameraParameters::KEY_QC_ZSL[] = "zsl"; \
     static const char KEY_MOT_DENOISE[]; \
     static const char KEY_MOT_LUMA_ADAPTATION[]; \
     static const char KEY_MOT_MANUAL_DC_OFFSET[]; \
+    static const char KEY_MOT_MANUAL_DC_OFFSET_MAX[]; \
+    static const char KEY_MOT_MANUAL_DC_OFFSET_MIN[]; \
     static const char KEY_MOT_TINTLESS[]; \
+    static const char KEY_MOT_RECOMMENDED_MULTISHOT[]; \
     static const char KEY_MOT_SUPPORTED_AUTO_DC_OFFSET[]; \
     static const char KEY_MOT_SUPPORTED_DENOISE[]; \
     static const char KEY_MOT_SUPPORTED_LUMA_ADAPTATION[]; \
@@ -87,14 +105,22 @@ const char CameraParameters::KEY_QC_ZSL[] = "zsl"; \
     static const char KEY_QC_CONTRAST[]; \
     static const char KEY_QC_DENOISE[]; \
     static const char KEY_QC_FACE_DETECTION[]; \
+    static const char KEY_QC_SUPPORTED_FLIP_MODES[]; \
     static const char KEY_QC_HIGH_DYNAMIC_RANGE_IMAGING[]; \
     static const char KEY_QC_ISO_MODE[]; \
     static const char KEY_QC_LENSSHADE[]; \
+    static const char KEY_QC_MAX_BRIGHTNESS[]; \
     static const char KEY_QC_MAX_CONTRAST[]; \
     static const char KEY_QC_MAX_NUM_REQUESTED_FACES[]; \
     static const char KEY_QC_MAX_SATURATION[]; \
+    static const char KEY_QC_MAX_SCE_FACTOR[]; \
     static const char KEY_QC_MAX_SHARPNESS[]; \
     static const char KEY_QC_MEMORY_COLOR_ENHANCEMENT[]; \
+    static const char KEY_QC_MIN_BRIGHTNESS[]; \
+    static const char KEY_QC_MIN_CONTRAST[]; \
+    static const char KEY_QC_MIN_SATURATION[]; \
+    static const char KEY_QC_MIN_SCE_FACTOR[]; \
+    static const char KEY_QC_MIN_SHARPNESS[]; \
     static const char KEY_QC_PREVIEW_FRAME_RATE_AUTO_MODE[]; \
     static const char KEY_QC_PREVIEW_FRAME_RATE_FIXED_MODE[]; \
     static const char KEY_QC_PREVIEW_FRAME_RATE_MODE[]; \
@@ -104,14 +130,18 @@ const char CameraParameters::KEY_QC_ZSL[] = "zsl"; \
     static const char KEY_QC_SELECTABLE_ZONE_AF[]; \
     static const char KEY_QC_SHARPNESS[]; \
     static const char KEY_QC_SKIN_TONE_ENHANCEMENT[]; \
+    static const char KEY_QC_SUPPORTED_AE_BRACKET_MODES[]; \
     static const char KEY_QC_SUPPORTED_AUTO_EXPOSURE[]; \
     static const char KEY_QC_SUPPORTED_CAMERA_FEATURES[]; \
     static const char KEY_QC_SUPPORTED_DENOISE[]; \
+    static const char KEY_QC_SUPPORTED_DIS_MODES[]; \
     static const char KEY_QC_SUPPORTED_FACE_DETECTION[]; \
     static const char KEY_QC_SUPPORTED_HDR_IMAGING_MODES[]; \
     static const char KEY_QC_SUPPORTED_HFR_SIZES[]; \
+    static const char KEY_QC_SUPPORTED_HISTOGRAM_MODES[]; \
     static const char KEY_QC_SUPPORTED_ISO_MODES[]; \
     static const char KEY_QC_SUPPORTED_LENSSHADE_MODES[]; \
+    static const char KEY_QC_SUPPORTED_LIVESNAPSHOT_SIZES[]; \
     static const char KEY_QC_SUPPORTED_MEM_COLOR_ENHANCE_MODES[]; \
     static const char KEY_QC_SUPPORTED_PREVIEW_FRAME_RATE_MODES[]; \
     static const char KEY_QC_SUPPORTED_REDEYE_REDUCTION[]; \
