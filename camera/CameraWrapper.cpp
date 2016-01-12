@@ -144,11 +144,52 @@ static char *camera_fixup_getparams(int id, const char *settings)
     params.dump();
 #endif
 
-    if (id == BACK_CAMERA) {
-        params.set(CameraParameters::KEY_QC_SUPPORTED_TOUCH_AF_AEC, "touch-on,touch-off");
-    }
-
+    params.set(CameraParameters::KEY_MOT_MANUAL_DC_OFFSET_MAX, "0");
+    params.set(CameraParameters::KEY_MOT_MANUAL_DC_OFFSET_MIN, "-40");
+    params.set(CameraParameters::KEY_MOT_RECOMMENDED_MULTISHOT, "1");
+    params.set(CameraParameters::KEY_MOT_SUPPORTED_AUTO_DC_OFFSET, "off,on");
+    params.set(CameraParameters::KEY_MOT_SUPPORTED_DENOISE,
+            "mot-denoise-enable-all,mot-denoise-disable-all,"
+            "mot-denoise-enable-msnr,mot-denoise-enable-mvnr");
+    params.set(CameraParameters::KEY_MOT_SUPPORTED_LUMA_ADAPTATION, "off,on");
+    params.set(CameraParameters::KEY_MOT_SUPPORTED_TINTLESS, "off,on");
+    params.set(CameraParameters::KEY_QC_MAX_BRIGHTNESS, "6");
+    params.set(CameraParameters::KEY_QC_MAX_CONTRAST, "10");
+    params.set(CameraParameters::KEY_QC_MAX_NUM_REQUESTED_FACES, "5");
+    params.set(CameraParameters::KEY_QC_MAX_SATURATION, "10");
+    params.set(CameraParameters::KEY_QC_MAX_SCE_FACTOR, "100");
+    params.set(CameraParameters::KEY_QC_MAX_SHARPNESS, "36");
+    params.set(CameraParameters::KEY_QC_MIN_BRIGHTNESS, "0");
+    params.set(CameraParameters::KEY_QC_MIN_CONTRAST, "0");
+    params.set(CameraParameters::KEY_QC_MIN_SATURATION, "0");
+    params.set(CameraParameters::KEY_QC_MIN_SCE_FACTOR, "-100");
+    params.set(CameraParameters::KEY_QC_MIN_SHARPNESS, "0");
+    params.set(CameraParameters::KEY_QC_SUPPORTED_AE_BRACKET_MODES, "Off,AE-Bracket");
+    params.set(CameraParameters::KEY_QC_SUPPORTED_AUTO_EXPOSURE,
+            "frame-average,center-weighted,spot-metering,center-weighted,"
+            "spot-metering-adv,center-weighted-adv");
+    params.set(CameraParameters::KEY_QC_SUPPORTED_CAMERA_FEATURES, "6325375");
+    params.set(CameraParameters::KEY_QC_SUPPORTED_DENOISE, "denoise-off,denoise-on,cbcr");
+    params.set(CameraParameters::KEY_QC_SUPPORTED_DIS_MODES, "enable,disable");
     params.set(CameraParameters::KEY_QC_SUPPORTED_FACE_DETECTION, "on,off");
+    params.set(CameraParameters::KEY_QC_SUPPORTED_FLIP_MODES, "off,flip-v,flip-h,flip-vh");
+    params.set(CameraParameters::KEY_QC_SUPPORTED_HFR_SIZES, "1296x728");
+    params.set(CameraParameters::KEY_QC_SUPPORTED_HISTOGRAM_MODES, "enable,disable");
+    params.set(CameraParameters::KEY_QC_SUPPORTED_LENSSHADE_MODES, "enable,disable");
+    params.set(CameraParameters::KEY_QC_SUPPORTED_LIVESNAPSHOT_SIZES,
+            "1280x768,1280x720,1024x768,800x600,864x480,800x480,"
+            "720x480,640x480,352x288,320x240,176x144");
+    params.set(CameraParameters::KEY_QC_SUPPORTED_MEM_COLOR_ENHANCE_MODES, "enable,disable");
+    params.set(CameraParameters::KEY_QC_SUPPORTED_REDEYE_REDUCTION, "enable,disable");
+    params.set(CameraParameters::KEY_QC_SUPPORTED_SCENE_DETECT, "off,on");
+    params.set(CameraParameters::KEY_QC_SUPPORTED_SELECTABLE_ZONE_AF,
+            "auto,spot-metering,center-weighted,frame-average");
+    params.set(CameraParameters::KEY_QC_SUPPORTED_SKIN_TONE_ENHANCEMENT_MODES, "enable,disable");
+    params.set(CameraParameters::KEY_QC_SUPPORTED_TOUCH_AF_AEC, "touch-on,touch-off");
+    params.set(CameraParameters::KEY_QC_SUPPORTED_VIDEO_HIGH_FRAME_RATE_MODES, "60,off");
+    params.set(CameraParameters::KEY_QC_SUPPORTED_ZSL_MODES, "off,on");
+    params.set(CameraParameters::KEY_SUPPORTED_FLASH_MODES, "auto,on,off,torch");
+
 
     if (get_product_device() == FALCON || get_product_device() == PEREGRINE) {
         if (id == BACK_CAMERA) {
