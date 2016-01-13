@@ -177,6 +177,7 @@ static char *camera_fixup_getparams(int id, const char *settings)
     params.set(CameraParameters::KEY_QC_SUPPORTED_DIS_MODES, "enable,disable");
     params.set(CameraParameters::KEY_QC_SUPPORTED_FACE_DETECTION, "on,off");
     params.set(CameraParameters::KEY_QC_SUPPORTED_FLIP_MODES, "off,flip-v,flip-h,flip-vh");
+    params.set(CameraParameters::KEY_QC_SUPPORTED_HFR_SIZES, "1296x728");
     params.set(CameraParameters::KEY_QC_SUPPORTED_HISTOGRAM_MODES, "enable,disable");
     params.set(CameraParameters::KEY_QC_SUPPORTED_LENSSHADE_MODES, "enable,disable");
     params.set(CameraParameters::KEY_QC_SUPPORTED_LIVESNAPSHOT_SIZES,
@@ -188,6 +189,7 @@ static char *camera_fixup_getparams(int id, const char *settings)
     params.set(CameraParameters::KEY_QC_SUPPORTED_SELECTABLE_ZONE_AF,
             "auto,spot-metering,center-weighted,frame-average");
     params.set(CameraParameters::KEY_QC_SUPPORTED_SKIN_TONE_ENHANCEMENT_MODES, "enable,disable");
+    params.set(CameraParameters::KEY_QC_SUPPORTED_VIDEO_HIGH_FRAME_RATE_MODES, "60,off");
     params.set(CameraParameters::KEY_QC_SUPPORTED_ZSL_MODES, "off,on");
 
 
