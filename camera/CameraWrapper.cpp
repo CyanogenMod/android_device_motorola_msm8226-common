@@ -58,6 +58,8 @@ static int camera_device_open(const hw_module_t *module, const char *name,
 static int camera_get_number_of_cameras(void);
 static int camera_get_camera_info(int camera_id, struct camera_info *info);
 
+static char videoHfr[4] = "off";
+
 static struct hw_module_methods_t camera_module_methods = {
     .open = camera_device_open
 };
@@ -190,12 +192,16 @@ static char *camera_fixup_getparams(int id, const char *settings)
     params.set(CameraParameters::KEY_QC_SUPPORTED_SKIN_TONE_ENHANCEMENT_MODES, "enable,disable");
     params.set(CameraParameters::KEY_QC_SUPPORTED_ZSL_MODES, "off,on");
 
-
     if (get_product_device() == FALCON || get_product_device() == PEREGRINE) {
         if (id == BACK_CAMERA) {
             params.set(CameraParameters::KEY_QC_SUPPORTED_ISO_MODES,
                     "auto,ISO_HJR,ISO100,ISO200,ISO400,ISO800,ISO1600");
+            params.set(CameraParameters::KEY_QC_SUPPORTED_HFR_SIZES, "1296x728");
+            params.set(CameraParameters::KEY_QC_SUPPORTED_VIDEO_HIGH_FRAME_RATE_MODES, "60,off");
         }
+    } else {
+        params.set(CameraParameters::KEY_QC_SUPPORTED_HFR_SIZES, "1296x728,1296x728,720x480");
+        params.set(CameraParameters::KEY_QC_SUPPORTED_VIDEO_HIGH_FRAME_RATE_MODES, "60,90,120,off");
     }
 
     if (!(get_product_device() == FALCON || get_product_device() == PEREGRINE) ||
@@ -206,6 +212,9 @@ static char *camera_fixup_getparams(int id, const char *settings)
                 "candlelight,beach,snow,sunset,steadyphoto,fireworks,sports,party,"
                 "auto_hdr,hdr,asd,backlight,flowers,AR");
     }
+
+    /* HFR video recording workaround */
+    params.set(CameraParameters::KEY_QC_VIDEO_HIGH_FRAME_RATE, videoHfr);
 
 #if !LOG_NDEBUG
     ALOGV("%s: fixed parameters:", __FUNCTION__);
@@ -227,6 +236,14 @@ static char *camera_fixup_setparams(int id, const char *settings)
     ALOGV("%s: original parameters:", __FUNCTION__);
     params.dump();
 #endif
+
+    /*
+     * The video-hfr parameter gets removed from the parameters list by the
+     * vendor call, unless the Motorola camera app is used. Save the value
+     * so that we can later return it.
+     */
+    const char *hfr = params.get(CameraParameters::KEY_QC_VIDEO_HIGH_FRAME_RATE);
+    snprintf(videoHfr, sizeof(videoHfr), "%s", hfr ? hfr : "off");
 
     if (get_product_device() == FALCON || get_product_device() == PEREGRINE) {
         if (id == BACK_CAMERA) {
