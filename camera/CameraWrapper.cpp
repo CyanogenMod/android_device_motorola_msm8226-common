@@ -58,6 +58,8 @@ static int camera_device_open(const hw_module_t *module, const char *name,
 static int camera_get_number_of_cameras(void);
 static int camera_get_camera_info(int camera_id, struct camera_info *info);
 
+static bool isHfrEnabled = false;
+
 static struct hw_module_methods_t camera_module_methods = {
     .open = camera_device_open
 };
@@ -177,6 +179,7 @@ static char *camera_fixup_getparams(int id, const char *settings)
     params.set(CameraParameters::KEY_QC_SUPPORTED_DIS_MODES, "enable,disable");
     params.set(CameraParameters::KEY_QC_SUPPORTED_FACE_DETECTION, "on,off");
     params.set(CameraParameters::KEY_QC_SUPPORTED_FLIP_MODES, "off,flip-v,flip-h,flip-vh");
+    params.set(CameraParameters::KEY_QC_SUPPORTED_HFR_SIZES, "1296x728");
     params.set(CameraParameters::KEY_QC_SUPPORTED_HISTOGRAM_MODES, "enable,disable");
     params.set(CameraParameters::KEY_QC_SUPPORTED_LENSSHADE_MODES, "enable,disable");
     params.set(CameraParameters::KEY_QC_SUPPORTED_LIVESNAPSHOT_SIZES,
@@ -188,8 +191,10 @@ static char *camera_fixup_getparams(int id, const char *settings)
     params.set(CameraParameters::KEY_QC_SUPPORTED_SELECTABLE_ZONE_AF,
             "auto,spot-metering,center-weighted,frame-average");
     params.set(CameraParameters::KEY_QC_SUPPORTED_SKIN_TONE_ENHANCEMENT_MODES, "enable,disable");
+    params.set(CameraParameters::KEY_QC_SUPPORTED_VIDEO_HIGH_FRAME_RATE_MODES, "60,off");
     params.set(CameraParameters::KEY_QC_SUPPORTED_ZSL_MODES, "off,on");
 
+    params.set(CameraParameters::KEY_QC_VIDEO_HIGH_FRAME_RATE, isHfrEnabled ? "60" : "off");
 
     if (get_product_device() == FALCON || get_product_device() == PEREGRINE) {
         if (id == BACK_CAMERA) {
@@ -227,6 +232,18 @@ static char *camera_fixup_setparams(int id, const char *settings)
     ALOGV("%s: original parameters:", __FUNCTION__);
     params.dump();
 #endif
+
+    /*
+     * If anything but Motorola camera app is used, this parameters is no
+     * longer there after the vendor call, so remember whether HFR is enabled
+     * or not so that we can later return the correct value.
+     */
+    const char *hfr = params.get(CameraParameters::KEY_QC_VIDEO_HIGH_FRAME_RATE);
+    if (hfr != NULL) {
+        isHfrEnabled = !strcmp(hfr, "60");
+    } else {
+        isHfrEnabled = false;
+    }
 
     if (get_product_device() == FALCON || get_product_device() == PEREGRINE) {
         if (id == BACK_CAMERA) {
