@@ -68,6 +68,7 @@ const char CameraParameters::KEY_QC_TOUCH_AF_AEC[] = "touch-af-aec"; \
 const char CameraParameters::KEY_QC_TOUCH_INDEX_AEC[] = "touch-index-aec"; \
 const char CameraParameters::KEY_QC_TOUCH_INDEX_AF[] = "touch-index-af"; \
 const char CameraParameters::KEY_QC_VIDEO_HIGH_FRAME_RATE[] = "video-hfr"; \
+const char CameraParameters::KEY_QC_VIDEO_HIGH_SPEED_RECORDING[] = "video-hsr"; \
 const char CameraParameters::KEY_QC_ZSL[] = "zsl"; \
 \
 
@@ -125,5 +126,6 @@ const char CameraParameters::KEY_QC_ZSL[] = "zsl"; \
     static const char KEY_QC_TOUCH_INDEX_AEC[]; \
     static const char KEY_QC_TOUCH_INDEX_AF[]; \
     static const char KEY_QC_VIDEO_HIGH_FRAME_RATE[]; \
+    static const char KEY_QC_VIDEO_HIGH_SPEED_RECORDING[]; \
     static const char KEY_QC_ZSL[]; \
     \
