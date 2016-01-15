@@ -174,7 +174,11 @@ static char *camera_fixup_getparams(int id, const char *settings)
     }
 
     /* HFR video recording workaround */
-    params.set(CameraParameters::KEY_QC_VIDEO_HIGH_FRAME_RATE, videoHfr);
+    const char *recordingHint = params.get(CameraParameters::KEY_RECORDING_HINT);
+    bool isVideo = recordingHint && !strcmp(recordingHint, "true");
+    if (isVideo) {
+        params.set(CameraParameters::KEY_QC_VIDEO_HIGH_FRAME_RATE, videoHfr);
+    }
 
 #if !LOG_NDEBUG
     ALOGV("%s: fixed parameters:", __FUNCTION__);
