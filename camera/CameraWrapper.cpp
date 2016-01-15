@@ -152,6 +152,7 @@ static char *camera_fixup_getparams(int id, const char *settings)
     }
 
     params.set(CameraParameters::KEY_QC_SUPPORTED_FACE_DETECTION, "on,off");
+    params.set(CameraParameters::KEY_QC_SUPPORTED_FLIP_MODES, "off,flip-v,flip-h,flip-vh");
 
     if (get_product_device() == FALCON || get_product_device() == PEREGRINE) {
         if (id == BACK_CAMERA) {
