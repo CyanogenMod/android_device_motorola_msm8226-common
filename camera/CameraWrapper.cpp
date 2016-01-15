@@ -59,6 +59,7 @@ static int camera_get_number_of_cameras(void);
 static int camera_get_camera_info(int camera_id, struct camera_info *info);
 
 static char videoHfr[4] = "off";
+static char videoHsr[4] = "off";
 
 static struct hw_module_methods_t camera_module_methods = {
     .open = camera_device_open
@@ -215,6 +216,7 @@ static char *camera_fixup_getparams(int id, const char *settings)
 
     /* HFR video recording workaround */
     params.set(CameraParameters::KEY_QC_VIDEO_HIGH_FRAME_RATE, videoHfr);
+    params.set(CameraParameters::KEY_QC_VIDEO_HIGH_SPEED_RECORDING, videoHsr);
 
 #if !LOG_NDEBUG
     ALOGV("%s: fixed parameters:", __FUNCTION__);
@@ -238,12 +240,14 @@ static char *camera_fixup_setparams(int id, const char *settings)
 #endif
 
     /*
-     * The video-hfr parameter gets removed from the parameters list by the
-     * vendor call, unless the Motorola camera app is used. Save the value
+     * The video-hfr and video-hsr parameters get removed from the parameters list
+     * by the vendor call, unless the Motorola camera app is used. Save the value
      * so that we can later return it.
      */
     const char *hfr = params.get(CameraParameters::KEY_QC_VIDEO_HIGH_FRAME_RATE);
+    const char *hsr = params.get(CameraParameters::KEY_QC_VIDEO_HIGH_SPEED_RECORDING);
     snprintf(videoHfr, sizeof(videoHfr), "%s", hfr ? hfr : "off");
+    snprintf(videoHsr, sizeof(videoHsr), "%s", hsr ? hsr : "off");
 
     if (get_product_device() == FALCON || get_product_device() == PEREGRINE) {
         if (id == BACK_CAMERA) {
