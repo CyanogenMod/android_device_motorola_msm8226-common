@@ -221,9 +221,6 @@ static char *camera_fixup_setparams(int id, const char *settings)
                     params.set(CameraParameters::KEY_PREVIEW_FPS_RANGE, "15000,30000");
                 }
             }
-        } else {
-            /* The HW detection causes a stream of errors, disable it. */
-            params.set(android::CameraParameters::KEY_MAX_NUM_DETECTED_FACES_HW, 0);
         }
     } else if (get_product_device() == TITAN || get_product_device() == THEA) {
         const char *sceneMode = params.get(CameraParameters::KEY_SCENE_MODE);
