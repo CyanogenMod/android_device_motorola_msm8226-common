@@ -209,9 +209,6 @@ static char *camera_fixup_setparams(int id, const char *settings)
         if (id == BACK_CAMERA) {
             /* ZSL is causing unwanted preview FPS changes */
             params.remove(CameraParameters::KEY_QC_ZSL);
-        } else {
-            /* The HW detection causes a stream of errors, disable it. */
-            params.set(android::CameraParameters::KEY_MAX_NUM_DETECTED_FACES_HW, 0);
         }
     } else if (get_product_device() == TITAN || get_product_device() == THEA) {
         const char *sceneMode = params.get(CameraParameters::KEY_SCENE_MODE);
