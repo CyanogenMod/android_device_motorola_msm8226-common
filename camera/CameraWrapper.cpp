@@ -207,17 +207,8 @@ static char *camera_fixup_setparams(int id, const char *settings)
 
     if (get_product_device() == FALCON || get_product_device() == PEREGRINE) {
         if (id == BACK_CAMERA) {
-            /*
-             * In some cases the vendor HAL tries to restore an invalid fps range
-             * (10000,15000) causing a crash.
-             */
-            const char *fps = params.get(CameraParameters::KEY_PREVIEW_FPS_RANGE);
-            const char *fpsValues = params.get(CameraParameters::KEY_SUPPORTED_PREVIEW_FPS_RANGE);
-            if (fps != NULL && fpsValues != NULL) {
-                if (!strstr(fpsValues, fps)) {
-                    params.set(CameraParameters::KEY_PREVIEW_FPS_RANGE, "15000,30000");
-                }
-            }
+            /* ZSL is causing unwanted preview FPS changes */
+            params.remove(CameraParameters::KEY_QC_ZSL);
         } else {
             /* The HW detection causes a stream of errors, disable it. */
             params.set(android::CameraParameters::KEY_MAX_NUM_DETECTED_FACES_HW, 0);
