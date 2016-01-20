@@ -154,8 +154,6 @@ static char *camera_fixup_getparams(int id, const char *settings)
 
     if (get_product_device() == FALCON || get_product_device() == PEREGRINE) {
         if (id == BACK_CAMERA) {
-            params.set(CameraParameters::KEY_QC_SUPPORTED_ISO_MODES,
-                    "auto,ISO_HJR,ISO100,ISO200,ISO400,ISO800,ISO1600");
             params.set(CameraParameters::KEY_QC_SUPPORTED_HFR_SIZES, "1296x728");
             params.set(CameraParameters::KEY_QC_SUPPORTED_VIDEO_HIGH_FRAME_RATE_MODES, "60,off");
         }
