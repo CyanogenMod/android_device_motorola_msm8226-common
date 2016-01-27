@@ -150,16 +150,6 @@ ProximitySensor::~ProximitySensor() {
     }
 }
 
-int ProximitySensor::setInitialState() {
-    struct input_absinfo absinfo;
-    if (!ioctl(data_fd, EVIOCGABS(EVENT_TYPE_PROXIMITY), &absinfo)) {
-        // make sure to report an event immediately
-        mHasPendingEvent = true;
-        mPendingEvent.distance = indexToValue(absinfo.value);
-    }
-    return 0;
-}
-
 int ProximitySensor::enable(int32_t, int en) {
     int flags = en ? 1 : 0;
     if (flags != mEnabled) {
@@ -183,8 +173,6 @@ int ProximitySensor::enable(int32_t, int en) {
             write(fd, buf, sizeof(buf));
             close(fd);
             mEnabled = flags;
-            if (mEnabled)
-                setInitialState();
             return 0;
         } else {
             ALOGE("open %s failed.(%s)\n", input_sysfs_path, strerror(errno));
@@ -241,6 +229,8 @@ int ProximitySensor::readEvents(sensors_event_t *data, int count) {
         int type = event->type;
         if (type == EV_ABS) {
             if (event->code == EVENT_TYPE_PROXIMITY) {
+                PDEBUG("ProximitySensor: got proximity event, value = %d", (int)event->value);
+
                 if (event->value != -1) {
                     // FIXME: not sure why we're getting -1 sometimes
                     mPendingEvent.distance = indexToValue(event->value);
