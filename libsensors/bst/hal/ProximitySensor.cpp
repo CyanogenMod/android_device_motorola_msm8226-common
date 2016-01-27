@@ -153,10 +153,26 @@ ProximitySensor::~ProximitySensor() {
 int ProximitySensor::setInitialState() {
     struct input_absinfo absinfo;
     if (!ioctl(data_fd, EVIOCGABS(EVENT_TYPE_PROXIMITY), &absinfo)) {
-        // make sure to report an event immediately
-        mHasPendingEvent = true;
+
+    // TODO: Remove wall of text
+    // Before the sensor can report a value it will be calibrated. Have the sensor report when it
+    // is ready rather than setting the 'mHasPendingEvent' flag to force a reading of '.distance',
+    // which by default will be 'far'
+
+        // The sensor only reports if there is a proximity change.
+        if (!mEnabled && (mPendingEvent.distance == indexToValue(absinfo.value))) {
+            // Have the hal trigger an artifical event reporting our last '.distance'
+            mHasPendingEvent = true;
+        }
+
+        // store the last sensor '.distance' reading
         mPendingEvent.distance = indexToValue(absinfo.value);
     }
+
+    //TODO: Remove/cleanup loggin
+    ALOGE("PS: <%d> absinfo value = %f", mEnabled, (float) indexToValue(absinfo.value));
+    ALOGE("PS: <%d> initial value = %f", mEnabled, (float) mPendingEvent.distance);
+
     return 0;
 }
 
@@ -183,8 +199,7 @@ int ProximitySensor::enable(int32_t, int en) {
             write(fd, buf, sizeof(buf));
             close(fd);
             mEnabled = flags;
-            if (mEnabled)
-                setInitialState();
+            setInitialState();
             return 0;
         } else {
             ALOGE("open %s failed.(%s)\n", input_sysfs_path, strerror(errno));
@@ -216,7 +231,7 @@ int ProximitySensor::readEvents(sensors_event_t *data, int count) {
 
 #if __HAL_VER__ >= __SENSORS_DEVICE_API_VERSION_1_1__
     if (mEnabled) {
-        PINFO("<BST> " "mPendingFlushFinishEvent = %d ", mPendingFlushFinishEvent);
+        PINFO("<BST> " "PS: mPendingFlushFinishEvent = %d ", mPendingFlushFinishEvent);
         flush_finish_event.version = META_DATA_VERSION;
         flush_finish_event.type = SENSOR_TYPE_META_DATA;
         flush_finish_event.meta_data.what = META_DATA_FLUSH_COMPLETE;
@@ -241,6 +256,8 @@ int ProximitySensor::readEvents(sensors_event_t *data, int count) {
         int type = event->type;
         if (type == EV_ABS) {
             if (event->code == EVENT_TYPE_PROXIMITY) {
+                ALOGE("ProximitySensor: got proximity event value = %d", (int)event->value);
+
                 if (event->value != -1) {
                     // FIXME: not sure why we're getting -1 sometimes
                     mPendingEvent.distance = indexToValue(event->value);
@@ -272,14 +289,14 @@ float ProximitySensor::indexToValue(size_t index) const {
 int ProximitySensor::flush(int id __unused) {
     int ret = 0;
     mPendingFlushFinishEvent++;
-    PINFO("<BST> flush sensor id: %d for %d times", id, mPendingFlushFinishEvent);
+    PINFO("<BST> PS: flush sensor id: %d for %d times", id, mPendingFlushFinishEvent);
     return ret;
 }
 
 int ProximitySensor::batch(int id, int flags, int64_t period_ns, int64_t timeout) {
     int ret = 0;
 
-    PDEBUG("batch id %d, flags %d, period_ns %lld, timeout %lld", id, flags, period_ns, timeout);
+    PDEBUG("PS: batch id %d, flags %d, period_ns %lld, timeout %lld", id, flags, period_ns, timeout);
 
     UNUSED_PARAM(id);
     UNUSED_PARAM(flags);
