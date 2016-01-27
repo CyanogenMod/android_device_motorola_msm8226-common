@@ -25,18 +25,12 @@ GyroscopeSensor::GyroscopeSensor()
     : SensorBase("/dev/l3g4200d", "gyroscope"),
       mEnabled(0),
       mInputReader(4),
-      mIsPendingEventsFlush(false)
+      mIsPendingEventsFlushCount(0)
 {
     mPendingEvents.version = sizeof(sensors_event_t);
     mPendingEvents.sensor = ID_GY;
     mPendingEvents.type = SENSOR_TYPE_GYROSCOPE;
     memset(mPendingEvents.data, 0, sizeof(mPendingEvents.data));
-
-    mPendingEventsFlush.version = META_DATA_VERSION;
-    mPendingEventsFlush.sensor = 0;
-    mPendingEventsFlush.type = SENSOR_TYPE_META_DATA;
-    mPendingEventsFlush.reserved0 = 0;
-    mPendingEventsFlush.timestamp = 0;
 }
 
 GyroscopeSensor::~GyroscopeSensor()
@@ -92,6 +86,20 @@ int GyroscopeSensor::readEvents(sensors_event_t* data, int count)
     int numEventReceived = 0;
     input_event const* event;
 
+    while (count && mIsPendingEventsFlushCount > 0) {
+        sensors_meta_data_event_t flushEvent;
+        flushEvent.version = META_DATA_VERSION;
+        flushEvent.type = SENSOR_TYPE_META_DATA;
+        flushEvent.meta_data.what = META_DATA_FLUSH_COMPLETE;
+        flushEvent.meta_data.sensor = mPendingEvents.sensor;
+        flushEvent.reserved0 = 0;
+        flushEvent.timestamp = getTimestamp();
+        *data++ = flushEvent;
+        mPendingEventsFlushCount[i]--;
+        count--;
+        numEventReceived++;
+    }
+
     while (count && mInputReader.readEvent(&event)) {
         int type = event->type;
         if (type == EV_REL) {
@@ -113,15 +121,6 @@ int GyroscopeSensor::readEvents(sensors_event_t* data, int count)
                 count--;
                 numEventReceived++;
             }
-
-            if (mIsPendingEventsFlush) {
-                mIsPendingEventsFlush = false;
-                mPendingEventsFlush.meta_data.what = META_DATA_FLUSH_COMPLETE;
-                mPendingEventsFlush.meta_data.sensor = ID_GY;
-                *data++ = mPendingEventsFlush;
-                count--;
-                numEventReceived++;
-            }
         } else {
             ALOGE("Gyroscope: unknown event (type=%d, code=%d)",
                     type, event->code);
@@ -137,7 +136,7 @@ int GyroscopeSensor::flush(int)
     if (!mEnabled)
         return -EINVAL;
 
-    mIsPendingEventsFlush = true;
+    mIsPendingEventsFlushCount++;
 
     return 0;
 }

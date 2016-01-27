@@ -26,29 +26,25 @@ AccelerometerSensor::AccelerometerSensor()
       mEnabled(0),
       mOriEnabled(false),
       mInputReader(8),
-      mPendingEventsMask(0),
-      mPendingEventsFlushMask(0)
+      mPendingEventsMask(0)
 {
     mPendingEvents[ACC].version = sizeof(sensors_event_t);
     mPendingEvents[ACC].sensor = ID_A;
     mPendingEvents[ACC].type = SENSOR_TYPE_ACCELEROMETER;
     memset(mPendingEvents[ACC].data, 0, sizeof(mPendingEvents[ACC].data));
+    mPendingEventsFlushCount[ACC] = 0;
 
     mPendingEvents[SO].version = sizeof(sensors_event_t);
     mPendingEvents[SO].sensor = ID_SO;
     mPendingEvents[SO].type = SENSOR_TYPE_SCREEN_ORIENTATION;
     memset(mPendingEvents[SO].data, 0, sizeof(mPendingEvents[SO].data));
+    mPendingEventsFlushCount[SO] = 0;
 
     mPendingEvents[SM].version = sizeof(sensors_event_t);
     mPendingEvents[SM].sensor = ID_SM;
     mPendingEvents[SM].type = SENSOR_TYPE_SIGNIFICANT_MOTION;
     memset(mPendingEvents[SM].data, 0, sizeof(mPendingEvents[SM].data));
-
-    mPendingEventsFlush.version = META_DATA_VERSION;
-    mPendingEventsFlush.sensor = 0;
-    mPendingEventsFlush.type = SENSOR_TYPE_META_DATA;
-    mPendingEventsFlush.reserved0 = 0;
-    mPendingEventsFlush.timestamp = 0;
+    mPendingEventsFlushCount[SM] = 0;
 }
 
 AccelerometerSensor::~AccelerometerSensor()
@@ -193,6 +189,24 @@ int AccelerometerSensor::readEvents(sensors_event_t* data, int count)
     int numEventReceived = 0;
     input_event const* event;
 
+    for (int i = 0; i < NUM_SENSORS; i++) {
+        if (!count)
+            break;
+        if (!mPendingEventsFlushCount[i])
+            continue;
+        sensors_meta_data_event_t flushEvent;
+        flushEvent.version = META_DATA_VERSION;
+        flushEvent.type = SENSOR_TYPE_META_DATA;
+        flushEvent.meta_data.what = META_DATA_FLUSH_COMPLETE;
+        flushEvent.meta_data.sensor = mPendingEvents[i].sensor;
+        flushEvent.reserved0 = 0;
+        flushEvent.timestamp = getTimestamp();
+        *data++ = flushEvent;
+        mPendingEventsFlushCount[i]--;
+        count--;
+        numEventReceived++;
+    }
+
     while (count && mInputReader.readEvent(&event)) {
         int type = event->type;
         if (type == EV_ABS) {
@@ -240,15 +254,6 @@ int AccelerometerSensor::readEvents(sensors_event_t* data, int count)
                         writeAkmAccel(mPendingEvents[ACC].acceleration.x,
                                       mPendingEvents[ACC].acceleration.y,
                                       mPendingEvents[ACC].acceleration.z);
-
-                    if (mPendingEventsFlushMask & (1 << i)) {
-                        mPendingEventsFlushMask &= ~(1 << i);
-                        mPendingEventsFlush.meta_data.what = META_DATA_FLUSH_COMPLETE;
-                        mPendingEventsFlush.meta_data.sensor = i;
-                        *data++ = mPendingEventsFlush;
-                        count--;
-                        numEventReceived++;
-                     }
                 }
             }
         } else {
@@ -283,7 +288,7 @@ int AccelerometerSensor::flush(int handle)
     if (!(mEnabled & indexToMask(id)))
         return -EINVAL;
 
-    mPendingEventsFlushMask |= 1 << id;
+    mPendingEventsFlushCount[id]++;
 
     return 0;
 }

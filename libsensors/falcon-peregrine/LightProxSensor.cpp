@@ -24,26 +24,21 @@
 LightProxSensor::LightProxSensor()
     : SensorBase(NULL, "light-prox"),
       mInputReader(4),
-      mPendingEventsMask(0),
-      mPendingEventsFlushMask(0)
+      mPendingEventsMask(0)
 {
     mEnabled[LIGHT] = false;
     mPendingEvents[LIGHT].version = sizeof(sensors_event_t);
     mPendingEvents[LIGHT].sensor = ID_L;
     mPendingEvents[LIGHT].type = SENSOR_TYPE_LIGHT;
     memset(mPendingEvents[LIGHT].data, 0, sizeof(mPendingEvents[LIGHT].data));
+    mPendingEventsFlushCount[LIGHT] = 0;
 
     mEnabled[PROX] = false;
     mPendingEvents[PROX].version = sizeof(sensors_event_t);
     mPendingEvents[PROX].sensor = ID_P;
     mPendingEvents[PROX].type = SENSOR_TYPE_PROXIMITY;
     memset(mPendingEvents[PROX].data, 0, sizeof(mPendingEvents[PROX].data));
-
-    mPendingEventsFlush.version = META_DATA_VERSION;
-    mPendingEventsFlush.sensor = 0;
-    mPendingEventsFlush.type = SENSOR_TYPE_META_DATA;
-    mPendingEventsFlush.reserved0 = 0;
-    mPendingEventsFlush.timestamp = 0;
+    mPendingEventsFlushCount[PROX] = 0;
 }
 
 LightProxSensor::~LightProxSensor()
@@ -165,6 +160,24 @@ int LightProxSensor::readEvents(sensors_event_t* data, int count)
     int numEventReceived = 0;
     input_event const* event;
 
+    for (int i = 0; i < NUM_SENSORS; i++) {
+        if (!count)
+            break;
+        if (!mPendingEventsFlushCount[i])
+            continue;
+        sensors_meta_data_event_t flushEvent;
+        flushEvent.version = META_DATA_VERSION;
+        flushEvent.type = SENSOR_TYPE_META_DATA;
+        flushEvent.meta_data.what = META_DATA_FLUSH_COMPLETE;
+        flushEvent.meta_data.sensor = mPendingEvents[i].sensor;
+        flushEvent.reserved0 = 0;
+        flushEvent.timestamp = getTimestamp();
+        *data++ = flushEvent;
+        mPendingEventsFlushCount[i]--;
+        count--;
+        numEventReceived++;
+    }
+
     while (count && mInputReader.readEvent(&event)) {
         int type = event->type;
         if (type == EV_LED) {
@@ -193,15 +206,6 @@ int LightProxSensor::readEvents(sensors_event_t* data, int count)
                         count--;
                         numEventReceived++;
                     }
-
-                    if (mPendingEventsFlushMask & (1 << i)) {
-                        mPendingEventsFlushMask &= ~(1 << i);
-                        mPendingEventsFlush.meta_data.what = META_DATA_FLUSH_COMPLETE;
-                        mPendingEventsFlush.meta_data.sensor = i;
-                        *data++ = mPendingEventsFlush;
-                        count--;
-                        numEventReceived++;
-                     }
                 }
             }
         } else {
@@ -233,7 +237,7 @@ int LightProxSensor::flush(int handle)
     if (!mEnabled[id])
         return -EINVAL;
 
-    mPendingEventsFlushMask |= 1 << id;
+    mPendingEventsFlushCount[id]++;
 
     return 0;
 }
