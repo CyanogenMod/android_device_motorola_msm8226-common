@@ -33,9 +33,8 @@ private:
     bool mEnabled[NUM_SENSORS];
     InputEventCircularReader mInputReader;
     sensors_event_t mPendingEvents[NUM_SENSORS];
-    sensors_event_t mPendingEventsFlush;
     uint32_t mPendingEventsMask;
-    uint32_t mPendingEventsFlushMask;
+    int mPendingEventsFlushCount[NUM_SENSORS];
     bool mProxHasPendingEvent;
     void setProxInitialState();
 

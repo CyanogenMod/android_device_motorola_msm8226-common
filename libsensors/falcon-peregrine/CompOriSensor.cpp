@@ -24,8 +24,7 @@
 CompOriSensor::CompOriSensor()
     : SensorBase(NULL, "compass"),
       mInputReader(10),
-      mPendingEventsMask(0),
-      mPendingEventsFlushMask(0)
+      mPendingEventsMask(0)
 {
     mEnabled[MAG] = false;
     mPendingEvents[MAG].version = sizeof(sensors_event_t);
@@ -33,18 +32,14 @@ CompOriSensor::CompOriSensor()
     mPendingEvents[MAG].type = SENSOR_TYPE_MAGNETIC_FIELD;
     mPendingEvents[MAG].magnetic.status = SENSOR_STATUS_ACCURACY_HIGH;
     memset(mPendingEvents[MAG].data, 0, sizeof(mPendingEvents[MAG].data));
+    mPendingEventsFlushCount[MAG] = 0;
 
     mEnabled[ORI] = false;
     mPendingEvents[ORI].version = sizeof(sensors_event_t);
     mPendingEvents[ORI].sensor = ID_O;
     mPendingEvents[ORI].type = SENSOR_TYPE_ORIENTATION;
     memset(mPendingEvents[ORI].data, 0, sizeof(mPendingEvents[ORI].data));
-
-    mPendingEventsFlush.version = META_DATA_VERSION;
-    mPendingEventsFlush.sensor = 0;
-    mPendingEventsFlush.type = SENSOR_TYPE_META_DATA;
-    mPendingEventsFlush.reserved0 = 0;
-    mPendingEventsFlush.timestamp = 0;
+    mPendingEventsFlushCount[ORI] = 0;
 }
 
 CompOriSensor::~CompOriSensor()
@@ -147,6 +142,24 @@ int CompOriSensor::readEvents(sensors_event_t* data, int count)
     int numEventReceived = 0;
     input_event const* event;
 
+    for (int i = 0; i < NUM_SENSORS; i++) {
+        if (!count)
+            break;
+        if (!mPendingEventsFlushCount[i])
+            continue;
+        sensors_meta_data_event_t flushEvent;
+        flushEvent.version = META_DATA_VERSION;
+        flushEvent.type = SENSOR_TYPE_META_DATA;
+        flushEvent.meta_data.what = META_DATA_FLUSH_COMPLETE;
+        flushEvent.meta_data.sensor = mPendingEvents[i].sensor;
+        flushEvent.reserved0 = 0;
+        flushEvent.timestamp = getTimestamp();
+        *data++ = flushEvent;
+        mPendingEventsFlushCount[i]--;
+        count--;
+        numEventReceived++;
+    }
+
     while (count && mInputReader.readEvent(&event)) {
         int type = event->type;
         if (type == EV_ABS) {
@@ -203,15 +216,6 @@ int CompOriSensor::readEvents(sensors_event_t* data, int count)
                         count--;
                         numEventReceived++;
                     }
-
-                    if (mPendingEventsFlushMask & (1 << i)) {
-                        mPendingEventsFlushMask &= ~(1 << i);
-                        mPendingEventsFlush.meta_data.what = META_DATA_FLUSH_COMPLETE;
-                        mPendingEventsFlush.meta_data.sensor = i;
-                        *data++ = mPendingEventsFlush;
-                        count--;
-                        numEventReceived++;
-                     }
                 }
             }
         } else {
@@ -243,7 +247,7 @@ int CompOriSensor::flush(int handle)
     if (!mEnabled[id])
         return -EINVAL;
 
-    mPendingEventsFlushMask |= 1 << id;
+    mPendingEventsFlushCount[id]++;
 
     return 0;
 }

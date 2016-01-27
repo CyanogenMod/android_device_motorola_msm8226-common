@@ -64,9 +64,8 @@ private:
     bool mOriEnabled;
     InputEventCircularReader mInputReader;
     sensors_event_t mPendingEvents[NUM_SENSORS];
-    sensors_event_t mPendingEventsFlush;
     uint32_t mPendingEventsMask;
-    uint32_t mPendingEventsFlushMask;
+    int mPendingEventsFlushCount[NUM_SENSORS];
     void writeAkmAccel(float x, float y, float z);
 
 public:

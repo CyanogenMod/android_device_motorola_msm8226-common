@@ -36,8 +36,7 @@ private:
     int mEnabled;
     InputEventCircularReader mInputReader;
     sensors_event_t mPendingEvents;
-    sensors_event_t mPendingEventsFlush;
-    bool mIsPendingEventsFlush;
+    int mPendingEventsFlushCount;
 
 public:
             GyroscopeSensor();
