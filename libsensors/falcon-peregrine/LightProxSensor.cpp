@@ -82,16 +82,6 @@ int LightProxSensor::setDelay(int32_t handle, int64_t ns)
     return 0;
 }
 
-void LightProxSensor::setProxInitialState()
-{
-    struct input_absinfo absinfo;
-    if (!ioctl(data_fd, EVIOCGABS(EVENT_TYPE_PROXIMITY), &absinfo)) {
-        // make sure to report an event immediately
-        mProxHasPendingEvent = true;
-        mPendingEvents[PROX].distance = absinfo.value * ADJUST_PROX;
-    }
-}
-
 int LightProxSensor::enable(int32_t handle, int en)
 {
     char enable_path[PATH_MAX];
@@ -128,30 +118,16 @@ int LightProxSensor::enable(int32_t handle, int en)
         }
         close(fd);
         mEnabled[sensor] = enable;
-        if (sensor == PROX)
-            setProxInitialState();
         return 0;
     }
 
     return fd;
 }
 
-bool LightProxSensor::hasPendingEvents() const
-{
-    return mProxHasPendingEvent;
-}
-
 int LightProxSensor::readEvents(sensors_event_t* data, int count)
 {
     if (count < 1)
         return -EINVAL;
-
-    if (mProxHasPendingEvent) {
-        mProxHasPendingEvent = false;
-        mPendingEvents[PROX].timestamp = getTimestamp();
-        *data = mPendingEvents[PROX];
-        return mEnabled[PROX] ? 1 : 0;
-    }
 
     ssize_t n = mInputReader.fill(data_fd);
     if (n < 0)
