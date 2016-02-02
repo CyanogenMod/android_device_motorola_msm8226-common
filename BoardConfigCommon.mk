@@ -114,6 +114,10 @@ TARGET_USERIMAGES_USE_F2FS := true
 # Release tools
 TARGET_RELEASETOOLS_EXTENSIONS := $(VENDOR_PATH)
 
+# Basic dexpreopt
+WITH_DEXPREOPT := true
+WITH_DEXPREOPT_BOOT_IMG_ONLY := true
+
 # SELinux
 -include device/qcom/sepolicy/sepolicy.mk
 
