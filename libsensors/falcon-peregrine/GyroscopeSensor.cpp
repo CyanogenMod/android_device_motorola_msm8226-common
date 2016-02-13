@@ -95,7 +95,7 @@ int GyroscopeSensor::readEvents(sensors_event_t* data, int count)
         flushEvent.reserved0 = 0;
         flushEvent.timestamp = getTimestamp();
         *data++ = flushEvent;
-        mPendingEventsFlushCount[i]--;
+        mIsPendingEventsFlushCount--;
         count--;
         numEventReceived++;
     }
