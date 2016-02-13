@@ -25,7 +25,7 @@ GyroscopeSensor::GyroscopeSensor()
     : SensorBase("/dev/l3g4200d", "gyroscope"),
       mEnabled(0),
       mInputReader(4),
-      mIsPendingEventsFlushCount(0)
+      mPendingEventsFlushCount(0)
 {
     mPendingEvents.version = sizeof(sensors_event_t);
     mPendingEvents.sensor = ID_GY;
@@ -86,7 +86,7 @@ int GyroscopeSensor::readEvents(sensors_event_t* data, int count)
     int numEventReceived = 0;
     input_event const* event;
 
-    while (count && mIsPendingEventsFlushCount > 0) {
+    while (count && mPendingEventsFlushCount > 0) {
         sensors_meta_data_event_t flushEvent;
         flushEvent.version = META_DATA_VERSION;
         flushEvent.type = SENSOR_TYPE_META_DATA;
@@ -95,7 +95,7 @@ int GyroscopeSensor::readEvents(sensors_event_t* data, int count)
         flushEvent.reserved0 = 0;
         flushEvent.timestamp = getTimestamp();
         *data++ = flushEvent;
-        mPendingEventsFlushCount[i]--;
+        mPendingEventsFlushCount--;
         count--;
         numEventReceived++;
     }
@@ -136,7 +136,7 @@ int GyroscopeSensor::flush(int)
     if (!mEnabled)
         return -EINVAL;
 
-    mIsPendingEventsFlushCount++;
+    mPendingEventsFlushCount++;
 
     return 0;
 }
