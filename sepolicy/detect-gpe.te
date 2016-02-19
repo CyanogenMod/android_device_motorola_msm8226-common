@@ -1,0 +1,8 @@
+type detect-gpe, domain;
+
+domain_trans(init, rootfs, detect-gpe)
+
+allow detect-gpe kmsg_device:chr_file rw_file_perms;
+allow detect-gpe userdata_block_device:blk_file r_file_perms;
+allow detect-gpe rootfs:dir { write remove_name add_name };
+allow detect-gpe rootfs:file { entrypoint rename unlink };
