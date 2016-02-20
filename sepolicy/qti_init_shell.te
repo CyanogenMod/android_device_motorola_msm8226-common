@@ -1,11 +1,6 @@
 # Allow init to "wait" for partitions
 allow qti_init_shell block_device:dir search;
 
-# Allow init to detect fstype of /userdata
-allow qti_init_shell init:fifo_file { getattr write };
-allow qti_init_shell blkid_exec:file { getattr execute read open execute_no_trans };
-allow qti_init_shell userdata_block_device:blk_file { getattr read open ioctl };
-
 # Required for FM
 allow qti_init_shell apk_data_file:dir rw_dir_perms;
 allow qti_init_shell apk_data_file:file create_file_perms;
