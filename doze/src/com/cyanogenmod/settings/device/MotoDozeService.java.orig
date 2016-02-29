@@ -28,17 +28,17 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.os.UserHandle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
+import android.os.UserHandle;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MotoDozeService extends Service {
     private static final String TAG = "MotoDozeService";
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     private static final String GESTURE_HAND_WAVE_KEY = "gesture_hand_wave";
     private static final String GESTURE_POCKET_KEY = "gesture_pocket";
@@ -50,7 +50,6 @@ public class MotoDozeService extends Service {
     private Context mContext;
     private MotoProximitySensor mSensor;
     private PowerManager mPowerManager;
-    private PowerManager.WakeLock mWakeLock;
 
     private boolean mHandwaveGestureEnabled = false;
     private boolean mPocketGestureEnabled = false;
@@ -115,7 +114,6 @@ public class MotoDozeService extends Service {
         mContext = this;
         mPowerManager = (PowerManager)getSystemService(Context.POWER_SERVICE);
         mSensor = new MotoProximitySensor(mContext);
-        mWakeLock = mPowerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MotoDozeWakeLock");
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
         loadPreferences(sharedPrefs);
         sharedPrefs.registerOnSharedPreferenceChangeListener(mPrefListener);
@@ -153,9 +151,6 @@ public class MotoDozeService extends Service {
 
     private void onDisplayOn() {
         if (DEBUG) Log.d(TAG, "Display on");
-        if (!mWakeLock.isHeld()) {
-            mWakeLock.acquire();
-        }
         mSensor.disable();
     }
 
@@ -163,9 +158,6 @@ public class MotoDozeService extends Service {
         if (DEBUG) Log.d(TAG, "Display off");
         if (isDozeEnabled()) {
             mSensor.enable();
-            if (mWakeLock.isHeld()) {
-                mWakeLock.release();
-            }
         }
     }
 
