@@ -50,6 +50,7 @@ public class MotoDozeService extends Service {
     private Context mContext;
     private MotoProximitySensor mSensor;
     private PowerManager mPowerManager;
+    private PowerManager.WakeLock mWakeLock;
 
     private boolean mHandwaveGestureEnabled = false;
     private boolean mPocketGestureEnabled = false;
@@ -114,6 +115,7 @@ public class MotoDozeService extends Service {
         mContext = this;
         mPowerManager = (PowerManager)getSystemService(Context.POWER_SERVICE);
         mSensor = new MotoProximitySensor(mContext);
+        mWakeLock = mPowerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MotoDozeWakeLock");
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
         loadPreferences(sharedPrefs);
         sharedPrefs.registerOnSharedPreferenceChangeListener(mPrefListener);
@@ -151,6 +153,9 @@ public class MotoDozeService extends Service {
 
     private void onDisplayOn() {
         if (DEBUG) Log.d(TAG, "Display on");
+        if (!mWakeLock.isHeld()) {
+            mWakeLock.acquire();
+        }
         mSensor.disable();
     }
 
@@ -158,6 +163,9 @@ public class MotoDozeService extends Service {
         if (DEBUG) Log.d(TAG, "Display off");
         if (isDozeEnabled()) {
             mSensor.enable();
+            if (mWakeLock.isHeld()) {
+                mWakeLock.release();
+            }
         }
     }
 
