@@ -29,6 +29,11 @@ LOCAL_SRC_FILES    := $(LOCAL_MODULE)
 LOCAL_MODULE_PATH  := $(TARGET_OUT_ETC)/wifi
 include $(BUILD_PREBUILT)
 
+# Create symbolic links
+$(shell mkdir -p $(TARGET_OUT_ETC)/firmware/wlan/prima; \
+	ln -sf /data/misc/wifi/WCNSS_qcom_cfg.ini \
+	$(TARGET_OUT_ETC)/firmware/wlan/prima/WCNSS_qcom_cfg.ini)
+
 include $(CLEAR_VARS)
 LOCAL_MODULE := WCNSS_qcom_wlan_factory_nv.bin
 LOCAL_MODULE_CLASS := FAKE
