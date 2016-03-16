@@ -28,6 +28,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.os.UserHandle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
@@ -41,6 +42,8 @@ public class MotoDozeService extends Service {
 
     private static final String GESTURE_HAND_WAVE_KEY = "gesture_hand_wave";
     private static final String GESTURE_POCKET_KEY = "gesture_pocket";
+
+    private static final String DOZE_INTENT = "com.android.systemui.doze.pulse";
 
     private static final int POCKET_DELTA_NS = 1000 * 1000 * 1000;
 
@@ -134,7 +137,7 @@ public class MotoDozeService extends Service {
     }
 
     private void launchDozePulse() {
-        mContext.sendBroadcast(new Intent("com.android.systemui.doze.pulse"));
+        mContext.sendBroadcastAsUser(new Intent(DOZE_INTENT), UserHandle.ALL);
     }
 
     private boolean isInteractive() {
