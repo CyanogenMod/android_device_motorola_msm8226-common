@@ -24,12 +24,12 @@ import android.util.Log;
 public class BootCompletedReceiver extends BroadcastReceiver {
 
     private static final boolean DEBUG = false;
-    private static final String TAG = "MotoDoze";
+    private static final String TAG = "CMActions";
 
     @Override
     public void onReceive(final Context context, Intent intent) {
         if (DEBUG) Log.d(TAG, "Starting service");
-        context.startService(new Intent(context, MotoDozeService.class));
+        context.startService(new Intent(context, CMActionsService.class));
     }
 
 }
