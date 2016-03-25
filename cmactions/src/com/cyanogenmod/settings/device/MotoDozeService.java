@@ -36,8 +36,8 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MotoDozeService extends Service {
-    private static final String TAG = "MotoDozeService";
+public class CMActionsService extends Service {
+    private static final String TAG = "CMActionsService";
     private static final boolean DEBUG = false;
 
     private static final String GESTURE_HAND_WAVE_KEY = "gesture_hand_wave";
@@ -111,11 +111,11 @@ public class MotoDozeService extends Service {
 
     @Override
     public void onCreate() {
-        if (DEBUG) Log.d(TAG, "MotoDozeService Started");
+        if (DEBUG) Log.d(TAG, "CMActionsService Started");
         mContext = this;
         mPowerManager = (PowerManager)getSystemService(Context.POWER_SERVICE);
         mSensor = new MotoProximitySensor(mContext);
-        mWakeLock = mPowerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MotoDozeWakeLock");
+        mWakeLock = mPowerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "CMActionsWakeLock");
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
         loadPreferences(sharedPrefs);
         sharedPrefs.registerOnSharedPreferenceChangeListener(mPrefListener);

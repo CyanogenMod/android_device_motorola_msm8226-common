@@ -13,7 +13,7 @@
         android:targetSdkVersion="23"/>
 
     <application
-        android:label="MotoDoze"
+        android:label="CMActions"
         android:persistent="true">
 
         <receiver android:name="com.cyanogenmod.settings.device.BootCompletedReceiver">
@@ -23,8 +23,8 @@
             </intent-filter>
         </receiver>
 
-        <service android:name="com.cyanogenmod.settings.device.MotoDozeService"
-                 android:permission="MotoDozeService">
+        <service android:name="com.cyanogenmod.settings.device.CMActionsService"
+                 android:permission="CMActionsService">
         </service>
 
         <activity
