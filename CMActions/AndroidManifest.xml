@@ -23,7 +23,7 @@
         </service>
 
         <activity
-            android:name=".GestureSettings"
+            android:name=".GesturePreferenceActivity"
             android:label="@string/screen_gestures_panel_title"
             android:theme="@android:style/Theme.Material.Settings">
             <intent-filter>
