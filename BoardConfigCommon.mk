@@ -73,6 +73,9 @@ BOARD_CHARGING_MODE_BOOTING_LPM := /sys/mmi_lpm/lpm_mode
 # CMHW
 BOARD_HARDWARE_CLASS := $(VENDOR_PATH)/cmhw/
 
+# Dexpreopt
+WITH_DEXPREOPT := true
+
 # Display
 NUM_FRAMEBUFFER_SURFACE_BUFFERS := 3
 TARGET_USES_C2D_COMPOSITION := true
@@ -112,16 +115,6 @@ TARGET_USERIMAGES_USE_F2FS := true
 
 # Release tools
 TARGET_RELEASETOOLS_EXTENSIONS := $(VENDOR_PATH)
-
-# Basic dexpreopt
-ifeq ($(HOST_OS),linux)
-  ifneq ($(TARGET_BUILD_VARIANT),eng)
-    ifeq ($(WITH_DEXPREOPT),)
-      WITH_DEXPREOPT := true
-      WITH_DEXPREOPT_BOOT_IMG_ONLY := true
-    endif
-  endif
-endif
 
 # SELinux
 -include device/qcom/sepolicy/sepolicy.mk
