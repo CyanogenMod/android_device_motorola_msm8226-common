@@ -14,4 +14,12 @@
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
   <!-- Gesture shortcuts -->
+  <string name="screen_gestures_panel_title">Гестови</string>
+  <string name="ambient_display_title">Амбијент приказ</string>
+  <string name="ambient_display_enable_title">Амбијент приказ</string>
+  <string name="ambient_display_enable_summary">Пробуди екран кад добијеш обавештење</string>
+  <string name="hand_wave_gesture_title">Покрет руком</string>
+  <string name="hand_wave_gesture_summary">Пулсно обавештење при покрету руком</string>
+  <string name="pocket_gesture_title">Џеп</string>
+  <string name="pocket_gesture_summary">Пулсно обавештење при уклањању из џепа</string>
 </resources>

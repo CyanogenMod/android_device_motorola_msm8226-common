@@ -14,4 +14,12 @@
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
   <!-- Gesture shortcuts -->
+  <string name="screen_gestures_panel_title">Keinuak</string>
+  <string name="ambient_display_title">Ambient display</string>
+  <string name="ambient_display_enable_title">Ambient display</string>
+  <string name="ambient_display_enable_summary">Esnatu pantaila jakinarazpenak jasotzean</string>
+  <string name="hand_wave_gesture_title">Agurtu eskuarekin</string>
+  <string name="hand_wave_gesture_summary">Jakinarazpen argia eskuarekin agurtzean</string>
+  <string name="pocket_gesture_title">Poltsikoratu</string>
+  <string name="pocket_gesture_summary">Jakinarazpen argia poltsikotik ateratzean</string>
 </resources>

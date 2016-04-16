@@ -14,4 +14,12 @@
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
   <!-- Gesture shortcuts -->
+  <string name="screen_gestures_panel_title">Gebaren</string>
+  <string name="ambient_display_title">Omgevingsdisplay</string>
+  <string name="ambient_display_enable_title">Omgevingsdisplay</string>
+  <string name="ambient_display_enable_summary">Scherm aan bij het ontvangen van meldingen</string>
+  <string name="hand_wave_gesture_title">Handgebaar</string>
+  <string name="hand_wave_gesture_summary">Meldingen laten knipperen bij handgebaar</string>
+  <string name="pocket_gesture_title">Broekzak</string>
+  <string name="pocket_gesture_summary">Meldingen laten knipperen bij verwijderen uit broekzak</string>
 </resources>

@@ -14,4 +14,12 @@
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
   <!-- Gesture shortcuts -->
+  <string name="screen_gestures_panel_title">Gesty</string>
+  <string name="ambient_display_title">Aktywny wyświetlacz</string>
+  <string name="ambient_display_enable_title">Aktywny wyświetlacz</string>
+  <string name="ambient_display_enable_summary">Wybudź ekran, po otrzymaniu powiadomienia</string>
+  <string name="hand_wave_gesture_title">Machnięcie ręką</string>
+  <string name="hand_wave_gesture_summary">Pulsujące powiadomienia po machnięciu ręką</string>
+  <string name="pocket_gesture_title">Kieszeń</string>
+  <string name="pocket_gesture_summary">Pulsujące powiadomienia po wyjęciu z kieszeni</string>
 </resources>

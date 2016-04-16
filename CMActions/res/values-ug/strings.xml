@@ -14,4 +14,12 @@
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
   <!-- Gesture shortcuts -->
+  <string name="screen_gestures_panel_title">قول ئىشارەت</string>
+  <string name="ambient_display_title">مۇھىتنى كۆرسىتىش</string>
+  <string name="ambient_display_enable_title">مۇھىتنى كۆرسىتىش</string>
+  <string name="ambient_display_enable_summary">ئۇقتۇرۇش كەلگەندە ئېكراننى ئويغىتىش</string>
+  <string name="hand_wave_gesture_title">قول پۇلاڭلىتىش</string>
+  <string name="hand_wave_gesture_summary">قولنى پۇلاڭلاتقاندا ئۇقتۇرۇش چىرىغىنى چاقنىتىش</string>
+  <string name="pocket_gesture_title">يانچۇق</string>
+  <string name="pocket_gesture_summary">يانچۇقتىن چىقارغاندا ئۇقتۇرۇش چىرىغىنى چاقنىتىدۇ</string>
 </resources>
