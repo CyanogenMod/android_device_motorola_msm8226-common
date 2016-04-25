@@ -105,6 +105,10 @@ PRODUCT_PACKAGES += \
     FMRadio \
     libfmjni
 
+# Gello
+PRODUCT_PACKAGES += \
+    Gello
+
 # GPS
 PRODUCT_PACKAGES += \
     gps.msm8226
