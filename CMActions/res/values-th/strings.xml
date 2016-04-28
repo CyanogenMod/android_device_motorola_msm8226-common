@@ -14,4 +14,12 @@
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
   <!-- Gesture shortcuts -->
+  <string name="screen_gestures_panel_title">ท่าทาง</string>
+  <string name="ambient_display_title">หน้าจอแวดล้อม</string>
+  <string name="ambient_display_enable_title">หน้าจอแวดล้อม</string>
+  <string name="ambient_display_enable_summary">เปิดหน้าจอเมื่อได้รับการแจ้งเตือน</string>
+  <string name="hand_wave_gesture_title">การเคลื่อนไหวด้วยมือ</string>
+  <string name="hand_wave_gesture_summary">เช็คการแจ้งเตือนเมื่อมีการโบกมือ</string>
+  <string name="pocket_gesture_title">กระเป๋า</string>
+  <string name="pocket_gesture_summary">เช็คการแจ้งเตือนเมื่อนำออกจากกระเป๋า</string>
 </resources>

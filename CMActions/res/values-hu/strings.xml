@@ -14,4 +14,12 @@
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
   <!-- Gesture shortcuts -->
+  <string name="screen_gestures_panel_title">Mozdulatok</string>
+  <string name="ambient_display_title">Környezeti kijelző</string>
+  <string name="ambient_display_enable_title">Környezeti kijelző</string>
+  <string name="ambient_display_enable_summary">Képernyő ébresztése értesítések fogadásakor</string>
+  <string name="hand_wave_gesture_title">Lebegő simítás</string>
+  <string name="hand_wave_gesture_summary">Értesítések pulzálása lebegő simításnál</string>
+  <string name="pocket_gesture_title">Zseb</string>
+  <string name="pocket_gesture_summary">Értesítések pulzálása zsebből való kivétel után</string>
 </resources>
