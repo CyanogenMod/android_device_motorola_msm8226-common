@@ -39,12 +39,7 @@ ro.bluetooth.hfp.ver=1.6
 ro.qualcomm.bt.hci_transport=smd
 
 # Display
-debug.sf.fb_always_on=1
-debug.sf.hw=1
-debug.egl.hw=1
-debug.composition.type=c2d
 persist.hwc.mdpcomp.enable=true
-debug.mdpcomp.logs=0
 ro.opengles.version=196608
 ro.sf.lcd_density=320
 
