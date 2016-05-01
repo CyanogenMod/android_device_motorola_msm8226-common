@@ -201,3 +201,7 @@ PRODUCT_PACKAGES += \
     libcurl \
     libqsap_sdk \
     libQWiFiSoftApCfg
+
+#Gello
+PRODUCT_PACKAGES += \
+    Gello
