@@ -11,6 +11,10 @@ type cutback_data_file, file_type, data_file_type;
 # Hardware revisions
 type hw_revs_data_file, file_type, data_file_type;
 
+# Persist
+type persist_omadm_file, file_type;
+type persist_telephony_file, file_type;
+
 # PDS
 type pds_file, file_type;
 type pds_public_file, file_type;

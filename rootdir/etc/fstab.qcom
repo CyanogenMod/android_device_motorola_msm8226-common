@@ -8,7 +8,7 @@
 /dev/block/platform/msm_sdcc.1/by-name/cache        /cache       ext4    rw,nosuid,nodev,noatime,nodiratime,barrier=1,data=ordered                      wait,check,formattable
 /dev/block/platform/msm_sdcc.1/by-name/fsg          /fsg         ext4    ro,nosuid,nodev,barrier=0,context=u:object_r:firmware_file:s0                  wait
 /dev/block/platform/msm_sdcc.1/by-name/modem        /firmware    ext4    ro,nosuid,nodev,barrier=0,context=u:object_r:firmware_file:s0                  wait
-/dev/block/platform/msm_sdcc.1/by-name/persist      /persist     ext4    ro,nosuid,nodev,barrier=1                                                      wait
+/dev/block/platform/msm_sdcc.1/by-name/persist      /persist     ext4    rw,nosuid,nodev,barrier=1                                                      wait
 /dev/block/platform/msm_sdcc.1/by-name/boot         /boot        emmc    defaults                                                                       recoveryonly
 /dev/block/platform/msm_sdcc.1/by-name/recovery     /recovery    emmc    defaults                                                                       recoveryonly
 

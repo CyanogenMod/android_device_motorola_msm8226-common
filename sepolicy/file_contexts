@@ -39,6 +39,15 @@
 /dev/block/bootdevice/by-name/utags                         u:object_r:utags_block_device:s0
 /dev/block/bootdevice/by-name/utagsBackup                   u:object_r:utags_block_device:s0
 
+# Persist firmware filesystem
+/persist/prov(/.*)?                                         u:object_r:persist_drm_file:s0
+/persist/omadm(/.*)?                                        u:object_r:persist_omadm_file:s0
+/persist/omadm_cust_database(/.*)?                          u:object_r:persist_omadm_file:s0
+/persist/omadm_database(/.*)?                               u:object_r:persist_omadm_file:s0
+/persist/prop(/.*)?                                         u:object_r:persist_omadm_file:s0
+# Persist file to store apn
+/persist/telephony(/.*)?                                    u:object_r:persist_telephony_file:s0
+
 # PDS
 /pds(/.*)?                                                  u:object_r:pds_file:s0
 /pds/public(/.*)?                                           u:object_r:pds_public_file:s0
