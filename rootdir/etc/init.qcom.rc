@@ -59,6 +59,14 @@ on init
     chown root qcom_diag /sys/kernel/dropbox/event
     chown root qcom_diag /sys/kernel/dropbox/data
 
+on early-boot
+    # Force all SSR systems to related so they attempt self-recovery without
+    # rebooting the device
+    write /sys/bus/msm_subsys/devices/subsys0/restart_level related
+    write /sys/bus/msm_subsys/devices/subsys1/restart_level related
+    write /sys/bus/msm_subsys/devices/subsys2/restart_level related
+    write /sys/bus/msm_subsys/devices/subsys3/restart_level related
+
 on fs
     mount_all fstab.qcom
     write /sys/kernel/boot_adsp/boot 1
