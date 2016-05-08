@@ -5,8 +5,11 @@
         <device name="SND_DEVICE_OUT_VOICE_HANDSET_TMUS" acdb_id="7"/>
         <device name="SND_DEVICE_OUT_VOICE_SPEAKER" acdb_id="14"/>
 
+        <device name="SND_DEVICE_IN_CAMCORDER_MIC" acdb_id="50" />
         <device name="SND_DEVICE_IN_VOICE_DMIC" acdb_id="6"/>
         <device name="SND_DEVICE_IN_VOICE_DMIC_TMUS" acdb_id="6"/>
+        <device name="SND_DEVICE_IN_VOICE_REC_MIC" acdb_id="61" />
+        <device name="SND_DEVICE_IN_VOICE_SPEAKER_DMIC" acdb_id="11" />
    </acdb_ids>
 
    <pcm_ids>
@@ -17,6 +20,11 @@
         <usecase name="USECASE_VOLTE_CALL" type="in" id="17"/>
         <usecase name="USECASE_VOLTE_CALL" type="out" id="17"/>
     </pcm_ids>
+
+    <device_names>
+        <device name="SND_DEVICE_IN_CAMCORDER_MIC" alias="camcorder-mic-bf" />
+        <device name="SND_DEVICE_IN_VOICE_SPEAKER_DMIC" alias="voice-speaker-mic" />
+    </device_names>
 
     <backend_names>
         <device name="SND_DEVICE_OUT_SPEAKER" backend="speaker" interface="SLIMBUS_0_RX"/>
