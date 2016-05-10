@@ -14,4 +14,12 @@
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
   <!-- Gesture shortcuts -->
+  <string name="screen_gestures_panel_title">Gebare</string>
+  <string name="ambient_display_title">Omgewings temperatuur skerm</string>
+  <string name="ambient_display_enable_title">Omgewings temperatuur skerm</string>
+  <string name="ambient_display_enable_summary">Skerm sal wakker word wanneer jy kennisgewings ontvang</string>
+  <string name="hand_wave_gesture_title">Handgebaar</string>
+  <string name="hand_wave_gesture_summary">Pols kennisgewings op die handgebaar</string>
+  <string name="pocket_gesture_title">Sak</string>
+  <string name="pocket_gesture_summary">Pols kennisgewings wanneer jy toestel uit jou sak haal</string>
 </resources>

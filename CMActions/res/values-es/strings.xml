@@ -14,4 +14,12 @@
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
   <!-- Gesture shortcuts -->
+  <string name="screen_gestures_panel_title">Gestos</string>
+  <string name="ambient_display_title">Pantalla ambiental</string>
+  <string name="ambient_display_enable_title">Pantalla ambiental</string>
+  <string name="ambient_display_enable_summary">Activa la pantalla cuando recibas notificaciones</string>
+  <string name="hand_wave_gesture_title">Pasar la mano</string>
+  <string name="hand_wave_gesture_summary">Mostrar notificaciones cuando se pase la mano por el dispositivo</string>
+  <string name="pocket_gesture_title">Bolsillo</string>
+  <string name="pocket_gesture_summary">Mostrar notificaciones cuando se saque del bolsillo</string>
 </resources>

@@ -14,4 +14,12 @@
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
   <!-- Gesture shortcuts -->
+  <string name="screen_gestures_panel_title">Cử chỉ</string>
+  <string name="ambient_display_title">Hiển thị môi trường xung quanh</string>
+  <string name="ambient_display_enable_title">Hiển thị môi trường xung quanh</string>
+  <string name="ambient_display_enable_summary">Đánh thức màn hình khi nhận thông báo</string>
+  <string name="hand_wave_gesture_title">Vẫy tay</string>
+  <string name="hand_wave_gesture_summary">Kích hoạt thông báo lúc vẫy tay</string>
+  <string name="pocket_gesture_title">Bỏ túi</string>
+  <string name="pocket_gesture_summary">Kích hoạt thông báo khi lấy ra khỏi túi</string>
 </resources>
