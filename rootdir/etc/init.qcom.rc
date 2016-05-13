@@ -366,9 +366,11 @@ on boot
     chown system system /sys/devices/virtual/timed_output/vibrator/vtg_level
     chmod 0660 /sys/devices/virtual/timed_output/vibrator/vtg_level
 
-    # High brightness mode
+    # Display
     chown system system /sys/devices/virtual/graphics/fb0/hbm
     chmod 0660 /sys/devices/virtual/graphics/fb0/hbm
+    chown system graphics /sys/devices/virtual/graphics/fb0/idle_time
+    chmod 0664 /sys/devices/virtual/graphics/fb0/idle_time
 
     # setup trace dir
     mkdir /cache/trace 0777 root shell
