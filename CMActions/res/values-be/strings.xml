@@ -16,4 +16,7 @@
   <!-- Gesture shortcuts -->
   <string name="screen_gestures_panel_title">Жэсты</string>
   <string name="ambient_display_title">Індыкацыя падзей</string>
+  <string name="ambient_display_enable_title">Індыкацыя падзей</string>
+  <string name="ambient_display_enable_summary">Улучаць экран, калі атрымана паведамленне</string>
+  <string name="hand_wave_gesture_title">Узмах рукою</string>
 </resources>
