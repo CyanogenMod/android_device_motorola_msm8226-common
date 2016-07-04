@@ -18,8 +18,8 @@
   <string name="ambient_display_title">Display Ambient</string>
   <string name="ambient_display_enable_title">Display Ambient</string>
   <string name="ambient_display_enable_summary">Accendi lo schermo quando ricevi una notifica</string>
-  <string name="hand_wave_gesture_title">Gesture con la mano</string>
-  <string name="hand_wave_gesture_summary">Mostra le notifiche al passaggio della mano</string>
+  <string name="hand_wave_gesture_title">Movimento della mano</string>
+  <string name="hand_wave_gesture_summary">Mostra notifiche al passaggio della mano</string>
   <string name="pocket_gesture_title">Tasca</string>
   <string name="pocket_gesture_summary">Mostra le notifiche quando rimuovi il telefono dalla tasca</string>
 </resources>

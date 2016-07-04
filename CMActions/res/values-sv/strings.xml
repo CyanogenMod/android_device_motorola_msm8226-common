@@ -16,5 +16,6 @@
   <!-- Gesture shortcuts -->
   <string name="screen_gestures_panel_title">Gester</string>
   <string name="ambient_display_title">Omgivande display</string>
+  <string name="ambient_display_enable_summary">Väck skärmen när du tar emot notifikationer</string>
   <string name="pocket_gesture_title">Ficka</string>
 </resources>
