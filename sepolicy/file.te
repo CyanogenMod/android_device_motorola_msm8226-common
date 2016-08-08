@@ -22,9 +22,3 @@ type pds_batt_file, file_type;
 
 # Sensors
 type sysfs_devices_sensors, sysfs_type;
-
-# Power
-type sysfs_power, sysfs_type;
-
-# Light
-type sysfs_light, sysfs_type;
