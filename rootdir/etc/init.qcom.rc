@@ -523,9 +523,10 @@ service mmi-touch-sh /system/bin/sh /init.mmi.touch.sh synaptics aps
     user root
     oneshot
 
-service charge_only_mode /system/bin/charge_only_mode
-    user root
-    disabled
+service charger /charger
+    class charger
+    group log
+    seclabel u:r:healthd:s0
 
 service mpdecision /system/bin/mpdecision --avg_comp
     user root
@@ -694,9 +695,6 @@ on charger
     write /sys/class/android_usb/android0/functions mass_storage
     write /sys/class/android_usb/android0/enable 1
 
-    wait /dev/block/platform/msm_sdcc.1/by-name/system
-    mount ext4 /dev/block/platform/msm_sdcc.1/by-name/system /system ro barrier=1
-
     write /sys/module/lpm_levels/enable_low_power/l2 1
     write /sys/module/msm_pm/modes/cpu0/power_collapse/suspend_enabled 1
     write /sys/module/msm_pm/modes/cpu1/power_collapse/suspend_enabled 1
@@ -722,13 +720,11 @@ on charger
     chmod 664 /sys/devices/system/cpu/cpu3/online
     write /sys/module/msm_pm/modes/cpu0/standalone_power_collapse/idle_enabled 1
     write /sys/module/msm_pm/modes/cpu0/power_collapse/idle_enabled 1
-    write /sys/power/autosleep "mem"
     write /sys/module/lpm_levels/enable_low_power/l2 3
     write /sys/module/msm_pm/modes/cpu0/power_collapse/idle_enabled 0
     write /sys/devices/system/cpu/cpu1/online 1
     write /sys/devices/system/cpu/cpu2/online 1
     write /sys/devices/system/cpu/cpu3/online 1
-    start charge_only_mode
 
 on property:sys.boot_completed=1
     write /sys/module/lpm_levels/enable_low_power/l2 4
