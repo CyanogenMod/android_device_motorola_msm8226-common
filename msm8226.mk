@@ -174,6 +174,9 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/thermal/thermal-engine-thea.conf:system/etc/thermal-engine-thea.conf \
     $(LOCAL_PATH)/thermal/thermal-engine-titan.conf:system/etc/thermal-engine-titan.conf
 
+PRODUCT_PACKAGES += \
+    libshims_thermal
+
 # USB
 PRODUCT_PACKAGES += \
     com.android.future.usb.accessory
