@@ -115,6 +115,9 @@ TARGET_USERIMAGES_USE_F2FS := true
 # Release tools
 TARGET_RELEASETOOLS_EXTENSIONS := $(VENDOR_PATH)
 
+# Shims
+TARGET_LDPRELOAD=libshims_thermal.so
+
 # Basic dexpreopt
 ifeq ($(HOST_OS),linux)
   ifneq ($(TARGET_BUILD_VARIANT),eng)
