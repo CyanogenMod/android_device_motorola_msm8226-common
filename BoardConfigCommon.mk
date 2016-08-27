@@ -89,9 +89,6 @@ EXTENDED_FONT_FOOTPRINT := true
 # Lights
 TARGET_PROVIDES_LIBLIGHT := true
 
-# Memory
-MALLOC_IMPL := dlmalloc
-
 # Partitions
 BOARD_FLASH_BLOCK_SIZE := 131072
 
