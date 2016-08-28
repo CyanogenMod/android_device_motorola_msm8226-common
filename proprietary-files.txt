@@ -92,7 +92,9 @@ etc/firmware/cpp_firmware_v1_2_0.fw
 
 # DRM
 bin/qseecomd
-lib/libdrmdecrypt.so
+lib/libscdclient.so
+lib/libkeyctrl.so
+lib/lib_asb_tee.so
 vendor/lib/drm/libdrmwvmplugin.so
 vendor/lib/libdrmdiag.so
 vendor/lib/libdrmfs.so
@@ -100,11 +102,11 @@ vendor/lib/libdrmtime.so
 vendor/lib/libQSEEComAPI.so
 vendor/lib/librpmb.so
 vendor/lib/libssd.so
+vendor/lib/libwvdrmengine.so
 vendor/lib/libwvdrm_L1.so
 vendor/lib/libwvm.so
 vendor/lib/libWVStreamControlAPI_L1.so
 vendor/lib/mediadrm/libwvdrmengine.so
-
 # GPS
 -app/com.qualcomm.location/com.qualcomm.location.apk
 -app/com.qualcomm.services.location/com.qualcomm.services.location.apk
