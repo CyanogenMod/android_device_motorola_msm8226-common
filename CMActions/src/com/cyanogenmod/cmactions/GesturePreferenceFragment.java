@@ -17,9 +17,9 @@
 package com.cyanogenmod.cmactions;
 
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
-import android.preference.SwitchPreference;
+import android.support.v14.preference.PreferenceFragment;
+import android.support.v14.preference.SwitchPreference;
+import android.support.v7.preference.Preference;
 import android.provider.Settings;
 
 public class GesturePreferenceFragment extends PreferenceFragment {
@@ -33,8 +33,7 @@ public class GesturePreferenceFragment extends PreferenceFragment {
     private SwitchPreference mHandwavePreference;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         addPreferencesFromResource(R.xml.gesture_panel);
         boolean dozeEnabled = isDozeEnabled();
         mAmbientDisplayPreference =
