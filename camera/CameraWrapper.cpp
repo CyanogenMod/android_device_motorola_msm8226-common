@@ -36,6 +36,9 @@
 #define BACK_CAMERA     0
 #define FRONT_CAMERA    1
 
+#define OPEN_RETRIES    10
+#define OPEN_RETRY_MSEC 20
+
 using namespace android;
 
 enum {
@@ -602,6 +605,13 @@ static int camera_device_open(const hw_module_t *module, const char *name,
         rv = gVendorModule->common.methods->open(
                 (const hw_module_t*)gVendorModule, name,
                 (hw_device_t**)&(camera_device->vendor));
+        for (int i = 0; rv && i < OPEN_RETRIES; i++) {
+            rv = gVendorModule->common.methods->open(
+                    (const hw_module_t*)gVendorModule, name,
+                    (hw_device_t**)&(camera_device->vendor));
+            if (rv)
+                usleep(OPEN_RETRY_MSEC * 1000);
+        }
         if (rv) {
             ALOGE("vendor camera open fail");
             goto fail;
