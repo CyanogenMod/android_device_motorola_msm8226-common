@@ -32,6 +32,7 @@
 #include <hardware/camera.h>
 #include <camera/Camera.h>
 #include <camera/CameraParameters.h>
+#include <fcntl.h>
 
 #define BACK_CAMERA     0
 #define FRONT_CAMERA    1
@@ -121,6 +122,25 @@ typedef struct wrapper_camera_device {
 
 #define CAMERA_ID(device) (((wrapper_camera_device_t *)(device))->id)
 
+static void wait_for_server()
+{
+    int fd = open("/sys/kernel/qcamera_server/ready", O_RDONLY);
+    if (fd < 0) {
+        ALOGE("Could not open 'ready' file");
+        return;
+    }
+
+    for (int i = 0; i < 50; i++) {
+        char is_ready;
+        if (read(fd, &is_ready, 1) != -1 && is_ready == '1')
+            break;
+        usleep(100000);
+        lseek(fd, 0, SEEK_SET);
+    }
+
+    close(fd);
+}
+
 static int check_vendor_module()
 {
     int rv = 0;
@@ -128,6 +148,8 @@ static int check_vendor_module()
 
     if (gVendorModule)
         return 0;
+
+    wait_for_server();
 
     rv = hw_get_module_by_class("camera", "vendor",
             (const hw_module_t**)&gVendorModule);
