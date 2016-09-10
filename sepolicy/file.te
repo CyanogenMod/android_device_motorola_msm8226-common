@@ -18,4 +18,4 @@ type pds_public_file, file_type;
 type pds_batt_file, file_type;
 
 # Sensors
-type sysfs_devices_sensors, sysfs_type;
+type sysfs_devices_sensors, file_type, sysfs_type;
