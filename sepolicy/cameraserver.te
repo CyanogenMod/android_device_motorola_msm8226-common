@@ -1,0 +1,4 @@
+allow cameraserver camera_socket:sock_file w_file_perms;
+
+# Camera server wants to access /system/vendor/lib/egl, why?
+allow cameraserver system_file:dir { open read };
