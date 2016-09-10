@@ -112,9 +112,6 @@ on post-fs-data
     restorecon /data/hostapd
     restorecon /data/misc/wifi/hostapd/wlan0
 
-    # Hardware revisions
-    mkdir /data/hardware_revisions 0755 system system
-
     #Create directories for gpsone_daemon services
     mkdir /data/misc/gpsone_d 0770 system gps
 
@@ -465,12 +462,6 @@ service hciattach /system/bin/sh /system/etc/init.qcom.bt.sh
     user bluetooth
     group bluetooth net_bt_admin
     disabled
-    oneshot
-
-service hw_revs /system/bin/hardware_revisions.sh
-    class main
-    user system
-    group system
     oneshot
 
 service irsc_util /system/bin/irsc_util "/etc/sec_config"
