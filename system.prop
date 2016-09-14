@@ -83,6 +83,9 @@ ro.use_data_netmgrd=true
 # Scheduler
 sys.io.scheduler=bfq
 
+# Storage
+ro.sys.sdcardfs=true
+
 # Subsystem
 persist.sys.ssr.enable_debug=0
 
