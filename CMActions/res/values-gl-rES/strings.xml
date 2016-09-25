@@ -14,4 +14,12 @@
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
   <!-- Gesture shortcuts -->
+  <string name="screen_gestures_panel_title">Xestos</string>
+  <string name="ambient_display_title">Visualización ambiente</string>
+  <string name="ambient_display_enable_title">Pantalla ambiente</string>
+  <string name="ambient_display_enable_summary">Activar a pantalla ao recibir notificacións</string>
+  <string name="hand_wave_gesture_title">Pasar a man</string>
+  <string name="hand_wave_gesture_summary">Amosar notificacións ao pasar a man</string>
+  <string name="pocket_gesture_title">Peto</string>
+  <string name="pocket_gesture_summary">Amosar notificacións ao sacar do peto</string>
 </resources>
