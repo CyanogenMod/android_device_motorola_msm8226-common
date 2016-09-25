@@ -40,6 +40,7 @@ on early-init
 
     chown system system /sys/kernel/debug
     chmod 0775 /sys/kernel/debug
+    mount debugfs /sys/kernel/debug /sys/kernel/debug
 
     symlink /data/tombstones /tombstones
 
