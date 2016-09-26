@@ -147,7 +147,8 @@ PRODUCT_PACKAGES += \
 
 # Radio
 PRODUCT_PACKAGES += \
-    libcnefeatureconfig
+    libcnefeatureconfig \
+    ril-wrapper
 
 # Ramdisk
 PRODUCT_PACKAGES += \
