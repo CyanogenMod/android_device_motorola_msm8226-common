@@ -25,6 +25,7 @@ ro.qc.sdk.audio.ssr=false
 use.voice.path.for.pcm.voip=true
 
 # Bluetooth
+qcom.bluetooth.soc=smd
 qcom.bt.le_dev_pwr_class=1
 ro.qualcomm.bluetooth.opp=true
 ro.qualcomm.bluetooth.hfp=true
