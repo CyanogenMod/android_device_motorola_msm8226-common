@@ -39,6 +39,8 @@ write_headers "falcon peregrine thea titan"
 # The standard common blobs
 write_makefiles "$MY_DIR"/proprietary-files.txt
 
+printf '\n%s\n' "\$(call inherit-product, vendor/qcom/binaries/msm8974/graphics/graphics-vendor.mk)" >> "$PRODUCTMK"
+
 # We are done!
 write_footers
 
