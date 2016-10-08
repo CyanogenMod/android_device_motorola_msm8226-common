@@ -19,10 +19,12 @@ TARGET_DIR = os.getenv('OUT')
 
 def FullOTA_Assertions(info):
   AddBootloaderAssertion(info, info.input_zip)
+  AddFirmwareAssertion(info)
 
 
 def IncrementalOTA_Assertions(info):
   AddBootloaderAssertion(info, info.target_zip)
+  AddFirmwareAssertion(info)
 
 
 def AddBootloaderAssertion(info, input_zip):
@@ -33,3 +35,10 @@ def AddBootloaderAssertion(info, input_zip):
     if "*" not in bootloaders:
       info.script.AssertSomeBootloader(*bootloaders)
     info.metadata["pre-bootloader"] = m.group(1)
+
+def AddFirmwareAssertion(info):
+  info.output_zip.write(os.path.join(TARGET_DIR, "check-firmware-files.sh"), "check-firmware-files.sh")
+  info.script.AppendExtra('package_extract_file("check-firmware-files.sh", "/tmp/check-firmware-files.sh");')
+  info.script.SetPermissions("/tmp/check-firmware-files.sh", 0, 0, 0755, None, None);
+  info.script.AppendExtra('run_program("/tmp/check-firmware-files.sh") == 0' +
+                          ' || abort("Outdated radio/baseband, please update it to continue.");');

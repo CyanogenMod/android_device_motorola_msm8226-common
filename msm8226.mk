@@ -203,3 +203,6 @@ PRODUCT_PACKAGES += \
     libcurl \
     libqsap_sdk \
     libQWiFiSoftApCfg
+
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/check-firmware-files.sh:check-firmware-files.sh
