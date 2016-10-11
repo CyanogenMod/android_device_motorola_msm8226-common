@@ -51,6 +51,10 @@ ro.qc.sdk.izat.service_mask=0x5
 persist.gps.qc_nlp_in_use=1
 persist.loc.nlp_name=com.qualcomm.services.location
 
+# Media
+media.stagefright.legacyencoder=true
+media.stagefright.less-secure=true
+
 # NITZ
 persist.radio.nitz_plmn=
 persist.radio.nitz_lons_0=
@@ -92,4 +96,3 @@ persist.sys.ssr.enable_debug=0
 # Wifi
 persist.sys.qc.sub.rdump.on=1
 ro.disableWifiApFirmwareReload=true
-
