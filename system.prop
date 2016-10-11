@@ -90,3 +90,4 @@ persist.sys.ssr.enable_debug=0
 persist.sys.qc.sub.rdump.on=1
 ro.disableWifiApFirmwareReload=true
 
+media.stagefright.legacyencoder=true
