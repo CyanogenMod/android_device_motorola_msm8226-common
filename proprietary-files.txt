@@ -26,6 +26,8 @@ bin/hci_qcomm_init
 vendor/lib/libbtnv.so
 
 # Camera
+# vendor/lib/libmmjpeg.so - from shamu
+# vendor/lib/libmmcamera_faceproc.so - from shamu
 bin/mm-qcamera-daemon
 lib/libmot_sensorlistener.so
 lib/libmmcamera_ar0543.so
@@ -36,7 +38,7 @@ vendor/lib/libjpegehw.so
 vendor/lib/libmmcamera_hdr_gb_lib.so
 vendor/lib/libmmcamera_hdr_lib.so
 vendor/lib/libmmcamera_imglib.so
-vendor/lib/libmmcamera_faceproc.so
+vendor/lib/libmmcamera_faceproc.so|ac49bcc1aa20ff9f2c118f6c233b658f93543202
 vendor/lib/libmmcamera_imx132_eeprom.so
 vendor/lib/libmmcamera_imx132.so
 vendor/lib/libmmcamera_imx179.so
@@ -48,7 +50,7 @@ vendor/lib/libmmcamera_tintless_bg_pca_algo.so
 vendor/lib/libmmcamera_tuning.so
 vendor/lib/libmmcamera_wavelet_lib.so
 vendor/lib/libmmipl.so
-vendor/lib/libmmjpeg.so
+vendor/lib/libmmjpeg.so|44e479b511fe648de3aa792ca822b5d7dc2fc34a
 vendor/lib/libmmqjpeg_codec.so
 vendor/lib/libqomx_jpegdec.so
 vendor/lib/libqomx_jpegenc.so
@@ -90,18 +92,18 @@ etc/firmware/cpp_firmware_v1_1_1.fw
 etc/firmware/cpp_firmware_v1_1_6.fw
 etc/firmware/cpp_firmware_v1_2_0.fw
 
-# DRM
-bin/qseecomd
-vendor/lib/drm/libdrmwvmplugin.so
-vendor/lib/libdrmfs.so
-vendor/lib/libdrmtime.so
-vendor/lib/libQSEEComAPI.so
-vendor/lib/librpmb.so
-vendor/lib/libssd.so
-vendor/lib/libwvdrm_L3.so
-vendor/lib/libwvm.so
-vendor/lib/libWVStreamControlAPI_L3.so
-vendor/lib/mediadrm/libwvdrmengine.so
+# DRM - from seed
+bin/qseecomd|09a738119224d2d0fdd583f6b2c25d3d07299b3c
+vendor/lib/drm/libdrmwvmplugin.so|9f11ef67ea76ee95a43ed317a5cf479b9321d6d0
+vendor/lib/libdrmfs.so|4ef88abe5935fe485963b5a6fb94dd040523d681
+vendor/lib/libdrmtime.so|0724d70f1c7851c2d8b239ab3bbd5b2cadae645a
+vendor/lib/libQSEEComAPI.so|8371b1625921efb5779a644edc6b79ff089104e4
+vendor/lib/librpmb.so|930cada51c737dd8f95a94a8013a5caedd3de60e
+vendor/lib/libssd.so|1bfb2ccaa33455a9b9b2e0c4ae34e7586045b299
+vendor/lib/libwvdrm_L3.so|7e77482481197997294a834bfbc817a01b6075cd
+vendor/lib/libwvm.so|d143a34352073f16058c18debcf99c6a959dd5e1
+vendor/lib/libWVStreamControlAPI_L3.so|61673304827483d44b735a3dd08f0783d10ce92d
+vendor/lib/mediadrm/libwvdrmengine.so|70b94e8514f45c25a9a53f21186138a4026f4d67
 
 # GPS
 -app/com.qualcomm.location/com.qualcomm.location.apk
