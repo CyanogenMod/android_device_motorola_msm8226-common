@@ -23,3 +23,14 @@ LOCAL_MODULE := libshims_thermal
 LOCAL_MODULE_TAGS := optional
 
 include $(BUILD_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
+
+LOCAL_SRC_FILES := wvm.c
+
+LOCAL_SHARED_LIBRARIES := libstagefright_foundation
+
+LOCAL_MODULE := libshims_wvm
+LOCAL_MODULE_TAGS := optional
+
+include $(BUILD_SHARED_LIBRARY)
