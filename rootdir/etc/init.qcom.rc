@@ -43,7 +43,7 @@ on early-init
     symlink /data/tombstones /tombstones
 
 on init
-    export LD_SHIM_LIBS /system/bin/thermal-engine|libshims_thermal.so
+    export LD_SHIM_LIBS /system/bin/thermal-engine|libshims_thermal.so:/system/vendor/lib/libwvm.so|libshims_wvm.so
 
     # Set permissions for persist partition
     mkdir /persist 0771 system system
