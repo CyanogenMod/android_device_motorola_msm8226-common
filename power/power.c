@@ -170,7 +170,9 @@ static void power_hint(__attribute__((unused)) struct power_module *module,
             return;
 
         if (boostpulse_open() >= 0) {
-            snprintf(buf, sizeof(buf), "%d", 1);
+            /* The given value is expressed in msecs, convert it to usecs */
+            unsigned long duration_usec = *(int32_t *)data * 1000;
+            snprintf(buf, sizeof(buf), "%lu", duration_usec);
             len = write(boostpulse_fd, &buf, sizeof(buf));
             if (len < 0) {
                 strerror_r(errno, buf, sizeof(buf));
