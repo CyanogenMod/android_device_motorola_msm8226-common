@@ -3,7 +3,7 @@
 /system/bin/batt_health                                     u:object_r:batt_health_exec:s0
 /system/bin/dbvc_atvc_property_set                          u:object_r:atvc_exec:s0
 /system/bin/sensord                                         u:object_r:sensord_exec:s0
-/system/bin/dump_pds.sh                                     u:object_r:dump_pds_exec:s0
+/system/bin/dump_pds\.sh                                    u:object_r:dump_pds_exec:s0
 /system/bin/thermal-engine                                  u:object_r:thermal-engine_exec:s0
 
 # Camera
@@ -67,8 +67,8 @@
 /sys/devices/virtual/input/input3(/.*)?                     u:object_r:sysfs_devices_sensors:s0
 
 # Thermal
-/sys/devices/fd510000.gpio/gpio/gpio13/active_low           u:object_r:sysfs_thermal:s0
-/sys/devices/fd510000.gpio/gpio/gpio13/edge                 u:object_r:sysfs_thermal:s0
-/sys/devices/f9925000.i2c/i2c-3/3-0048/temp1_input          u:object_r:sysfs_thermal:s0
-/sys/devices/f9925000.i2c/i2c-3/3-0048/temp1_max            u:object_r:sysfs_thermal:s0
-/sys/devices/f9925000.i2c/i2c-3/3-0048/temp1_max_hyst       u:object_r:sysfs_thermal:s0
+/sys/devices/fd510000\.gpio/gpio/gpio13/active_low          u:object_r:sysfs_thermal:s0
+/sys/devices/fd510000\.gpio/gpio/gpio13/edge                u:object_r:sysfs_thermal:s0
+/sys/devices/f9925000\.i2c/i2c-3/3-0048/temp1_input         u:object_r:sysfs_thermal:s0
+/sys/devices/f9925000\.i2c/i2c-3/3-0048/temp1_max           u:object_r:sysfs_thermal:s0
+/sys/devices/f9925000\.i2c/i2c-3/3-0048/temp1_max_hyst      u:object_r:sysfs_thermal:s0
