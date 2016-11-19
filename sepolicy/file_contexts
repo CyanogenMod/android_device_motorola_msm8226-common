@@ -13,6 +13,10 @@
 /sys/devices/virtual/graphics/fb0/hbm                       u:object_r:livedisplay_sysfs:s0
 /sys/devices/virtual/timed_output/vibrator/vtg_level        u:object_r:vibeamp_sysfs:s0
 
+# DTV
+/dev/isdbt                                                  u:object_r:isdbt_device:s0
+/system/bin/dtv-jelly                                       u:object_r:jellyservice_exec:s0
+
 # Motorola services
 /data/power_supply_logger(/.*)?                             u:object_r:batt_health_data_file:s0
 /sys/module/qpnp_charger/parameters(/.*)?                   u:object_r:sysfs_batt_health:s0
