@@ -1,0 +1,3 @@
+allow servicemanager jellyservice:process getattr;
+
+r_dir_file(servicemanager, jellyservice)
