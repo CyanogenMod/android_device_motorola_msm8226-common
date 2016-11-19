@@ -1,0 +1,9 @@
+type dtv_app, domain;
+app_domain(dtv_app)
+
+allow dtv_app media_rw_data_file:dir create_dir_perms;
+allow dtv_app media_rw_data_file:file create_file_perms;
+
+allow dtv_app sysfs:file r_file_perms;
+
+binder_call(dtv_app, jellyservice)
