@@ -1,3 +1,6 @@
+# DTV
+type isdbt_device, dev_type;
+
 # Partitions
 type cid_block_device, dev_type;
 type clogo_block_device, dev_type;
