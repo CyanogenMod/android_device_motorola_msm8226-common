@@ -1,0 +1,24 @@
+type dtv_app, domain;
+app_domain(dtv_app)
+net_domain(dtv_app)
+bluetooth_domain(dtv_app)
+
+allow dtv_app media_rw_data_file:dir create_dir_perms;
+allow dtv_app media_rw_data_file:file create_file_perms;
+
+allow dtv_app audioserver_service:service_manager find;
+allow dtv_app cameraserver_service:service_manager find;
+allow dtv_app drmserver_service:service_manager find;
+allow dtv_app jellyservice_service:service_manager find;
+allow dtv_app mediaserver_service:service_manager find;
+allow dtv_app mediaextractor_service:service_manager find;
+allow dtv_app mediacodec_service:service_manager find;
+allow dtv_app mediadrmserver_service:service_manager find;
+allow dtv_app nfc_service:service_manager find;
+allow dtv_app radio_service:service_manager find;
+allow dtv_app surfaceflinger_service:service_manager find;
+allow dtv_app app_api_service:service_manager find;
+
+allow dtv_app sysfs_thermal:file r_file_perms;
+
+binder_call(dtv_app, jellyservice)

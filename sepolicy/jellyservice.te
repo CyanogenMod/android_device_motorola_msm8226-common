@@ -1,0 +1,17 @@
+type jellyservice, domain;
+type jellyservice_exec, exec_type, file_type;
+init_daemon_domain(jellyservice)
+
+allow jellyservice isdbt_device:chr_file rw_file_perms;
+allow jellyservice ion_device:chr_file r_file_perms;
+
+allow jellyservice dtv_app:binder call;
+
+allow jellyservice jellyservice_service:service_manager add;
+
+binder_use(jellyservice)
+
+binder_service(jellyservice)
+
+binder_call(jellyservice, servicemanager)
+binder_call(jellyservice, surfaceflinger)
