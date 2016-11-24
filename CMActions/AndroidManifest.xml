@@ -8,7 +8,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
-        android:label="CMActions"
+        android:label="@string/device_settings_app_name"
         android:persistent="true">
 
         <receiver android:name="com.cyanogenmod.cmactions.BootCompletedReceiver">
