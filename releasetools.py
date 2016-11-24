@@ -19,10 +19,12 @@ TARGET_DIR = os.getenv('OUT')
 
 def FullOTA_Assertions(info):
   AddBootloaderAssertion(info, info.input_zip)
+  FalconCdmaChanges(info)
 
 
 def IncrementalOTA_Assertions(info):
   AddBootloaderAssertion(info, info.target_zip)
+  FalconCdmaChanges(info)
 
 
 def AddBootloaderAssertion(info, input_zip):
@@ -33,3 +35,11 @@ def AddBootloaderAssertion(info, input_zip):
     if "*" not in bootloaders:
       info.script.AssertSomeBootloader(*bootloaders)
     info.metadata["pre-bootloader"] = m.group(1)
+
+
+def FalconCdmaChanges(info):
+  info.script.AppendExtra('if getprop("ro.boot.device") == "falcon" && getprop("ro.boot.radio") == "0x3" then')
+  info.script.Mount("/system")
+  info.script.AppendExtra('symlink("/system/etc/CdmaCarrierConfig/", "/system/priv-app/");')
+  info.script.Unmount("/system")
+  info.script.AppendExtra('endif;')
