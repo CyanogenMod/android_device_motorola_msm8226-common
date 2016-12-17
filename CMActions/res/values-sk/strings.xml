@@ -14,4 +14,12 @@
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
   <!-- Gesture shortcuts -->
+  <string name="screen_gestures_panel_title">Gestá</string>
+  <string name="ambient_display_title">Ambientné zobrazenie</string>
+  <string name="ambient_display_enable_title">Ambientné zobrazenie</string>
+  <string name="ambient_display_enable_summary">Prebudiť obrazovku po prijatí oznámenia</string>
+  <string name="hand_wave_gesture_title">Mávnutie rukou</string>
+  <string name="hand_wave_gesture_summary">Upozorniť pulzovaním pri mávnutí rukou</string>
+  <string name="pocket_gesture_title">Vrecko</string>
+  <string name="pocket_gesture_summary">Upozorniť pulzovaním pri vybratí z vrecka</string>
 </resources>
